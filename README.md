@@ -1,5 +1,5 @@
 # ledger-big-curves
-Schnorr signatures with big curves on ledger's secure element
+Schnorr signatures with big curves on ledger devices' secure elements
 
 ### General ledger development setup
 - [ ] all info is here https://ledger.readthedocs.io/en/latest/userspace/getting_started.html
