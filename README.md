@@ -2,7 +2,7 @@
 Schnorr signatures with big curves on ledger's secure element
 
 ### General ledger development setup
-- all info is here https://ledger.readthedocs.io/en/latest/userspace/getting_started.html
+- [ ] all info is here https://ledger.readthedocs.io/en/latest/userspace/getting_started.html
 - [ ] create a ledger development environment directory: 
 ````
 mkdir ledger-dev-env && cd ledger-dev-env
