@@ -1,0 +1,28 @@
+#ifndef CODA_GROUP
+#define CODA_GROUP
+
+#include<stdint.h>
+#include"field.h"
+
+const field_element group_order = { 123 };
+const field_element coeff_a = { 123 };
+const field_element coeff_b = { 123 };
+
+struct group_element {
+  uint64_t x[12];
+  uint64_t y[12];
+};
+
+// mnt6753 generator
+const group_element gen = {
+  .x = 3458420969484235708806261200128850544017070333833944116801482064540723268149235477762870414664917360605949659630933184751526227993647030875167687492714052872195770088225183259051403087906158701786758441889742618916006546636728,
+  .y = 27460508402331965149626600224382137254502975979168371111640924721589127725376473514838234361114855175488242007431439074223827742813911899817930728112297763448010814764117701403540298764970469500339646563344680868495474127850569
+};
+
+void addg(group_element *a, group_element *b);
+void subg(group_element *a, group_element *b);
+void doubleg(group_element *a);
+void scalar_mul(field_element *k, group_element *a);
+bool is_on_curve(group_element *a);
+
+#endif // CODA_GROUP
