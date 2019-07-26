@@ -17,5 +17,6 @@ void fmnt6753_mul(fmnt6753 *c, fmnt6753 *a, fmnt6753 *b);
 void fmnt6753_div(fmnt6753 *c, fmnt6753 *a, fmnt6753 *b);
 void fmnt6753_sq(fmnt6753 *c, fmnt6753 *a);
 void fmnt6753_inv(fmnt6753 *c, fmnt6753 *a);
+void fmnt6753_int_mul(fmnt6753 *c, uint64_t b, fmnt6753 *a);
 
 #endif // CODA_FIELD
