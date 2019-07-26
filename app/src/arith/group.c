@@ -8,18 +8,19 @@ bool is_zero(gmnt6753 *p) {
 bool is_on_curve(gmnt6753 *p) {
   if (is_zero(p)) {
     return true;
-  } else if (p->Z == 1) {
+  } else if (fmnt6753_eq(p->Z, fmnt6753_one)) {
     fmnt6753 y2;
     fmnt6753_sq(y2, p->Y);
 
     fmnt6753 x3_ax_b;
-    fmnt6753_sq(&x3_ax_b, p->X);                    // x*2
-    fmnt6753_add(&x3_ax_b, &x3_ax_b, &coeff_a);     // x*2 + a
-    fmnt6753_mul(&x3_ax_b, &x3_ax_b, &p->X);        // x*3 + ax
-    fmnt6753_add(&x3_ax_b, &x3_ax_b, &coeff_b);     // x*3 + ax + b
+    fmnt6753_sq(x3_ax_b, p->X);                     // x*2
+    fmnt6753_add(x3_ax_b, x3_ax_b, coeff_a);        // x*2 + a
+    fmnt6753_mul(x3_ax_b, x3_ax_b, p->X);           // x*3 + ax
+    fmnt6753_add(x3_ax_b, x3_ax_b, coeff_b);        // x*3 + ax + b
 
-    return *y2 == *x3_ax_b;
+    return fmnt6753_eq(y2, x3_ax_b);
   }
+  return false;
 };
 
 // From https://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian.html#addition-madd-2007-bl
@@ -79,13 +80,13 @@ void gmnt6753_double(gmnt6753 *r, gmnt6753 *p) {
   fmnt6753 s;                                       // S = 2*((X1+YY)^2-XX-YYYY)
   fmnt6753_add(s, p->X, yy);                        // X1+YY
   fmnt6753_sq(s, s);                                // (X1+YY)^2
-  fmnt6753_sub(s, s, xx);                              // (X1+YY)^2-XX
-  fmnt6753_sub(s, s, yyyy);                            // (X1+YY)^2-XX-YYYY
+  fmnt6753_sub(s, s, xx);                           // (X1+YY)^2-XX
+  fmnt6753_sub(s, s, yyyy);                         // (X1+YY)^2-XX-YYYY
   fmnt6753_int_mul(s, 2, s);                        // 2*((X1+YY)^2-XX-YYYY)
 
   fmnt6753 m;                                       // M = 3*XX+a*ZZ^2
   fmnt6753_sq(m, zz);                               // ZZ^2
-  fmnt6753_mul(m, m, &coeff_a);                     // a*ZZ^2
+  fmnt6753_mul(m, m, coeff_a);                      // a*ZZ^2
   fmnt6753_int_mul(xx, 3, xx);                      // 3*XX
   fmnt6753_add(m, m, xx);                           // 3*XX + a*ZZ^2
 
@@ -108,7 +109,7 @@ void gmnt6753_double(gmnt6753 *r, gmnt6753 *p) {
 
 };
 
-void gmnt6753_scalar_mul(gmnt6753 *r, fmnt6753 *k, gmnt6753 *p) {
+void gmnt6753_scalar_mul(gmnt6753 *r, fmnt6753 k, gmnt6753 *p) {
 //  R0 ← 0
 //  R1 ← P
 //  for i from m downto 0 do
