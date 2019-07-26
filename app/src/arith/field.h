@@ -1,19 +1,21 @@
 #ifndef CODA_FIELD
 #define CODA_FIELD
 
-#include<cx.h>
+#include "os.h"
+#include "cx.h"
 
-struct field_element {
-  uint64_t val[12];
-}
+typedef uint64_t fmnt6753[12];
 
-const field_element MODULUS = 123;
+const fmnt6753 MODULUS =
+  {1234, 1234, 1234, 1234,
+  1234, 1234, 1234, 1234,
+  1234, 1234, 1234, 1234};
 
-void addf(field_element *a, field_element *b);
-void subf(field_element *a, field_element *b);
-void mulf(field_element *a, field_element *b);
-void squaref(field_element *a);
-void divf(field_element *a, field_element *b);
-void invf(field_element *a);
+void fmnt6753_add(fmnt6753 *c, fmnt6753 *a, fmnt6753 *b);
+void fmnt6753_sub(fmnt6753 *c, fmnt6753 *a, fmnt6753 *b);
+void fmnt6753_mul(fmnt6753 *c, fmnt6753 *a, fmnt6753 *b);
+void fmnt6753_div(fmnt6753 *c, fmnt6753 *a, fmnt6753 *b);
+void fmnt6753_sq(fmnt6753 *c, fmnt6753 *a);
+void fmnt6753_inv(fmnt6753 *c, fmnt6753 *a);
 
 #endif // CODA_FIELD

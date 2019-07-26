@@ -77,8 +77,8 @@ static void ui_approval(void);
 static const uint64_t N_privateKey[12];
 // initialization marker in flash. const and N_ variable name are mandatory here
 static const unsigned char N_initialized;
-static const size_t PRIVATE_KEY_SIZE = (12 * sizeof(uint64_t))
-static const size_t PUBLIC_KEY_SIZE = (24 * sizeof(uint64_t))
+static const size_t PRIVATE_KEY_SIZE = (12 * sizeof(uint64_t));
+static const size_t PUBLIC_KEY_SIZE = (24 * sizeof(uint64_t));
 
 static char lineBuffer[50];
 static cx_blake2b_t hash;

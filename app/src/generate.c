@@ -1,7 +1,6 @@
 #include "os.h"
 #include "cx.h"
 #include "os_io_seproxyhal.h"
-#include "glyphs.h"
 
 // Ledger uses: 
 // - BIP 39 to generate and interpret the master seed, which
@@ -12,9 +11,9 @@
 // HD tree
 
 
-derive_private_key
+// derive_private_key
 
-generate_public_key
+// generate_public_key
 
-generate_pair
+// generate_pair
 
