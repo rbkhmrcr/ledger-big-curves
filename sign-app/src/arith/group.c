@@ -1,27 +1,6 @@
 #include "field.h"
 #include "group.h"
-
-bool is_zero(gmnt6753 *p) {
-  return false;
-};
-
-bool is_on_curve(gmnt6753 *p) {
-  if (is_zero(p)) {
-    return true;
-  } else if (fmnt6753_eq(p->Z, fmnt6753_one)) {
-    fmnt6753 y2;
-    fmnt6753_sq(y2, p->Y);
-
-    fmnt6753 x3_ax_b;
-    fmnt6753_sq(x3_ax_b, p->X);                     // x*2
-    fmnt6753_add(x3_ax_b, x3_ax_b, coeff_a);        // x*2 + a
-    fmnt6753_mul(x3_ax_b, x3_ax_b, p->X);           // x*3 + ax
-    fmnt6753_add(x3_ax_b, x3_ax_b, coeff_b);        // x*3 + ax + b
-
-    return fmnt6753_eq(y2, x3_ax_b);
-  }
-  return false;
-};
+#include "group-utils.h"
 
 // From https://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian.html#addition-madd-2007-bl
 // for p = (X1, Y1, Z1), q = (X2, Y2, Z2); assumes Z2 = 1
@@ -86,7 +65,7 @@ void gmnt6753_double(gmnt6753 *r, gmnt6753 *p) {
 
   fmnt6753 m;                                       // M = 3*XX+a*ZZ^2
   fmnt6753_sq(m, zz);                               // ZZ^2
-  fmnt6753_mul(m, m, coeff_a);                      // a*ZZ^2
+  fmnt6753_mul(m, m, gmnt6753_coeff_a);                      // a*ZZ^2
   fmnt6753_int_mul(xx, 3, xx);                      // 3*XX
   fmnt6753_add(m, m, xx);                           // 3*XX + a*ZZ^2
 
@@ -106,18 +85,25 @@ void gmnt6753_double(gmnt6753 *r, gmnt6753 *p) {
   fmnt6753_sq(r->Z, r->Z);                          // (Y1+Z1)^2
   fmnt6753_sub(r->Z, r->Z, yy);                     // (Y1+Z1)^2-YY
   fmnt6753_sub(r->Z, r->Z, zz);                     // (Y1+Z1)^2-YY-ZZ
-
 };
 
-void gmnt6753_scalar_mul(gmnt6753 *r, fmnt6753 k, gmnt6753 *p) {
-//  R0 ← 0
-//  R1 ← P
-//  for i from m downto 0 do
-//     if di = 0 then
-//        R1 ← point_add(R0, R1)
-//        R0 ← point_double(R0)
-//     else
-//        R0 ← point_add(R0, R1)
-//        R1 ← point_double(R1)
-//  return R0
+void gmnt6753_scalar_mul(gmnt6753 *r, fmnt6753 k, const gmnt6753 *p) {
+  gmnt6753 r0 = gmnt6753_zero;
+  gmnt6753 r1;
+  memcpy(r1, p, gmnt6753_struct_size);
+
+  const int m = fmnt6753_bit_length;
+
+  for (int i = m; i > (-1); i--) {
+
+    if (di == 0) {
+      gmnt6753_add(p, r, p)
+      gmnt6753_double(r, r)
+    }
+    else {
+      gmnt6753_add(r, r, p);
+      point_double(p, p);
+    }
+  }
+  return r;
 };
