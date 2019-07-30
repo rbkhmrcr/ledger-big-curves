@@ -65,7 +65,7 @@ void gmnt6753_double(gmnt6753 *r, gmnt6753 *p) {
 
   fmnt6753 m;                                       // M = 3*XX+a*ZZ^2
   fmnt6753_sq(m, zz);                               // ZZ^2
-  fmnt6753_mul(m, m, gmnt6753_coeff_a);                      // a*ZZ^2
+  fmnt6753_mul(m, m, gmnt6753_coeff_a);             // a*ZZ^2
   fmnt6753_int_mul(xx, 3, xx);                      // 3*XX
   fmnt6753_add(m, m, xx);                           // 3*XX + a*ZZ^2
 

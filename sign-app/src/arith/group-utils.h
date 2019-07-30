@@ -1,5 +1,5 @@
 #ifndef GROUP_UTILS
-#define GROUP_UTILS 
+#define GROUP_UTILS
 
 #include "field.h"
 #include "group.h"
