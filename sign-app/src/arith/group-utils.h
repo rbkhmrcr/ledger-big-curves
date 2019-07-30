@@ -4,11 +4,18 @@
 #include "field.h"
 #include "group.h"
 
+// scalar length in uint64_t
+#define scalar6753_uint64_length 12
+
+typedef uint64_t scalar6753[scalar6753_uint64_length];
+
 typedef struct gmnt6753 {
   fmnt6753 X;
   fmnt6753 Y;
   fmnt6753 Z;
 } gmnt6753;
+
+#define gmnt6753_struct_size 36
 
 const fmnt6753 gmnt6753_group_order =
 {
@@ -33,9 +40,21 @@ const fmnt6753 gmnt6753_coeff_b =
 
 const gmnt6753 gmnt6753_zero =
 {
-  fmnt6753_zero,
-  fmnt6753_zero,
-  fmnt6753_zero
+  {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0
+  },
+  {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 1
+  },
+  {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0
+  }
 };
 
 const gmnt6753 gmnt6753_one =
@@ -50,7 +69,11 @@ const gmnt6753 gmnt6753_one =
     1234, 1234, 1234, 1234,
     1234, 1234, 1234, 1234
   },
-  fmnt6753_one
+  {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 1
+  }
 };
 
 bool gmnt6753_is_zero(gmnt6753 *p);

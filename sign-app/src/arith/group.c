@@ -1,3 +1,4 @@
+#include <string.h>
 #include "field.h"
 #include "group.h"
 #include "group-utils.h"
@@ -87,23 +88,21 @@ void gmnt6753_double(gmnt6753 *r, gmnt6753 *p) {
   fmnt6753_sub(r->Z, r->Z, zz);                     // (Y1+Z1)^2-YY-ZZ
 };
 
-void gmnt6753_scalar_mul(gmnt6753 *r, fmnt6753 k, const gmnt6753 *p) {
-  gmnt6753 r0 = gmnt6753_zero;
-  gmnt6753 r1;
+void gmnt6753_scalar_mul(gmnt6753 *r, scalar6753 k, const gmnt6753 *p) {
+  *r = gmnt6753_zero;
+  gmnt6753 *r1;
   memcpy(r1, p, gmnt6753_struct_size);
 
-  const int m = fmnt6753_bit_length;
-
-  for (int i = m; i > (-1); i--) {
-
+  for (int i = fmnt6753_bit_length; i >= 0; --i) {
+    // TODO
+    int di = p[i] & 1;
     if (di == 0) {
-      gmnt6753_add(p, r, p)
-      gmnt6753_double(r, r)
+      gmnt6753_add(r1, r, r1);
+      gmnt6753_double(r, r);
     }
     else {
-      gmnt6753_add(r, r, p);
-      point_double(p, p);
+      gmnt6753_add(r, r, r1);
+      gmnt6753_double(r1, r1);
     }
   }
-  return r;
 };

@@ -35,7 +35,7 @@ const fmnt6753 fmnt6753_zero  =
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 0
-};
+} ;
 
 const fmnt6753 fmnt6753_one =
 {
