@@ -5,10 +5,10 @@
  * following:
  *
  * Modular addition of two big integer: r = a+b mod m
- * @param r    where to put result
- * @param a    first operand
- * @param b    second operand
- * @param m    modulo
+ * @param r    where to put result        // const unsigned char *
+ * @param a    first operand              // const unsigned char *
+ * @param b    second operand             // const unsigned char *
+ * @param m    modulo                     // const unsigned char *
  * @param len  byte length of r, a, b, m
  **/
 
@@ -31,9 +31,10 @@ void fmnt6753_sq(fmnt6753 c, fmnt6753 a) {
 };
 
 void fmnt6753_inv(fmnt6753 c, fmnt6753 a) {
- cx_math_invprimem(c, a, fmnt6753_modulus, fmnt6753_length);
+  cx_math_invprimem(c, a, fmnt6753_modulus, fmnt6753_length);
 };
 
-void fmnt6753_int_mul(fmnt6753 c, uint64_t b, fmnt6753 a);  // pad then use multm?
+void fmnt6753_int_mul(fmnt6753 c, uint64_t b,
+                      fmnt6753 a); 
 
-bool fmnt6753_eq(fmnt6753 a, fmnt6753 b);                   // loop
+bool fmnt6753_eq(fmnt6753 a, fmnt6753 b); // loop
