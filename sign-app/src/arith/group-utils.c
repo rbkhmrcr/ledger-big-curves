@@ -12,10 +12,10 @@ bool is_on_curve(gmnt6753 *p) {
     fmnt6753_sq(y2, p->Y);
 
     fmnt6753 x3_ax_b;
-    fmnt6753_sq(x3_ax_b, p->X);                       // x*2
-    fmnt6753_add(x3_ax_b, x3_ax_b, gmnt6753_coeff_a); // x*2 + a
-    fmnt6753_mul(x3_ax_b, x3_ax_b, p->X);             // x*3 + ax
-    fmnt6753_add(x3_ax_b, x3_ax_b, gmnt6753_coeff_b); // x*3 + ax + b
+    fmnt6753_sq(x3_ax_b, p->X);                       // x^2
+    fmnt6753_add(x3_ax_b, x3_ax_b, gmnt6753_coeff_a); // x^2 + a
+    fmnt6753_mul(x3_ax_b, x3_ax_b, p->X);             // x^3 + ax
+    fmnt6753_add(x3_ax_b, x3_ax_b, gmnt6753_coeff_b); // x^3 + ax + b
     
     return fmnt6753_eq(y2, x3_ax_b);
   
