@@ -1,6 +1,5 @@
 #include "group-utils.h"
 #include "field.h"
-#include "group.h"
 
 bool is_zero(gmnt6753 *p) { return false; };
 

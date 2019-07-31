@@ -91,7 +91,7 @@ void gmnt6753_double(gmnt6753 *r, gmnt6753 *p) {
 
 void gmnt6753_scalar_mul(gmnt6753 *r, scalar6753 k, const gmnt6753 *p) {
   *r = gmnt6753_zero;
-  gmnt6753 *r1;
+  gmnt6753 *r1  = 0;
   memcpy(r1, p, gmnt6753_struct_size);
 
   for (int i = scalar6753_bit_length; i >= 0; --i) {

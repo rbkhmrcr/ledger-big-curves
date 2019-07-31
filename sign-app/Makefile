@@ -76,6 +76,9 @@ all: default
 load: all
 	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
 
+check: 
+	tests/check
+
 delete:
 	python -m ledgerblue.deleteApp $(COMMON_DELETE_PARAMS)
 

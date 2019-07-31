@@ -1,7 +1,3 @@
-#include "os.h"
-#include "cx.h"
-#include "os_io_seproxyhal.h"
-
 // Ledger uses: 
 // - BIP 39 to generate and interpret the master seed, which
 // produces the 24 words shown on the device at startup.  

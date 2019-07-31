@@ -2,7 +2,6 @@
 #define CODA_GROUP_UTILS
 
 #include "field.h"
-#include "group.h"
 
 // scalar length in uint64_t
 #define scalar6753_uint64_length 12
