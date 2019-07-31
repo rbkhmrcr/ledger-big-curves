@@ -4,10 +4,10 @@
 #include "os.h"
 #include <stdbool.h>
 
-// length in bytes
-#define fmnt6753_BYTES 96
 // length in uint64_t
 #define fmnt6753_uint64 12
+// length in bytes
+#define fmnt6753_BYTES 96
 // length in bits
 #define fmnt6753_BITS 753
 

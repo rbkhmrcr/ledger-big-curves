@@ -4,11 +4,13 @@
 #include "field.h"
 
 // scalar length in uint64_t
-#define scalar6753_uint64_length 12
+#define scalar6753_uint64 12
+// scalar length in bytes
+#define scalar6753_BYTES 96
 // scalar length in bits
-#define scalar6753_bit_length 753
+#define scalar6753_BITS 753
 
-typedef uint64_t scalar6753[scalar6753_uint64_length];
+typedef uint64_t scalar6753[scalar6753_uint64];
 
 typedef struct gmnt6753 {
   fmnt6753 X;

@@ -94,8 +94,8 @@ void gmnt6753_scalar_mul(gmnt6753 *r, scalar6753 k, const gmnt6753 *p) {
   gmnt6753 *r1  = 0;
   memcpy(r1, p, gmnt6753_struct_size);
 
-  for (int i = scalar6753_bit_length; i >= 0; --i) {
-    // TODO
+  for (int i = scalar6753_BITS; i >= 0; --i) {
+    // FIXME
     int di = k[i] & 1;
     if (di == 0) {
       gmnt6753_add(r1, r, r1);

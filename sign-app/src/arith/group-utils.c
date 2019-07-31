@@ -1,7 +1,12 @@
 #include "group-utils.h"
 #include "field.h"
 
-bool is_zero(gmnt6753 *p) { return false; };
+bool is_zero(gmnt6753 *p) { 
+
+  memcmp( p->X, fmnt6753_zero, fmnt6753_BYTES );
+  memcmp( p->Y, fmnt6753_one, fmnt6753_BYTES );
+  memcmp( p->Z, fmnt6753_zero, fmnt6753_BYTES );
+};
 
 bool is_on_curve(gmnt6753 *p) {
   if (is_zero(p)) {
