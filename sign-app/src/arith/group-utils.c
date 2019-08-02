@@ -4,9 +4,9 @@
 
 bool is_zero(gmnt6753 *p) {
 
-  if (memcmp(p->X, fmnt6753_zero, fmnt6753_BYTES) == 0 &&
-      memcmp(p->Y, fmnt6753_one, fmnt6753_BYTES) == 0 &&
-      memcmp(p->Z, fmnt6753_zero, fmnt6753_BYTES) == 0) {
+  if (os_memcmp(p->X, fmnt6753_zero, fmnt6753_BYTES) == 0 &&
+      os_memcmp(p->Y, fmnt6753_one, fmnt6753_BYTES) == 0 &&
+      os_memcmp(p->Z, fmnt6753_zero, fmnt6753_BYTES) == 0) {
 
     return true;
   }
@@ -53,4 +53,25 @@ bool is_on_curve(gmnt6753 *p) {
   }
 
   return false;
+};
+
+const unsigned char gmnt6753_group_order[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+const unsigned char *const_scptr(scalar6753 a) { return (const unsigned char *)a; };
+
+void ptr_to_scalar6753(scalar6753 a, unsigned char *olda) {
+  memcpy(&a, olda, scalar6753_BYTES);
+};
+
+void scalar6753_add(scalar6753 c, scalar6753 a, scalar6753 b) {
+  unsigned char *d = 0;
+  cx_math_addm(d, const_scptr(a), const_scptr(b), gmnt6753_group_order, scalar6753_BYTES);
+  ptr_to_scalar6753(c, d);
+};
+
+void scalar6753_mul(scalar6753 c, scalar6753 a, scalar6753 b) {
+  unsigned char *d = 0;
+  cx_math_multm(d, const_scptr(a), const_scptr(b), gmnt6753_group_order,
+                scalar6753_BYTES);
+  ptr_to_scalar6753(c, d);
 };

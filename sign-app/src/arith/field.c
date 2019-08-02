@@ -10,7 +10,7 @@ const unsigned char *const_ptr(fmnt6753 a) { return (const unsigned char *)a; };
 
 void ptr_to_fmnt6753(fmnt6753 a, unsigned char *olda) {
   // uint64_t a[fmnt6753_uint64];
-  memcpy(&a, olda, fmnt6753_BYTES);
+  os_memcpy(&a, olda, fmnt6753_BYTES);
 };
 
 /**
@@ -42,13 +42,22 @@ void fmnt6753_sub(fmnt6753 c, fmnt6753 a, fmnt6753 b) {
 // -a is equivalent to modulus - a
 void fmnt6753_negate(fmnt6753 c, fmnt6753 a) {
   unsigned char *d = 0;
-  cx_math_subm(d, fmnt6753_modulus, const_ptr(a), fmnt6753_modulus, fmnt6753_BYTES);
+  cx_math_subm(d, fmnt6753_modulus, const_ptr(a), fmnt6753_modulus,
+               fmnt6753_BYTES);
   ptr_to_fmnt6753(c, d);
 };
 
 void fmnt6753_mul(fmnt6753 c, fmnt6753 a, fmnt6753 b) {
   unsigned char *d = 0;
   cx_math_multm(d, const_ptr(a), const_ptr(b), fmnt6753_modulus,
+                fmnt6753_BYTES);
+  ptr_to_fmnt6753(c, d);
+};
+
+void fmnt6753_int_mul(fmnt6753 c, uint64_t a, fmnt6753 b) {
+  unsigned char *d = 0;
+  // FIXME
+  cx_math_multm(d, (const unsigned char *)a, const_ptr(b), fmnt6753_modulus,
                 fmnt6753_BYTES);
   ptr_to_fmnt6753(c, d);
 };

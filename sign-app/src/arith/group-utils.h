@@ -18,11 +18,8 @@ typedef struct gmnt6753 {
   fmnt6753 Z;
 } gmnt6753;
 
-// struct size in bytes FIXME
+// struct size in bytes FIXME?
 #define gmnt6753_struct_size 36
-
-static fmnt6753 gmnt6753_group_order = {1234, 1234, 1234, 1234, 1234, 1234,
-                                        1234, 1234, 1234, 1234, 1234, 1234};
 
 static fmnt6753 gmnt6753_coeff_a = {1234, 1234, 1234, 1234, 1234, 1234,
                                     1234, 1234, 1234, 1234, 1234, 1234};
@@ -49,5 +46,7 @@ static const struct gmnt6753 gmnt6753_one = {
 bool gmnt6753_is_zero(gmnt6753 *p);
 bool gmnt6753_is_on_curve(gmnt6753 *p);
 void gmnt6753_copy(gmnt6753 *r, gmnt6753 *p);
+void scalar6753_add(scalar6753 c, scalar6753 a, scalar6753 b);
+void scalar6753_mul(scalar6753 c, scalar6753 a, scalar6753 b);
 
 #endif // CODA_GROUP_UTILS

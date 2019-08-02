@@ -24,14 +24,14 @@
   info = NULL
  */
 
-void get_x(fmnt6753 x, const gmnt6753 *p) {
+void get_x(fmnt6753 x, gmnt6753 *p) {
   fmnt6753 invz;
   fmnt6753_inv(invz, p->Z);    // 1/Z
   fmnt6753_sq(invz, invz);     // 1/Z^2
   fmnt6753_mul(x, invz, p->X); // X/Z^2
 }
 
-void get_y(fmnt6753 y, const gmnt6753 *p) {
+void get_y(fmnt6753 y, gmnt6753 *p) {
   fmnt6753 invz, temp;
   fmnt6753_inv(invz, p->Z);       // 1/Z
   fmnt6753_sq(temp, invz);        // 1/Z^2
@@ -44,15 +44,15 @@ bool is_even(fmnt6753 y) {
   return false;
 }
 
-int sign(const scalar6753 *pvkey, const gmnt6753 *pbkey,
+int sign(scalar6753 *pvkey, gmnt6753 *pbkey,
          const unsigned char WIDE *hash PLENGTH(hash_len),
          unsigned int hash_len, unsigned char *sig PLENGTH(sig_len),
          unsigned int sig_len) {
 
-  gmnt6753 *r;
+  gmnt6753 *r = 0;
   scalar6753 k_prime;
   random_oracle(k_prime, hash, pvkey, NULL);
-  gmnt6753_scalar_mul(r, k_prime, gmnt6753_one);
+  gmnt6753_scalar_mul(r, k_prime, &gmnt6753_one);
 
   fmnt6753 k, rx, ry, pkx;
   get_x(rx, r);
@@ -60,7 +60,7 @@ int sign(const scalar6753 *pvkey, const gmnt6753 *pbkey,
   get_x(pkx, pbkey);
   // if ry is even, k = k'
   if (is_even(ry)) {
-    memcpy(k, k_prime, scalar6753_BYTES);
+    os_memcpy(k, k_prime, scalar6753_BYTES);
   }
   // else k = - k'
   else {
@@ -69,11 +69,11 @@ int sign(const scalar6753 *pvkey, const gmnt6753 *pbkey,
 
   scalar6753 s, e;
   random_oracle(e, hash, rx, pkx);
-  fmnt6753_mul(s, e, pvkey); // e*sk
-  fmnt6753_add(s, k, s);     // k + e*sk
+  scalar6753_mul(s, e, *pvkey); // e*sk
+  scalar6753_add(s, k, s);      // k + e*sk
 
-  memcpy(sig, rx, fmnt6753_BYTES);
-  memcpy(sig + fmnt6753_BYTES, s, fmnt6753_BYTES);
+  os_memcpy(sig, rx, fmnt6753_BYTES);
+  os_memcpy(sig + fmnt6753_BYTES, s, scalar6753_BYTES);
 
-  return (fmnt6753_BYTES + fmnt6753_BYTES);
+  return (fmnt6753_BYTES + scalar6753_BYTES);
 };
