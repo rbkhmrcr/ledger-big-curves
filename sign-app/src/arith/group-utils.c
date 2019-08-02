@@ -42,12 +42,12 @@ bool is_on_curve(gmnt6753 *p) {
     fmnt6753_sq(z2, p->Z);
 
     fmnt6753 lhs, rhs;
-    fmnt6753_mul(lhs, z2, gmnt6753_coeff_b); // bz^2
-    fmnt6753_sub(lhs, y2, lhs);              // y^2 - bz^2
-    fmnt6753_mul(lhs, p->Z, lhs);            // z(y^2 - bz^2)
-    fmnt6753_mul(rhs, z2, gmnt6753_coeff_a); // az^2
-    fmnt6753_add(rhs, x2, rhs);              // x^2 + az^2
-    fmnt6753_mul(rhs, p->X, rhs);            // x(x^2 + az^2)
+    fmnt6753_mul(lhs, z2, gmnt6753_coeff_b);          // bz^2
+    fmnt6753_sub(lhs, y2, lhs);                       // y^2 - bz^2
+    fmnt6753_mul(lhs, p->Z, lhs);                     // z(y^2 - bz^2)
+    fmnt6753_mul(rhs, z2, gmnt6753_coeff_a);          // az^2
+    fmnt6753_add(rhs, x2, rhs);                       // x^2 + az^2
+    fmnt6753_mul(rhs, p->X, rhs);                     // x(x^2 + az^2)
 
     return fmnt6753_eq(lhs, rhs);
   }
