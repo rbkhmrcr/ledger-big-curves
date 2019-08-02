@@ -19,6 +19,7 @@ static const fmnt6753 fmnt6753_one = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 
 void fmnt6753_add(fmnt6753 c, fmnt6753 a, fmnt6753 b);
 void fmnt6753_sub(fmnt6753 c, fmnt6753 a, fmnt6753 b);
+void fmnt6753_negate(fmnt6753 c, fmnt6753 a);
 void fmnt6753_mul(fmnt6753 c, fmnt6753 a, fmnt6753 b);
 void fmnt6753_div(fmnt6753 c, fmnt6753 a, fmnt6753 b);
 void fmnt6753_sq(fmnt6753 c, fmnt6753 a);
