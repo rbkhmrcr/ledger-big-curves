@@ -5,8 +5,8 @@
 
 /* we are using this to replace `cx_ecdsa_sign` in the boilerplate code,
  * which has the signature:
- * SYSCALL int cx_ecdsa_sign(const cx_ecfp_private_key_t WIDE *pvkey PLENGTH(
-                              scc__cx_scc_struct_size_ecfp_privkey__pvkey),
+ * SYSCALL int cx_ecdsa_sign(const cx_ecfp_private_key_t WIDE *private_key PLENGTH(
+                              scc__cx_scc_struct_size_ecfp_privkey__private_key),
                           int mode, cx_md_t hashID,
                           const unsigned char WIDE *hash PLENGTH(hash_len),
                           unsigned int hash_len,
@@ -14,7 +14,7 @@
                           unsigned int sig_len,
                           unsigned int *info PLENGTH(sizeof(unsigned int)));
 
-  pvkey = &N_privateKey,
+  private_key = &N_privateKey,
   mode = CX_RND_RFC6979 | CX_LAST,
   hashID = CX_SHA256,
   hash = result,
@@ -44,20 +44,20 @@ bool is_even(fmnt6753 y) {
   return false;
 }
 
-int sign(scalar6753 *pvkey, gmnt6753 *pbkey,
+int sign(scalar6753 *private_key, gmnt6753 *public_key,
          const unsigned char WIDE *hash PLENGTH(hash_len),
          unsigned int hash_len, unsigned char *sig PLENGTH(sig_len),
          unsigned int sig_len) {
 
   gmnt6753 *r = 0;
   scalar6753 k_prime;
-  random_oracle(k_prime, hash, pvkey, NULL);
+  random_oracle(k_prime, hash, private_key, NULL);
   gmnt6753_scalar_mul(r, k_prime, &gmnt6753_one);
 
   fmnt6753 k, rx, ry, pkx;
   get_x(rx, r);
   get_y(ry, r);
-  get_x(pkx, pbkey);
+  get_x(pkx, public_key);
   // if ry is even, k = k'
   if (is_even(ry)) {
     os_memcpy(k, k_prime, scalar6753_BYTES);
@@ -69,7 +69,7 @@ int sign(scalar6753 *pvkey, gmnt6753 *pbkey,
 
   scalar6753 s, e;
   random_oracle(e, hash, rx, pkx);
-  scalar6753_mul(s, e, *pvkey); // e*sk
+  scalar6753_mul(s, e, *private_key); // e*sk
   scalar6753_add(s, k, s);      // k + e*sk
 
   os_memcpy(sig, rx, fmnt6753_BYTES);

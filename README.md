@@ -1,17 +1,17 @@
-# Sample Signature App for Ledger Blue & Ledger Nano S
+# Coda signature app for Ledger Blue & Ledger Nano S/X 
 
-This application demonstrates a more complex user interface, the Secure Element
-proxy logic, cryptographic APIs and flash storage.
+Big disclaimer : This is a work in progress. Don't use it on a Ledger device 
+that is handling or has ever handled private keys associated with any accounts
+of value.
 
-Run `make load` to build and load the application onto the device. After
-installing and running the application, you can run `demo.py` to test a
-signature over USB.
+This app grew loosely from the Ledger samplesign app, but all of the python in `/cli` 
+has been updated to use python3. So if you're here from another project and curious,
+it seems it is possible!
 
-Note that in order to run `demo.py`, you must install the `secp256k1` Python
-package:
+Run `make` to check the build, and `make load` to build and load the application 
+onto the device. Errors try to be helpful and the most common reason for failure 
+is the device autolocking, so if something isn't working that might just be the 
+reason. After installing and running the application, you can run 
+`python3 cli/sign.py` to test a signature over USB. `make delete` deletes the app.
 
-```
-pip install secp256k1
-```
-
-See [Ledger's documentation](http://ledger.readthedocs.io) to get started.
+See [Ledger's documentation](http://ledger.readthedocs.io) for further information.
