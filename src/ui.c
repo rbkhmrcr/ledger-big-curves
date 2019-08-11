@@ -15,18 +15,17 @@ static const ux_menu_entry_t menu_about[] = {
     UX_MENU_END};
 
 static const ux_menu_entry_t menu_top[] = {
-    {NULL, ui_address, 0, NULL, "Address", NULL, 0, 0},
+    {NULL, pubkey_ui, 0, NULL, "Public Key", NULL, 0, 0},
     {menu_about, NULL, 0, NULL, "About", NULL, 0, 0},
     {NULL, os_sched_exit, 0, NULL, "Quit app", NULL, 0, 0},
     UX_MENU_END};
 
 void ui_idle() { UX_MENU_DISPLAY(0, menu_top, NULL); }
 
-#define MAX_CHARS_PER_LINE 8 // for testing
+#define MAX_CHARS_PER_LINE 8 // TODO : more? for testing
 
 static char text[256];
 static int line_buffer_pos;
-
 char line_buffer[MAX_CHARS_PER_LINE + 2 + 1];
 
 int ui_text_more() {

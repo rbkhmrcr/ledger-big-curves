@@ -1,3 +1,5 @@
 #include "cx.h"
-// this should have custom types in it
-void get_public_key(cx_ecfp_public_key_t *public_key);
+#include "crypto/group-utils.h"
+
+void generate_keypair(scalar6753 priv_key, gmnt6753 *pub_key);
+void generate_public_key(gmnt6753 *pub_key);

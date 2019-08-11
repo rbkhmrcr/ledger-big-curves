@@ -15,16 +15,27 @@
  *  limitations under the License.
  ********************************************************************************/
 
-#include "cx.h"
 #include "os.h"
+#include "cx.h"
 #include "os_io_seproxyhal.h"
 
+#include "crypto/group-utils.h"
+#include "transaction.h"
 #include "keys.h"
 #include "ui.h"
 
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
-#define CLA 		0x80
+
+#define OFFSET_CLA    0
+#define OFFSET_INS    1
+#define OFFSET_P1     2
+#define OFFSET_P2     3
+#define OFFSET_LC     4
+#define OFFSET_CDATA  5
+
+
+#define CLA 		  0x80
 #define INS_SIGN 	0x02
 #define INS_GET_PUBLIC_KEY 0x04
 #define P1_LAST 	0x80
@@ -61,17 +72,14 @@ void transaction_approve() {
   static unsigned char msg[256];
   unsigned int msg_len;
 
-  msglen = sizeof(msg);
+  msg_len = sizeof(msg);
 
   PRINTF("Signing message: %.*h\n", msg_len, msg);
 
-  cx_ecfp_private_key_t private_key;
-  coda_private_key(&private_key);
-
-  int sig_len = cx_eddsa_sign(
-      &private_key, 0, CX_SHA512, &msg[0], msg_len, NULL, 0, G_io_apdu_buffer,
-      6 + 2 * (32 + 1), // Formerly from cx_compliance_141.c
-      NULL);
+  scalar6753 private_key;
+  gmnt6753 *public_key = 0;
+  generate_keypair(private_key, public_key);
+  int sig_len = schnorr_sign(private_key, msg, msg_len, G_io_apdu_buffer);
 
   tx = sig_len;
   G_io_apdu_buffer[tx++] = 0x90;
@@ -134,16 +142,16 @@ static void coda_main(void) {
         switch (ins) {
         case INS_SIGN: {
           os_memset(&current_transaction, 0, sizeof(current_transaction));
-          uint8_t *p; // TODO CDATA?
+          uint8_t *p;
           p = &G_io_apdu_buffer[OFFSET_CDATA];
-          os_memmove(p, current_transaction, sizeof(current_transaction));
-          ui_transaction();
+          os_memmove(p, &current_transaction, sizeof(current_transaction));
+          transaction_ui();
           flags |= IO_ASYNCH_REPLY;
         } break;
 
         case INS_GET_PUBLIC_KEY: {
-          uint8_t public_key[32];
-          coda_public_key(public_key);
+          gmnt6753 *public_key = 0; // should have printable type? base58
+          generate_public_key(public_key);
           os_memmove(G_io_apdu_buffer, public_key, sizeof(public_key));
           tx = sizeof(public_key);
           THROW(0x9000);
@@ -257,7 +265,7 @@ __attribute__((section(".boot"))) int main(void) {
   // exit critical section
   __asm volatile("cpsie i");
 
-  lineBuffer[0] = '\0';
+  line_buffer[0] = '\0';
 
   // ensure exception will work as planned
   os_boot();

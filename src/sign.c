@@ -1,6 +1,6 @@
-#include "arith/field.h"
-#include "arith/group-utils.h"
-#include "arith/group.h"
+#include "crypto/field.h"
+#include "crypto/group-utils.h"
+#include "crypto/group.h"
 #include <string.h>
 
 /* we are using this to replace `cx_ecdsa_sign` in the boilerplate code,
@@ -44,7 +44,7 @@ bool is_even(fmnt6753 y) {
   return false;
 }
 
-int sign(scalar6753 *private_key, gmnt6753 *public_key,
+int schnorr_sign(scalar6753 *private_key, gmnt6753 *public_key,
          const unsigned char WIDE *hash PLENGTH(hash_len),
          unsigned int hash_len, unsigned char *sig PLENGTH(sig_len),
          unsigned int sig_len) {

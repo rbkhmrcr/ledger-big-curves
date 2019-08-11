@@ -1,7 +1,9 @@
 #include "os.h"
 #include "os_io_seproxyhal.h"
 
-// que?
+#include "transaction.h"
+#include "ui.h"
+
 static char *u64str(uint64_t v) {
   static char buf[24];
   char *p = &buf[sizeof(buf)];
@@ -70,11 +72,11 @@ bagl_ui_approval_nanos_button(unsigned int button_mask,
                               unsigned int button_mask_counter) {
   switch (button_mask) {
   case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-    txn_approve();
+    transaction_approve();
     break;
 
   case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-    txn_deny();
+    transaction_deny();
     break;
   }
   return 0;
@@ -110,7 +112,7 @@ bagl_ui_approval_nanos_button(unsigned int button_mask,
              0x000000,                                                         \
              BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,  \
              26},                                                              \
-            lineBuffer,                                                        \
+            line_buffer,                                                       \
             0,                                                                 \
             0,                                                                 \
             0,                                                                 \
@@ -152,7 +154,7 @@ bagl_ui_approval_nanos_button(unsigned int button_mask,
     }                                                                          \
     break;                                                                     \
   case BUTTON_EVT_RELEASED | BUTTON_LEFT:                                      \
-    txn_deny();                                                                \
+    transaction_deny();                                                        \
     break;                                                                     \
   }                                                                            \
   return 0;
@@ -184,7 +186,7 @@ bagl_ui_memo_nanos_button(unsigned int button_mask,
 // fee
 
 static void after_fee(void) {
-  ui_text_put(current_txn.memo);
+  ui_text_put((const char *)current_transaction.memo);
   ui_text_more();
   UX_DISPLAY(bagl_ui_memo_nanos, NULL);
 }
@@ -199,7 +201,7 @@ static unsigned int bagl_ui_fee_nanos_button(unsigned int button_mask,
 // amount
 
 static void after_amount(void) {
-  ui_text_put(u64str(current_txn.fee));
+  ui_text_put(u64str(current_transaction.fee));
   ui_text_more();
   UX_DISPLAY(bagl_ui_fee_nanos, NULL);
 }
@@ -211,84 +213,84 @@ static unsigned int
 bagl_ui_amount_nanos_button(unsigned int button_mask,
                             unsigned int button_mask_counter) {
   DISPLAY_HANDLER(after_amount)
+}
+// to
 
-  // to
+static void after_to(void) {
+  ui_text_put(u64str(current_transaction.amount));
+  ui_text_more();
+  UX_DISPLAY(bagl_ui_amount_nanos, NULL);
+}
 
-  static void after_to(void) {
-    ui_text_put(u64str(current_txn.amount));
-    ui_text_more();
-    UX_DISPLAY(bagl_ui_amount_nanos, NULL);
-  }
+static const bagl_element_t bagl_ui_to_nanos[] = DISPLAY_ELEMENTS("To:");
 
-  static const bagl_element_t bagl_ui_to_nanos[] = DISPLAY_ELEMENTS("To:");
+static unsigned int bagl_ui_to_nanos_button(unsigned int button_mask,
+                                            unsigned int button_mask_counter) {
+  DISPLAY_HANDLER(after_to)
+}
 
-  static unsigned int bagl_ui_to_nanos_button(
-      unsigned int button_mask, unsigned int button_mask_counter) {
-    DISPLAY_HANDLER(after_to)
-  }
+// from
 
-  // from
+static void after_from(void) {
+  // to = compressed public key
+  ui_text_put((const char *)current_transaction.to);
+  ui_text_more();
+  UX_DISPLAY(bagl_ui_to_nanos, NULL);
+}
 
-  static void after_from(void) {
-    char checksummed[96];
-    checksummed_addr(current_txn.to, checksummed);
-    ui_text_put(checksummed);
-    ui_text_more();
-    UX_DISPLAY(bagl_ui_to_nanos, NULL);
-  }
+static const bagl_element_t bagl_ui_from_nanos[] = DISPLAY_ELEMENTS("From:");
 
-  static const bagl_element_t bagl_ui_from_nanos[] = DISPLAY_ELEMENTS("From:");
+static unsigned int
+bagl_ui_from_nanos_button(unsigned int button_mask,
+                          unsigned int button_mask_counter) {
+  DISPLAY_HANDLER(after_from)
+}
 
-  static unsigned int bagl_ui_from_nanos_button(
-      unsigned int button_mask, unsigned int button_mask_counter) {
-    DISPLAY_HANDLER(after_from)
-  }
+// nonce
 
-  // nonce
+static void after_nonce(void) {
+  // from = compressed public key
+  ui_text_put((const char *)current_transaction.from);
+  ui_text_more();
+  UX_DISPLAY(bagl_ui_from_nanos, NULL);
+}
 
-  static void after_nonce(void) {
-    char checksummed[96];
-    checksummed_addr(current_txn.from, checksummed);
-    ui_text_put(checksummed);
-    ui_text_more();
-    UX_DISPLAY(bagl_ui_from_nanos, NULL);
-  }
+static const bagl_element_t bagl_ui_nonce_nanos[] = DISPLAY_ELEMENTS("Nonce:");
 
-  static const bagl_element_t bagl_ui_nonce_nanos[] =
-      DISPLAY_ELEMENTS("Nonce:");
+static unsigned int
+bagl_ui_nonce_nanos_button(unsigned int button_mask,
+                           unsigned int button_mask_counter) {
+  DISPLAY_HANDLER(after_nonce)
+}
 
-  static unsigned int bagl_ui_nonce_nanos_button(
-      unsigned int button_mask, unsigned int button_mask_counter) {
-    DISPLAY_HANDLER(after_nonce)
-  }
+// isDelegation
 
-  // isDelegation
+static void after_isDelegation(void) {
+  ui_text_put(u64str(current_transaction.nonce));
+  ui_text_more();
+  UX_DISPLAY(bagl_ui_nonce_nanos, NULL);
+}
 
-  static void after_isDelegation(void) {
-    ui_text_put(u64str(current_txn.nonce));
-    ui_text_more();
-    UX_DISPLAY(bagl_ui_nonce_nanos, NULL);
-  }
+static const bagl_element_t bagl_ui_isDelegation_nanos[] =
+    DISPLAY_ELEMENTS("isDelegation:");
 
-  static const bagl_element_t bagl_ui_isDelegation_nanos[] =
-      DISPLAY_ELEMENTS("isDelegation:");
+static unsigned int
+bagl_ui_isDelegation_nanos_button(unsigned int button_mask,
+                                  unsigned int button_mask_counter) {
+  DISPLAY_HANDLER(after_isDelegation)
+}
 
-  static unsigned int bagl_ui_isDelegation_nanos_button(
-      unsigned int button_mask, unsigned int button_mask_counter) {
-    DISPLAY_HANDLER(after_isDelegation)
-  }
+void transaction_ui() {
+  PRINTF("Transaction:\n");
+  PRINTF("  isDelegation: %d\n", current_transaction.isDelegation);
+  PRINTF("  Nonce: %s\n", u64str(current_transaction.nonce));
+  PRINTF("  From: %.*h\n", 96, current_transaction.from);
+  PRINTF("  To: %.*h\n", 96, current_transaction.to);
+  PRINTF("  Amount: %s\n", u64str(current_transaction.amount));
+  PRINTF("  Fee: %s\n", u64str(current_transaction.fee));
+  PRINTF("  Memo: %.*h\n", 32, current_transaction.memo);
 
-  void transaction_ui() {
-    PRINTF("Transaction:\n");
-    PRINTF("  isDelegation: %d\n", current_txn.isDelegation);
-    PRINTF("  Nonce: %s\n", u64str(current_txn.nonce));
-    PRINTF("  From: %.*h\n", 96, current_txn.from);
-    PRINTF("  To: %.*h\n", 96, current_txn.to);
-    PRINTF("  Amount: %s\n", u64str(current_txn.amount));
-    PRINTF("  Fee: %s\n", u64str(current_txn.fee));
-    PRINTF("  Memo: %.*h\n", 32, current_txn.memo);
-
-    ui_text_put("Sign transaction:");
-    ui_text_more();
-    UX_DISPLAY(bagl_ui_isDelegation_nanos, NULL);
-  }
+  ui_text_put("Sign transaction:");
+  ui_text_more();
+  UX_DISPLAY(bagl_ui_isDelegation_nanos, NULL);
+}
