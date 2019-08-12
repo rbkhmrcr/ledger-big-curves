@@ -19,44 +19,48 @@ from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
 from secp256k1 import PublicKey
 
-
-
 a = 0x7DA285E70863C79D56446237CE2E1468D14AE9BB64B2BB01B10E60A5D5DFE0A25714B7985993F62F03B22A9A3C737A1A1E0FCF2C43D7BF847957C34CCA1E3585F9A80A95F401867C4E80F4747FDE5ABA7505BA6FCF2485540B13DFC8468A
 b = 0x7DA285E70863C79D56446237CE2E1468D14AE9BB64B2BB01B10E60A5D5DFE0A25714B7985993F62F03B22A9A3C737A1A1E0FCF2C43D7BF847957C34CCA1E3585F9A80A95F401867C4E80F4747FDE5ABA7505BA6FCF2485540B13DFC8468A
 p = 0x1C4C62D92C41110229022EEE2CDADB7F997505B8FAFED5EB7E8F96C97D87307FDB925E8A0ED8D99D124D9A15AF79DB26C5C28C859A99B3EEBCA9429212636B9DFF97634993AA4D6C381BC3F0057974EA099170FA13A4FD90776E240000001
 
-textToSign = ""
+textToSign = b''
 while True:
-        data = raw_input("Enter text to sign, end with an empty line : ")
+        data = (input("Enter text to sign, end with an empty line : ")).encode('utf-8')
         if len(data) == 0:
                 break
-        textToSign += data + "\n"
+        textToSign += data + b'\n'
 
-dongle = getDongle(True)
-publicKey = dongle.exchange(bytes("8004000000".decode('hex')))
-print "publicKey " + str(publicKey).encode('hex')
+dongle = getDongle(True) # True here means debug is on
+
+try:
+    publicKey = dongle.exchange(bytes.fromhex('8004000000'))
+except:
+    if comm.sw == 0x6804:
+        raise RuntimeError('Invalid status from Ledger: %x. Is the device unlocked?' % comm.sw)
+print("publicKey ", publicKey.hex())
+
 try:
         offset = 0
-        while offset <> len(textToSign):
+        while offset != len(textToSign):
                 if (len(textToSign) - offset) > 255:
                         chunk = textToSign[offset : offset + 255]
                 else:
                         chunk = textToSign[offset:]
                 if (offset + len(chunk)) == len(textToSign):
-                        p1 = 0x80
+                        p1 = b'\x80'
                 else:
-                        p1 = 0x00
-                apdu = bytes("8002".decode('hex')) + chr(p1) + chr(0x00) + chr(len(chunk)) + bytes(chunk)
+                        p1 = b'\x00'
+                apdu = bytes.fromhex('8002') + p1 + b'\x00' + bytes(len(chunk)) + bytes(chunk)
                 signature = dongle.exchange(apdu)
                 offset += len(chunk)
-        print "signature " + str(signature).encode('hex')
+        print("signature ", signature.hex())
         # publicKey = PublicKey(bytes(publicKey), raw=True)
         # signature = publicKey.ecdsa_deserialize(bytes(signature))
-        print hex(a + b % p)
-        print signature == a + b % p
+        print(hex(a + b % p))
+        print(signature == a + b % p)
         # print "verified " + str(publicKey.ecdsa_verify(bytes(textToSign), signature))
 except CommException as comm:
         if comm.sw == 0x6985:
-                print "Aborted by user"
+                print("Aborted by user")
         else:
-                print "Invalid status " + comm.sw
+                print("Invalid status %x" % comm.sw)
