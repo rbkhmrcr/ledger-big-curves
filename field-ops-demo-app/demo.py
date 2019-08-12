@@ -25,10 +25,10 @@ p = 0x1C4C62D92C41110229022EEE2CDADB7F997505B8FAFED5EB7E8F96C97D87307FDB925E8A0E
 
 textToSign = b''
 while True:
-        data = (input("Enter text to sign, end with an empty line : ")).encode('utf-8')
+        data = input('Enter text to sign, end with an empty line : ')
         if len(data) == 0:
                 break
-        textToSign += data + b'\n'
+        textToSign += data.encode() + b'\n'
 
 dongle = getDongle(True) # True here means debug is on
 
@@ -37,7 +37,7 @@ try:
 except:
     if comm.sw == 0x6804:
         raise RuntimeError('Invalid status from Ledger: %x. Is the device unlocked?' % comm.sw)
-print("publicKey ", publicKey.hex())
+print('publicKey ', publicKey.hex())
 
 try:
         offset = 0
@@ -50,17 +50,18 @@ try:
                         p1 = b'\x80'
                 else:
                         p1 = b'\x00'
-                apdu = bytes.fromhex('8002') + p1 + b'\x00' + bytes(len(chunk)) + bytes(chunk)
+                apdu = bytes.fromhex('8002') + p1 + b'\x00' + bytes([len(chunk)]) + chunk
                 signature = dongle.exchange(apdu)
                 offset += len(chunk)
-        print("signature ", signature.hex())
+        print('signature ', signature.hex())
         # publicKey = PublicKey(bytes(publicKey), raw=True)
         # signature = publicKey.ecdsa_deserialize(bytes(signature))
-        print(hex(a + b % p))
-        print(signature == a + b % p)
+        ans = hex(a + b % p)
+        padded_ans = ans[2:].zfill(192)
+        print(signature.hex() == padded_ans)
         # print "verified " + str(publicKey.ecdsa_verify(bytes(textToSign), signature))
 except CommException as comm:
         if comm.sw == 0x6985:
-                print("Aborted by user")
+                print('Aborted by user')
         else:
-                print("Invalid status %x" % comm.sw)
+                print('Invalid status %x' % comm.sw)
