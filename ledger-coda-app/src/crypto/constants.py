@@ -13,14 +13,21 @@ g_y = 45101279144106459224310746875535945933360870667789842147977091223002109660
 
 g_order = 41898490967918953402344214791240637128170709919953949071783502921025352812571106773058893763790338921418070971888253786114353726529584385201591605722013126468931404347949840543007986327743462853720628051692141265303114721689601
 
+one = 1 
+zero = 0 
+
 def pretty_print(big_int):
-    big_bytes = big_int.to_bytes(96, 'big')
-    chunks = []
-    len_bytes = len(big_bytes)//8
-    for i in range(len_bytes):
-        int_int = int.from_bytes(big_bytes[i*8:(i+1)*8], 'big', signed=False)
-        chunks.append(f'{int_int:020}')
-    return chunks
+    # return (big_int.to_bytes(96, 'big', signed=False))
+    padded_hex = hex(big_int)[2:].zfill(192)
+    return padded_hex
+# def pretty_print(big_int):
+#     big_bytes = big_int.to_bytes(96, 'big')
+#     chunks = []
+#     len_bytes = len(big_bytes)//8
+#     for i in range(len_bytes):
+#         int_int = int.from_bytes(big_bytes[i*8:(i+1)*8], 'big', signed=False)
+#         chunks.append(f'{int_int:020}')
+#     return chunks
 
 print("f mod", pretty_print(f_modulus))
 print("a", pretty_print(g_coeff_a))
@@ -28,3 +35,5 @@ print("b", pretty_print(g_coeff_b))
 print("g_x", pretty_print(g_x))
 print("g_y", pretty_print(g_y))
 print("g order", pretty_print(g_order))
+print("one", pretty_print(one))
+print("zero", pretty_print(zero))
