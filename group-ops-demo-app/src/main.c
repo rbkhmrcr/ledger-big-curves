@@ -296,22 +296,6 @@ static const bagl_element_t *io_seproxyhal_touch_exit(const bagl_element_t *e) {
 static const bagl_element_t *
 io_seproxyhal_touch_approve(const bagl_element_t *e) {
   unsigned int tx = 0;
-  unsigned char x2[fmnt6753_BYTES];
-  unsigned char x2a[fmnt6753_BYTES];
-  unsigned char x3ax[fmnt6753_BYTES];
-  unsigned char xy[2*fmnt6753_BYTES];
-
-  // update tx at end -- instead of comparing on ledger device we could send y^2 and x^3 + ax + b to computer?
-  // y^2 mod fmnt6753_modulus
-  cx_math_multm(xy + fmnt6753_BYTES, gmnt6753_one.Y, gmnt6753_one.Y, fmnt6753_modulus, fmnt6753_BYTES);
-  // x^2
-  cx_math_multm(x2, gmnt6753_one.X, gmnt6753_one.X, fmnt6753_modulus, fmnt6753_BYTES);
-  // x^2 + a
-  cx_math_addm(x2a, x2, gmnt6753_coeff_a, fmnt6753_modulus, fmnt6753_BYTES);
-  // x^3 + ax
-  cx_math_multm(x3ax, x2a, gmnt6753_one.X, fmnt6753_modulus, fmnt6753_BYTES);
-  // x^3 + ax + b
-  cx_math_addm(xy, x3ax, gmnt6753_coeff_b, fmnt6753_modulus, fmnt6753_BYTES);
 
   /*
   // Update the hash
@@ -326,8 +310,7 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
       hashTainted = 1;
   }
   */
-  os_memmove(G_io_apdu_buffer, xy, 2*fmnt6753_BYTES);
-  tx = 2*fmnt6753_BYTES;
+
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;
   // Send back the response, do not restart the event loop
