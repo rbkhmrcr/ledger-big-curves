@@ -11,7 +11,7 @@
 // length in bits
 #define fmnt6753_BITS 753
 
-typedef unsigned char const fmnt6753[96];
+typedef unsigned char fmnt6753[96];
 
 static const fmnt6753 fmnt6753_modulus = {
     0x00, 0x01, 0xc4, 0xc6, 0x2d, 0x92, 0xc4, 0x11, 0x10, 0x22, 0x90, 0x22,
