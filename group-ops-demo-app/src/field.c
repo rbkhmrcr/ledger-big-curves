@@ -2,6 +2,8 @@
 #include "syscalls.h"
 #include <string.h>
 
+// FIXME : make all of this macros
+
 unsigned char *ptr(fmnt6753 a) { return (unsigned char *)a; };
 
 const unsigned char *const_ptr(fmnt6753 a) { return (const unsigned char *)a; };
