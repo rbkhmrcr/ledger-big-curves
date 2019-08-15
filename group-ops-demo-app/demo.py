@@ -73,7 +73,8 @@ try:
                 offset += len(chunk)
         print('received ', received.hex())
 
-        ans = point_add(mnt6_g1, mnt6_q)
+        # ans = point_add(mnt6_g1, mnt6_q)
+        ans = point_add(mnt6_g1, mnt6_g1)
         print("ans hex", hex(ans[0]), hex(ans[1]))
 
 except CommException as comm:
