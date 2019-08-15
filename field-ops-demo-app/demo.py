@@ -62,14 +62,13 @@ try:
         # publicKey = PublicKey(bytes(publicKey), raw=True)
         # signature = publicKey.ecdsa_deserialize(bytes(signature))
 
-        # process y^2 stuff
+        # y^2
         ans = hex(pow(mnt6_g1_y, 2, field_modulus))
         padded_ans = ans[2:].zfill(192)
         print("y^2 from python", padded_ans)
         print("y^2 from ledger", signature.hex()[:192])
 
-        # process x^3 + ax + b stuff
-
+        # x^3 + ax + b
         ansx = hex((pow(mnt6_g1_x, 3, field_modulus) + a*mnt6_g1_x  + b) % field_modulus)
         padded_ansx = ansx[2:].zfill(192)
         print("x^2 + ax + b from python", padded_ansx)
