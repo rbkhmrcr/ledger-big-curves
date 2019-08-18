@@ -54,7 +54,7 @@ const fmnt6753 gmnt6753_coeff_b = {
     0x86, 0x7c, 0x4e, 0x80, 0xf4, 0x74, 0x7f, 0xde, 0x5a, 0xba, 0x75, 0x05,
     0xba, 0x6f, 0xcf, 0x24, 0x85, 0x54, 0x0b, 0x13, 0xdf, 0xc8, 0x46, 0x8a};
 
-const struct gmnt6753 gmnt6753_zero = {
+const gmnt6753 gmnt6753_zero = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -214,7 +214,36 @@ void gmnt6753_affine_double(gmnt6753 *r, const gmnt6753 *p) {
   cx_math_subm(r->Y, lxpxr, p->Y, fmnt6753_modulus, fmnt6753_BYTES);    // lambda(xp - xr) - yp
 }
 
+// we can do temp = q, q = q0, q0 = temp instead probably
+void xorswap(unsigned char *x, unsigned char *y) {
+  if (x != y) {
+    *x ^= *y;
+    *y ^= *x;
+    *x ^= *y;
+  }
+}
+
 void gmnt6753_affine_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
+  gmnt6753 q = gmnt6753_zero;
+   for (int i = 0; i < scalar6753_BITS; i++) {
+    int di = k[i/8] & (1 << (i % 8));
+    gmnt6753 q0 = gmnt6753_zero;
+    gmnt6753_affine_double(&q0, &q);
+    gmnt6753 temp = q;
+    q = q0;
+    q0 = temp;
+    if (di == 1) {
+      gmnt6753 q1 = gmnt6753_zero;
+      gmnt6753_affine_add(&q1, &q, p);
+      gmnt6753 temp = q;
+      q = q1;
+      q1 = temp;
+    }
+  }
+  os_memcpy(&r, &q, gmnt6753_BYTES);
+}
+
+void gmnt6753_affine_constant_time_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
   gmnt6753 r1;
   os_memcpy(r1.X, p->X, fmnt6753_BYTES);
   os_memcpy(r1.Y, p->Y, fmnt6753_BYTES);

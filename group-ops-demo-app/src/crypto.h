@@ -42,6 +42,7 @@ void scalar6753_add(scalar6753 c, scalar6753 a, scalar6753 b);
 void scalar6753_mul(scalar6753 c, scalar6753 a, scalar6753 b);
 void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q);
 void gmnt6753_affine_double(gmnt6753 *r, const gmnt6753 *p);
+void gmnt6753_affine_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p);
 void group_add(group xy, const gmnt6753 *p, const gmnt6753 *q);
 void group_double(group xy, const gmnt6753 *p);
 void group_scalar_mul(group r, const scalar6753 k, const gmnt6753 *p);

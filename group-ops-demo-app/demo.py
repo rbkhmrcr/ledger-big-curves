@@ -27,6 +27,16 @@ mnt6_q = [1636423638749168944475905794433417357907074747373833974909348733764473
 p = 0x0001c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db26c5c28c859a99b3eebca9429212636b9dff97634993aa4d6c381bc3f0057974ea099170fa13a4fd90776e240000001
 group_order = 0x0001c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db117e776f218059db80f0da5cb537e38685acce9767254a4638810719ac425f0e39d54522cdd119f5e9063de245e8001
 
+
+# def is_on_curve(P1):
+#     lhs = (pow(P1[0], 3, p) + P1[0] * a + b) % p
+#     rhs = pow(P1[1], 2, p)
+#     print("x^3 + ax + b", lhs)
+#     print("y^2", rhs)
+#     return lhs == rhs
+
+# is_on_curve([0x00010a5edf4a097a64f93e11ca536080ccc54e169c7e600a6a3d1b6d942c758b279edbb8fd23678b54dcb9718b66cab88b71519cdede19ca6bb01ab6cedb8dd9762124e3d7ce8a6ab8eb13525cc2b58003f5b2cb16f303c9c5f9dd8ebb801c65, 0x0000bca739c54ec7d36ccf210946bbfa36a759bcd634f0d47a0b829ff403a7e16d326f0d632c1afb901930c0101f8d062520ddeff080b74f81b8314edee6516f63d6a140bd9d2f88ac0c362908fa23c54a2f2f90ac8b2a80af726b5c9ece06e8])
+
 def point_add(P1, P2):
     if (P1 is None):
         return P2
@@ -74,7 +84,7 @@ try:
         print('received ', received.hex())
 
         # ans = point_add(mnt6_g1, mnt6_q)
-        ans = point_add(mnt6_g1, mnt6_g1)
+        ans = point_add(point_add(mnt6_g1, mnt6_g1), mnt6_g1)
         print("ans hex", hex(ans[0]), hex(ans[1]))
 
 except CommException as comm:
