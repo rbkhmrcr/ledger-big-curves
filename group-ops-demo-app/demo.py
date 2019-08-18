@@ -84,8 +84,17 @@ try:
         print('received ', received.hex())
 
         # ans = point_add(mnt6_g1, mnt6_q)
-        ans = point_add(point_add(mnt6_g1, mnt6_g1), mnt6_g1)
-        print("ans hex", hex(ans[0]), hex(ans[1]))
+        print("g", hex(mnt6_g1[0]), hex(mnt6_g1[1]))
+        ans = point_add(mnt6_g1, mnt6_g1)
+        print("2g", hex(ans[0]), hex(ans[1]))
+        ans = point_add(ans, mnt6_g1)
+        print("3g", hex(ans[0]), hex(ans[1]))
+        ans = point_add(ans, mnt6_g1)
+        print("4g", hex(ans[0]), hex(ans[1]))
+        ans = point_add(ans, mnt6_g1)
+        print("5g", hex(ans[0]), hex(ans[1]))
+        ans = point_add(ans, mnt6_g1)
+        print("6g", hex(ans[0]), hex(ans[1]))
 
 except CommException as comm:
         if comm.sw == 0x6985:
