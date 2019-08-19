@@ -223,32 +223,35 @@ void xorswap(unsigned char *x, unsigned char *y) {
   }
 }
 
-void gmnt6753_affine_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
+gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p) {
+//void gmnt6753_affine_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
+  
   if (is_zero(p)) {
-    *r = gmnt6753_zero;
-    return;
+    return gmnt6753_zero;
   }
   if (is_scalar_zero(k)) {
-    *r = gmnt6753_zero;
-    return;
+    return gmnt6753_zero;
   }
+  
   gmnt6753 q = gmnt6753_zero;
-   for (int i = 0; i < scalar6753_BITS; i++) {
-    int di = k[i/8] & (1 << (i % 8));
+  // 96 bytes = 8 * 96 = 768. we want 753, 768 - 753 = 15 bits
+  // which means we have an offset of 15 bits
+   for (int i = 15; i < (scalar6753_BITS + 15); i++) {
+    int di = k[i/8] & (1 << ((7-i) % 8));
     gmnt6753 q0 = gmnt6753_zero;
     gmnt6753_affine_double(&q0, &q);
-    gmnt6753 temp = q;
+    // gmnt6753 temp = q;
     q = q0;
-    q0 = temp;
-    if (di == 1) {
+    // q0 = temp;
+    if (di != 0) {
       gmnt6753 q1 = gmnt6753_zero;
       gmnt6753_affine_add(&q1, &q, p);
-      gmnt6753 temp = q;
+      // gmnt6753 temp = q;
       q = q1;
-      q1 = temp;
+      // q1 = temp;
     }
   }
-  os_memcpy(&r, &q, gmnt6753_BYTES);
+  return q;
 }
 
 void gmnt6753_affine_constant_time_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
