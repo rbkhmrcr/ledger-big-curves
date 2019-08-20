@@ -34,6 +34,47 @@ const fmnt6753 fmnt6753_one = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
+const fmnt6753 fmnt6753_two = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02};
+
+const fmnt6753 fmnt6753_three = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03};
+
+const fmnt6753 fmnt6753_four = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04};
+
+const fmnt6753 fmnt6753_eight = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08};
+
+
 const fmnt6753 gmnt6753_coeff_a = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -70,6 +111,14 @@ const gmnt6753 gmnt6753_zero = {
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 
 // mnt6753 generator
@@ -98,7 +147,15 @@ const gmnt6753 gmnt6753_one = {
      0xc5, 0x7e, 0x61, 0x0d, 0xc7, 0xa5, 0x93, 0xcc, 0xe5, 0xa7, 0x92, 0xe9,
      0x4d, 0x00, 0x20, 0xc3, 0x35, 0xb7, 0x4d, 0x99, 0x92, 0xf5, 0xcb, 0xf4,
      0xb2, 0xcc, 0x4c, 0x42, 0xef, 0xf9, 0xa5, 0xa6, 0xc4, 0x52, 0x1d, 0xf9,
-     0x85, 0x56, 0x87, 0x13, 0x9f, 0x0c, 0x51, 0x75, 0x4c, 0x0c, 0xcc, 0x49}};
+     0x85, 0x56, 0x87, 0x13, 0x9f, 0x0c, 0x51, 0x75, 0x4c, 0x0c, 0xcc, 0x49},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}};
 
 const scalar6753 scalar6753_zero = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -120,52 +177,240 @@ const scalar6753 gmnt6753_group_order = {
     0x63, 0x88, 0x10, 0x71, 0x9a, 0xc4, 0x25, 0xf0, 0xe3, 0x9d, 0x54, 0x52,
     0x2c, 0xdd, 0x11, 0x9f, 0x5e, 0x90, 0x63, 0xde, 0x24, 0x5e, 0x80, 0x01};
 
+
+// field arithmetic
+bool fmnt6753_eq(const fmnt6753 a, const fmnt6753 b) {
+  return (os_memcmp(a, b, fmnt6753_BYTES) == 0);
+}
+
+// TODO check these get compiled into nothingness :)
+void fmnt6753_add(fmnt6753 c, const fmnt6753 a, const fmnt6753 b) {
+  cx_math_addm(c, a, b, fmnt6753_modulus, fmnt6753_BYTES);
+}
+
+void fmnt6753_sub(fmnt6753 c, const fmnt6753 a, const fmnt6753 b) {
+  cx_math_subm(c, a, b, fmnt6753_modulus, fmnt6753_BYTES);
+}
+
+void fmnt6753_mul(fmnt6753 c, const fmnt6753 a, const fmnt6753 b) {
+  cx_math_multm(c, a, b, fmnt6753_modulus, fmnt6753_BYTES);
+}
+
+void fmnt6753_sq(fmnt6753 c, const fmnt6753 a) {
+  cx_math_multm(c, a, a, fmnt6753_modulus, fmnt6753_BYTES);
+}
+
+// scalar arithmetic
 bool is_scalar_zero(const scalar6753 k) {
-  if (os_memcmp(k, scalar6753_zero, scalar6753_BYTES) == 0) {
-    return true;
-  }
-  return false;
+  return (os_memcmp(k, scalar6753_zero, scalar6753_BYTES) == 0);
 }
 
-bool is_zero(const gmnt6753 *p) {
-  if (os_memcmp(p->X, fmnt6753_zero, fmnt6753_BYTES) == 0 &&
-      os_memcmp(p->Y, fmnt6753_zero, fmnt6753_BYTES) == 0) {
-    return true;
-  }
-  return false;
-}
-
-bool is_on_curve(const gmnt6753 *p) {
-  if (is_zero(p)) {
-    return true;
-  }
-
-  fmnt6753 x2, x2a, x3ax, x3axb, y2;
-  cx_math_multm(y2, p->Y, p->Y, fmnt6753_modulus, fmnt6753_BYTES);                  // y^2
-  cx_math_multm(x2, p->X, p->X, fmnt6753_modulus, fmnt6753_BYTES);                  // x^2
-  cx_math_addm(x2a, x2, gmnt6753_coeff_a, fmnt6753_modulus, fmnt6753_BYTES);        // x^2 + a
-  cx_math_multm(x3ax, x2a, p->X, fmnt6753_modulus, fmnt6753_BYTES);                 // x^3 + ax
-  cx_math_addm(x3axb, x3ax, gmnt6753_coeff_b, fmnt6753_modulus, fmnt6753_BYTES);    // x^3 + ax + b
-
-  return (os_memcmp(y2, x3axb, fmnt6753_BYTES) == 0);
-}
-
-// FIXME make these macros?
-void scalar6753_add(scalar6753 c, scalar6753 a, scalar6753 b) {
+// TODO check these get compiled into nothingness :)
+void scalar6753_add(scalar6753 c, const scalar6753 a, const scalar6753 b) {
   cx_math_addm(c, a, b, gmnt6753_group_order, scalar6753_BYTES);
 }
 
-void scalar6753_mul(scalar6753 c, scalar6753 a, scalar6753 b) {
+void scalar6753_mul(scalar6753 c, const scalar6753 a, const scalar6753 b) {
   cx_math_multm(c, a, b, gmnt6753_group_order, scalar6753_BYTES);
 }
 
-void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
+// group arithmetic
+bool is_zero(const gmnt6753 *p) {
+  return (os_memcmp(p->X, fmnt6753_zero, fmnt6753_BYTES) == 0 &&
+      os_memcmp(p->Y, fmnt6753_zero, fmnt6753_BYTES) == 0 &&
+      os_memcmp(p->Z, fmnt6753_zero, fmnt6753_BYTES) == 0);
+}
+
+// TODO make this neater
+bool is_on_curve(const gmnt6753 *p) {
+
+  fmnt6753 lhs, rhs;
 
   if (is_zero(p)) {
+
+    return true;
+
+  } else if (fmnt6753_eq(p->Z, fmnt6753_one)) {
+    // we can check y^2 == x^3 + ax + b
+    fmnt6753 x2, x2a, x3ax;
+    fmnt6753_sq(rhs, p->Y);                       // y^2
+    fmnt6753_sq(x2, p->X);                        // x^2
+    fmnt6753_add(x2a, x2, gmnt6753_coeff_a);      // x^2 + a
+    fmnt6753_mul(x3ax, x2a, p->X);                // x^3 + ax
+    fmnt6753_add(rhs, x3ax, gmnt6753_coeff_b);    // x^3 + ax + b
+
+  } else {
+    // we check (y/z)^2 == (x/z)^3 + a(x/z) + b
+    // => z(y^2 - bz^2) == x(x^2 + az^2)
+    fmnt6753 x2, y2, z2;
+    fmnt6753_sq(x2, p->X);
+    fmnt6753_sq(y2, p->Y);
+    fmnt6753_sq(z2, p->Z);
+
+    fmnt6753 bz2, y2bz2, az2, x2az2;
+    fmnt6753_mul(bz2, z2, gmnt6753_coeff_b);      // bz^2
+    fmnt6753_sub(y2bz2, y2, bz2);                 // y^2 - bz^2
+    fmnt6753_mul(lhs, p->Z, y2bz2);               // z(y^2 - bz^2)
+    fmnt6753_mul(az2, z2, gmnt6753_coeff_a);      // az^2
+    fmnt6753_add(x2az2, x2, az2);                 // x^2 + az^2
+    fmnt6753_mul(rhs, p->X, x2az2);               // x(x^2 + az^2)
+
+  }
+
+  return fmnt6753_eq(lhs, rhs);
+}
+
+// https://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian.html#addition-add-2007-bl.op3
+// for p = (X1, Y1, Z1), q = (X2, Y2, Z2);
+//
+void gmnt6753_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
+
+  fmnt6753 z1z1, z2z2;
+  fmnt6753_sq(z1z1, p->Z);                    // Z1Z1 = Z1^2
+  fmnt6753_sq(z2z2, q->Z);                    // Z2Z2 = Z2^2
+
+  fmnt6753 u1, u2, t0, t1, s1, s2;
+  fmnt6753_mul(u1, p->X, z2z2);               // u1 = x1 * z2z2
+  fmnt6753_mul(u2, q->X, z1z1);               // u2 = x2 * z1z1
+  fmnt6753_mul(t0, q->Z, z2z2);               // t0 = z2 * z2z2
+  fmnt6753_mul(s1, p->Y, t0);                 // s1 = y1 * t0
+  fmnt6753_mul(t1, p->Z, z1z1);               // t1 = z1 * z1z1
+  fmnt6753_mul(s2, q->Y, t1);                 // s2 = y2 * t1
+
+  fmnt6753 h, t2, i, j, t3, w, v;             // w = r
+  fmnt6753_sub(h, u2, u1);                    // h = u2 - u1
+  fmnt6753_mul(t2, fmnt6753_two, h);          // 2*h
+  fmnt6753_sq(i, t2);                         // i = (2*h)^2
+  fmnt6753_mul(j, h, i);                      // j = h*i
+  fmnt6753_sub(t3, s2, s1);                   // s2 - s1
+  fmnt6753_mul(w, fmnt6753_two, t3);          // w = 2*(s2 - s1)
+  fmnt6753_mul(v, u1, i);                     // v = u1*i
+
+  // X3 = w^2 - j - 2*v
+  fmnt6753 t4, t5, t6;
+  fmnt6753_sq(t4, w);                         // w^2
+  fmnt6753_mul(t5, fmnt6753_two, v);          // 2*v
+  fmnt6753_sub(t6, t4, j);                    // w^2 - j
+  fmnt6753_sub(r->X, t6, t5);                 // w^2 - j - 2*v
+
+  // Y3 = w*(V-X3)-2*S1*J
+  fmnt6753 t7, t8, t9, t10;
+  fmnt6753_sub(t7, v, r->X);                  // v - X3
+  fmnt6753_mul(t8, s1, j);                    // s1*j
+  fmnt6753_mul(t9, fmnt6753_two, t8);         // 2*s1*j
+  fmnt6753_mul(t10, w, t7);                   // w*(v - X3)
+  fmnt6753_sub(r->Y, t10, t9);                // w*(v - X3) - 2*s1*j
+
+  // Z3 = ((Z1+Z2)^2-Z1Z1-Z2Z2)*H
+  fmnt6753 t11, t12, t13, t14;
+  fmnt6753_add(t11, p->Z, q->Z);              // z1z2 = z1 + z2
+  fmnt6753_sq(t12, t11);                      // (z1 + z2)^2
+  fmnt6753_sub(t13, t12, z1z1);               // (z1 + z2)^2 - z1z1
+  fmnt6753_sub(t14, t13, z2z2);               // (z1 + z2)^2 - z1z1 - z2z2
+  fmnt6753_mul(r->Z, t14, h);                 // ((z1 + z2)^2 - z1z1 - z2z2)*h
+};
+
+// https://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian.html#addition-madd-2007-bl.op3
+// for p = (X1, Y1, Z1), q = (X2, Y2, Z2); assumes Z2 = 1
+void gmnt6753_madd(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
+
+  fmnt6753 z1z1, u2;
+  fmnt6753_sq(z1z1, p->Z);                    // Z1Z1 = Z1^2
+  fmnt6753_mul(u2, q->X, z1z1);               // U2 = X2*Z1Z1
+
+  fmnt6753 t0, s2;
+  fmnt6753_mul(t0, p->Z, z1z1);               // t0 = Z1*z1z1
+  fmnt6753_mul(s2, q->Y, t0);                 // S2 = Y2*t0
+
+  fmnt6753 h, hh;
+  fmnt6753_sub(h, u2, p->X);                  // H = U2-X1
+  fmnt6753_sq(hh, h);                         // HH = H^2
+
+  fmnt6753 i, j, t1, v, w;                    // w is r in link
+  fmnt6753_mul(i, fmnt6753_four, hh);         // I = 4*HH
+  fmnt6753_mul(j, h, i);                      // J = H*I
+  fmnt6753_sub(t1, s2, p->Y);                 // t1 = S2-Y1
+  fmnt6753_sub(w, fmnt6753_two, t1);          // w = 2*(S2-Y1)
+  fmnt6753_mul(v, p->X, i);                   // V = X1*I
+
+  // X3 = w^2-J-2*V
+  fmnt6753 t2, t3,t4;
+  fmnt6753_sq(t2, w);                         // w^2
+  fmnt6753_mul(t3, fmnt6753_two, v);          // 2*V
+  fmnt6753_sub(t4, t2, j);                    // w^2-J
+  fmnt6753_sub(r->X, t4, t3);                 // w^2-J-2*V
+
+  // Y3 = w*(V-X3)-2*Y1*J
+  fmnt6753 t5, t6, t7, t8;
+  fmnt6753_sub(t5, v, r->X);                  // V-X3
+  fmnt6753_mul(t6, j, p->Y);                  // Y1*J
+  fmnt6753_mul(t7, fmnt6753_two, t6);         // 2*Y1*J
+  fmnt6753_mul(t8, w, t5);                    // w*(V-X3)
+  fmnt6753_sub(r->Y, t8, t7);                 // w*(V-X3)-2*Y1*J
+
+  // Z3 = (Z1+H)^2-Z1Z1-HH
+  fmnt6753 t9, t10, t11;
+  fmnt6753_add(t9, p->Z, h);                  // Z1+H
+  fmnt6753_sq(t10, t9);                       // (Z1+H)^2
+  fmnt6753_sub(t11, t10, z1z1);               // (Z1+H)^2-Z1Z1
+  fmnt6753_sub(r->Z, t11, hh);                // (Z1+H)^2-Z1Z1-HH
+}
+
+// https://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian/doubling/dbl-2007-bl.op3
+void gmnt6753_dbl(gmnt6753 *r, const gmnt6753 *p) {
+
+  fmnt6753 xx;
+  fmnt6753_sq(xx, p->X);                      // XX = X1^2
+
+  fmnt6753 yy, yyyy, zz;
+  fmnt6753_sq(yy, p->Y);                      // YY = Y1^2
+  fmnt6753_sq(yyyy, yy);                      // YYYY = YY^2
+  fmnt6753_sq(zz, p->Z);                      // ZZ = Z1^2
+
+  fmnt6753 t0, t1, t2, t3, s;                 // S = 2*((X1+YY)^2-XX-YYYY)
+  fmnt6753_add(t0, p->X, yy);                 // X1+YY
+  fmnt6753_sq(t1, t0);                        // (X1+YY)^2
+  fmnt6753_sub(t2, t1, xx);                   // (X1+YY)^2-XX
+  fmnt6753_sub(t3, t2, yyyy);                 // (X1+YY)^2-XX-YYYY
+  fmnt6753_mul(s, fmnt6753_two, t3);          // 2*((X1+YY)^2-XX-YYYY)
+
+  fmnt6753 t4, t5, t6, m;                     // M = 3*XX+a*ZZ^2
+  fmnt6753_sq(t4, zz);                        // ZZ^2
+  fmnt6753_mul(t5, t4, gmnt6753_coeff_a);     // a*ZZ^2
+  fmnt6753_mul(t6, fmnt6753_three, xx);       // 3*XX
+  fmnt6753_add(m, t6, t5);                    // 3*XX + a*ZZ^2
+
+  // X3 = T = M^2-2*S
+  fmnt6753 t7, t8;
+  fmnt6753_sq(t7, m);                         // M^2
+  fmnt6753_mul(t8, fmnt6753_two, s);          // 2*S
+  fmnt6753_sub(r->X, t7, t8);                 // M^2-2*S
+
+  // Y3 = M*(S-T)-8*YYYY
+  fmnt6753 t9, t10, t11;
+  fmnt6753_sub(t9, s, r->X);                  // S-T
+  fmnt6753_mul(t10, fmnt6753_eight, yyyy);    // 8*YYYY
+  fmnt6753_mul(t11, m, t9);                   // Y3 = M*(S-T)
+  fmnt6753_sub(r->Y, t11, t10);               // M*(S-T)-8*YYYY
+
+  // Z3 = (Y1+Z1)^2-YY-ZZ
+  fmnt6753 t12, t13, t14;
+  fmnt6753_add(t12, p->Y, p->Z);              // Y1+Z1
+  fmnt6753_sq(t13, t12);                     // (Y1+Z1)^2
+  fmnt6753_sub(t14, t13, yy);                 // (Y1+Z1)^2-YY
+  fmnt6753_sub(r->Z, t14, zz);                // (Y1+Z1)^2-YY-ZZ
+}
+
+
+/*
+// TODO make this neater
+void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
+
+  if (is_zero_affine(p)) {
     *r = *q;
     return;
   }
-  if (is_zero(q)) {
+  if (is_zero_affine(q)) {
     *r = *p;
     return;
   }
@@ -189,7 +434,7 @@ void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
 
 void gmnt6753_affine_double(gmnt6753 *r, const gmnt6753 *p) {
 
-  if (is_zero(p)) {
+  if (is_zero_affine(p)) {
     *r = gmnt6753_zero;
     return;
   }
@@ -214,25 +459,13 @@ void gmnt6753_affine_double(gmnt6753 *r, const gmnt6753 *p) {
   cx_math_subm(r->Y, lxpxr, p->Y, fmnt6753_modulus, fmnt6753_BYTES);    // lambda(xp - xr) - yp
 }
 
-// we can do temp = q, q = q0, q0 = temp instead probably
-void xorswap(unsigned char *x, unsigned char *y) {
-  if (x != y) {
-    *x ^= *y;
-    *y ^= *x;
-    *x ^= *y;
-  }
-}
-
-gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p) {
+gmnt6753_affine gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753_affine *p) {
 //void gmnt6753_affine_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
-  
-  if (is_zero(p)) {
+
+  if (is_zero_affine(p) || is_scalar_zero(k))  {
     return gmnt6753_zero;
   }
-  if (is_scalar_zero(k)) {
-    return gmnt6753_zero;
-  }
-  
+
   gmnt6753 q = gmnt6753_zero;
   // 96 bytes = 8 * 96 = 768. we want 753, 768 - 753 = 15 bits
   // which means we have an offset of 15 bits
@@ -254,7 +487,7 @@ gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p) {
   return q;
 }
 
-void gmnt6753_affine_constant_time_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
+void gmnt6753_affine_ct_scalar_mul(gmnt6753_affine *r, const scalar6753 k, const gmnt6753_affine *p) {
   gmnt6753 r1;
   os_memcpy(r1.X, p->X, fmnt6753_BYTES);
   os_memcpy(r1.Y, p->Y, fmnt6753_BYTES);
@@ -311,3 +544,4 @@ void group_double(group xy, const gmnt6753 *p) {
   cx_math_multm(lxpxr, lambda, xpxr, fmnt6753_modulus, fmnt6753_BYTES); // lambda(xp - xr)
   cx_math_subm(xy + fmnt6753_BYTES, lxpxr, p->Y, fmnt6753_modulus, fmnt6753_BYTES); // lambda(xp - xr) - yp
 }
+*/
