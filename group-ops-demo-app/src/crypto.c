@@ -74,7 +74,6 @@ const fmnt6753 fmnt6753_eight = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08};
 
-
 const fmnt6753 gmnt6753_coeff_a = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -185,19 +184,27 @@ bool fmnt6753_eq(const fmnt6753 a, const fmnt6753 b) {
 
 // TODO check these get compiled into nothingness :)
 void fmnt6753_add(fmnt6753 c, const fmnt6753 a, const fmnt6753 b) {
-  cx_math_addm(c, a, b, fmnt6753_modulus, fmnt6753_BYTES);
+  fmnt6753 d = fmnt6753_zero;
+  cx_math_addm(&d, a, b, fmnt6753_modulus, fmnt6753_BYTES);
+  c = d;
 }
 
 void fmnt6753_sub(fmnt6753 c, const fmnt6753 a, const fmnt6753 b) {
-  cx_math_subm(c, a, b, fmnt6753_modulus, fmnt6753_BYTES);
+  fmnt6753 d = fmnt6753_zero;
+  cx_math_subm(d, a, b, fmnt6753_modulus, fmnt6753_BYTES);
+  c = d;
 }
 
 void fmnt6753_mul(fmnt6753 c, const fmnt6753 a, const fmnt6753 b) {
-  cx_math_multm(c, a, b, fmnt6753_modulus, fmnt6753_BYTES);
+  fmnt6753 d = fmnt6753_zero;
+  cx_math_multm(d, a, b, fmnt6753_modulus, fmnt6753_BYTES);
+  c = d;
 }
 
 void fmnt6753_sq(fmnt6753 c, const fmnt6753 a) {
-  cx_math_multm(c, a, a, fmnt6753_modulus, fmnt6753_BYTES);
+  fmnt6753 d = fmnt6753_zero;
+  cx_math_multm(d, a, a, fmnt6753_modulus, fmnt6753_BYTES);
+  c = d;
 }
 
 // scalar arithmetic
@@ -205,13 +212,16 @@ bool is_scalar_zero(const scalar6753 k) {
   return (os_memcmp(k, scalar6753_zero, scalar6753_BYTES) == 0);
 }
 
-// TODO check these get compiled into nothingness :)
 void scalar6753_add(scalar6753 c, const scalar6753 a, const scalar6753 b) {
-  cx_math_addm(c, a, b, gmnt6753_group_order, scalar6753_BYTES);
+  scalar6753 d = scalar6753_zero;
+  cx_math_addm(d, a, b, gmnt6753_group_order, scalar6753_BYTES);
+  c = d;
 }
 
 void scalar6753_mul(scalar6753 c, const scalar6753 a, const scalar6753 b) {
+  scalar6753 d = scalar6753_zero;
   cx_math_multm(c, a, b, gmnt6753_group_order, scalar6753_BYTES);
+  c = d;
 }
 
 // group arithmetic
@@ -232,12 +242,11 @@ bool is_on_curve(const gmnt6753 *p) {
 
   } else if (fmnt6753_eq(p->Z, fmnt6753_one)) {
     // we can check y^2 == x^3 + ax + b
-    fmnt6753 x2, x2a, x3ax;
-    fmnt6753_sq(rhs, p->Y);                       // y^2
-    fmnt6753_sq(x2, p->X);                        // x^2
-    fmnt6753_add(x2a, x2, gmnt6753_coeff_a);      // x^2 + a
-    fmnt6753_mul(x3ax, x2a, p->X);                // x^3 + ax
-    fmnt6753_add(rhs, x3ax, gmnt6753_coeff_b);    // x^3 + ax + b
+    fmnt6753_sq(lhs, p->Y);                       // y^2
+    fmnt6753_sq(rhs, p->X);                       // x^2
+    fmnt6753_add(rhs, rhs, gmnt6753_coeff_a);     // x^2 + a
+    fmnt6753_mul(rhs, rhs, p->X);                 // x^3 + ax
+    fmnt6753_add(rhs, rhs, gmnt6753_coeff_b);     // x^3 + ax + b
 
   } else {
     // we check (y/z)^2 == (x/z)^3 + a(x/z) + b
@@ -247,13 +256,12 @@ bool is_on_curve(const gmnt6753 *p) {
     fmnt6753_sq(y2, p->Y);
     fmnt6753_sq(z2, p->Z);
 
-    fmnt6753 bz2, y2bz2, az2, x2az2;
-    fmnt6753_mul(bz2, z2, gmnt6753_coeff_b);      // bz^2
-    fmnt6753_sub(y2bz2, y2, bz2);                 // y^2 - bz^2
-    fmnt6753_mul(lhs, p->Z, y2bz2);               // z(y^2 - bz^2)
-    fmnt6753_mul(az2, z2, gmnt6753_coeff_a);      // az^2
-    fmnt6753_add(x2az2, x2, az2);                 // x^2 + az^2
-    fmnt6753_mul(rhs, p->X, x2az2);               // x(x^2 + az^2)
+    fmnt6753_mul(lhs, z2, gmnt6753_coeff_b);      // bz^2
+    fmnt6753_sub(lhs, y2, lhs);                   // y^2 - bz^2
+    fmnt6753_mul(lhs, p->Z, lhs);                 // z(y^2 - bz^2)
+    fmnt6753_mul(rhs, z2, gmnt6753_coeff_a);      // az^2
+    fmnt6753_add(rhs, x2, rhs);                   // x^2 + az^2
+    fmnt6753_mul(rhs, p->X, rhs);                 // x(x^2 + az^2)
 
   }
 
