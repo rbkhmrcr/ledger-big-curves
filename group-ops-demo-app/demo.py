@@ -27,6 +27,7 @@ mnt6_q = [1636423638749168944475905794433417357907074747373833974909348733764473
 p = 0x0001c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db26c5c28c859a99b3eebca9429212636b9dff97634993aa4d6c381bc3f0057974ea099170fa13a4fd90776e240000001
 group_order = 0x0001c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db117e776f218059db80f0da5cb537e38685acce9767254a4638810719ac425f0e39d54522cdd119f5e9063de245e8001
 
+bigk = 0x30bd0dcb53b85bd013043029438966ffec9438150ad06f59b4cc8dda8bff0fe5d3f4f63e46ac91576d1b4a15076774feb51ba730f83fc9eb56e9bcc9233e031577a744c336e1edff5513bf5c9a4d234bcc4ad6d9f1b3fdf00e16446a8268
 
 # def is_on_curve(P1):
 #     lhs = (pow(P1[0], 3, p) + P1[0] * a + b) % p
@@ -50,6 +51,19 @@ def point_add(P1, P2):
         lam = ((P2[1] - P1[1]) * pow(P2[0] - P1[0], p - 2, p)) % p
     x3 = (lam * lam - P1[0] - P2[0]) % p
     return (x3, (lam * (P1[0] - x3) - P1[1]) % p)
+
+N = 753
+
+def point_mul(P, n):
+    R = None
+    for i in range(N):
+        if ((n >> i) & 1):
+            R = point_add(R, P)
+        P = point_add(P, P)
+    return R
+
+testpt = point_mul(mnt6_g1, bigk)
+print(hex(testpt[0]), hex(testpt[1]))
 
 textToSign = b''
 while True:
@@ -84,17 +98,17 @@ try:
         print('received ', received.hex())
 
         # ans = point_add(mnt6_g1, mnt6_q)
-        print("g", hex(mnt6_g1[0]), hex(mnt6_g1[1]))
-        ans = point_add(mnt6_g1, mnt6_g1)
-        print("2g", hex(ans[0]), hex(ans[1]))
-        ans = point_add(ans, mnt6_g1)
-        print("3g", hex(ans[0]), hex(ans[1]))
-        ans = point_add(ans, mnt6_g1)
-        print("4g", hex(ans[0]), hex(ans[1]))
-        ans = point_add(ans, mnt6_g1)
-        print("5g", hex(ans[0]), hex(ans[1]))
-        ans = point_add(ans, mnt6_g1)
-        print("6g", hex(ans[0]), hex(ans[1]))
+        # print("g", hex(mnt6_g1[0]), hex(mnt6_g1[1]))
+        # ans = point_add(mnt6_g1, mnt6_g1)
+        # print("2g", hex(ans[0]), hex(ans[1]))
+        # ans = point_add(ans, mnt6_g1)
+        # print("3g", hex(ans[0]), hex(ans[1]))
+        # ans = point_add(ans, mnt6_g1)
+        # print("4g", hex(ans[0]), hex(ans[1]))
+        # ans = point_add(ans, mnt6_g1)
+        # print("5g", hex(ans[0]), hex(ans[1]))
+        # ans = point_add(ans, mnt6_g1)
+        # print("6g", hex(ans[0]), hex(ans[1]))
 
 except CommException as comm:
         if comm.sw == 0x6985:
