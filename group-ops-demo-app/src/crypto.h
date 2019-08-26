@@ -35,16 +35,21 @@ extern const fmnt6753 gmnt6753_coeff_b;
 extern const struct gmnt6753 gmnt6753_zero;
 extern const struct gmnt6753 gmnt6753_one;
 
+void fmnt6753_add(fmnt6753 c, const fmnt6753 a, const fmnt6753 b);
+void fmnt6753_sub(fmnt6753 c, const fmnt6753 a, const fmnt6753 b);
+void fmnt6753_mul(fmnt6753 c, const fmnt6753 a, const fmnt6753 b);
+void fmnt6753_dbl(fmnt6753 c, const fmnt6753 a);
+
+void scalar6753_add(scalar6753 c, const scalar6753 a, const scalar6753 b);
+void scalar6753_mul(scalar6753 c, const scalar6753 a, const scalar6753 b);
+
+// TODO : do we need these exposed?
 bool gmnt6753_is_zero(gmnt6753 *p);
 bool gmnt6753_is_on_curve(gmnt6753 *p);
 void gmnt6753_copy(gmnt6753 *r, gmnt6753 *p);
-void scalar6753_add(scalar6753 c, scalar6753 a, scalar6753 b);
-void scalar6753_mul(scalar6753 c, scalar6753 a, scalar6753 b);
+
 void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q);
 void gmnt6753_affine_double(gmnt6753 *r, const gmnt6753 *p);
 gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p);
-void group_add(group xy, const gmnt6753 *p, const gmnt6753 *q);
-void group_double(group xy, const gmnt6753 *p);
-void group_scalar_mul(group r, const scalar6753 k, const gmnt6753 *p);
 
 #endif // CODA_CRYPTO_UTILS

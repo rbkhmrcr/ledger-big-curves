@@ -342,7 +342,7 @@ const scalar6753 three = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03};
 */
-  const scalar6753 bigk = {
+  scalar6753 bigk = {
     0x00, 0x00, 0x30, 0xbd, 0x0d, 0xcb, 0x53, 0xb8, 0x5b, 0xd0, 0x13, 0x04,
     0x30, 0x29, 0x43, 0x89, 0x66, 0xff, 0xec, 0x94, 0x38, 0x15, 0x0a, 0xd0,
     0x6f, 0x59, 0xb4, 0xcc, 0x8d, 0xda, 0x8b, 0xff, 0x0f, 0xe5, 0xd3, 0xf4,
@@ -353,19 +353,17 @@ const scalar6753 three = {
     0xd6, 0xd9, 0xf1, 0xb3, 0xfd, 0xf0, 0x0e, 0x16, 0x44, 0x6a, 0x82, 0x68};
 
   unsigned int tx = 0;
-  unsigned char xy[2 * fmnt6753_BYTES];
-
+  // unsigned char xy[2 * fmnt6753_BYTES];
   // const gmnt6753 *pp = &p;
+  // gmnt6753 w = gmnt6753_affine_scalar_mul(bigk, &p);
+  // os_memmove(xy, w.X, fmnt6753_BYTES);
+  // os_memmove(xy + fmnt6753_BYTES, w.Y, fmnt6753_BYTES);
+  // os_memmove(G_io_apdu_buffer, xy, 2 * fmnt6753_BYTES);
+  // tx = 2 * fmnt6753_BYTES;
 
-  gmnt6753 w = gmnt6753_affine_scalar_mul(bigk, &p);
-
-  os_memmove(xy, w.X, fmnt6753_BYTES);
-  os_memmove(xy + fmnt6753_BYTES, w.Y, fmnt6753_BYTES);
-  os_memmove(G_io_apdu_buffer, xy, 2 * fmnt6753_BYTES);
-  tx = 2 * fmnt6753_BYTES;
-
-  // os_memmove(G_io_apdu_buffer, xp23a, fmnt6753_BYTES);
-  // tx = fmnt6753_BYTES;
+  scalar6753_add(bigk, bigk, bigk);
+  os_memmove(G_io_apdu_buffer, bigk, scalar6753_BYTES);
+  tx = scalar6753_BYTES;
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;
   // Send back the response, do not restart the event loop

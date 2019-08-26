@@ -96,6 +96,7 @@ try:
                 received = dongle.exchange(apdu)
                 offset += len(chunk)
         print('received ', received.hex())
+        print('expected ', hex(bigk + bigk % group_order))
 
         # ans = point_add(mnt6_g1, mnt6_q)
         # print("g", hex(mnt6_g1[0]), hex(mnt6_g1[1]))
