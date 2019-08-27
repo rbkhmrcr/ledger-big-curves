@@ -353,21 +353,6 @@ const scalar6753 three = {
     0xd6, 0xd9, 0xf1, 0xb3, 0xfd, 0xf0, 0x0e, 0x16, 0x44, 0x6a, 0x82, 0x68};
 
   unsigned int tx = 0;
-<<<<<<< HEAD
-  unsigned char xyz[2 * fmnt6753_BYTES];
-
-  gmnt6753 w;
-  gmnt6753_madd(&w, &r, &p);
-
-  os_memmove(xyz, w.X, fmnt6753_BYTES);
-  os_memmove(xyz + fmnt6753_BYTES, w.Y, fmnt6753_BYTES);
-  //os_memmove(xyz + 2*fmnt6753_BYTES, w.Z, fmnt6753_BYTES);
-  os_memmove(G_io_apdu_buffer, xyz, 2 * fmnt6753_BYTES);
-  tx = 2 * fmnt6753_BYTES;
-
-  // os_memmove(G_io_apdu_buffer, xp23a, fmnt6753_BYTES);
-  // tx = fmnt6753_BYTES;
-=======
   // unsigned char xy[2 * fmnt6753_BYTES];
   // const gmnt6753 *pp = &p;
   // gmnt6753 w = gmnt6753_affine_scalar_mul(bigk, &p);
@@ -379,7 +364,6 @@ const scalar6753 three = {
   scalar6753_add(bigk, bigk, bigk);
   os_memmove(G_io_apdu_buffer, bigk, scalar6753_BYTES);
   tx = scalar6753_BYTES;
->>>>>>> spring-cleaning
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;
   // Send back the response, do not restart the event loop

@@ -34,7 +34,6 @@ const fmnt6753 fmnt6753_one = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
-<<<<<<< HEAD
 const fmnt6753 fmnt6753_two = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -75,8 +74,6 @@ const fmnt6753 fmnt6753_eight = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08};
 
-=======
->>>>>>> spring-cleaning
 const fmnt6753 gmnt6753_coeff_a = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -220,7 +217,7 @@ bool is_zero(const gmnt6753 *p) {
 bool is_on_curve(const gmnt6753 *p) {
   if (is_zero(p)) {
     return true;
-
+/*
   } else if (fmnt6753_eq(p->Z, fmnt6753_one)) {
     // we can check y^2 == x^3 + ax + b
     fmnt6753_sq(lhs, p->Y);                       // y^2
@@ -228,7 +225,6 @@ bool is_on_curve(const gmnt6753 *p) {
     fmnt6753_add(rhs, rhs, gmnt6753_coeff_a);     // x^2 + a
     fmnt6753_mul(rhs, rhs, p->X);                 // x^3 + ax
     fmnt6753_add(rhs, rhs, gmnt6753_coeff_b);     // x^3 + ax + b
-
   } else {
     // we check (y/z)^2 == (x/z)^3 + a(x/z) + b
     // => z(y^2 - bz^2) == x(x^2 + az^2)
@@ -246,6 +242,8 @@ bool is_on_curve(const gmnt6753 *p) {
 
   }
   return (os_memcmp(y2, x3axb, fmnt6753_BYTES) == 0);
+*/
+}
 }
 
 void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
@@ -318,7 +316,7 @@ gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p) {
   if (is_zero(p)) {
     return gmnt6753_zero;
   }
-  if (is_scalar_zero(k)) {
+  if (scalar6753_is_zero(k)) {
     return gmnt6753_zero;
   }
 
