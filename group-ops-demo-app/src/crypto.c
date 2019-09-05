@@ -244,6 +244,7 @@ bool is_on_curve(const gmnt6753 *p) {
   return (os_memcmp(y2, x3axb, fmnt6753_BYTES) == 0);
 */
 }
+return true;
 }
 
 void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
@@ -301,23 +302,15 @@ void gmnt6753_affine_double(gmnt6753 *r, const gmnt6753 *p) {
   cx_math_subm(r->Y, lxpxr, p->Y, fmnt6753_modulus, fmnt6753_BYTES);    // lambda(xp - xr) - yp
 }
 
-// we can do temp = q, q = q0, q0 = temp instead probably
-void xorswap(unsigned char *x, unsigned char *y) {
-  if (x != y) {
-    *x ^= *y;
-    *y ^= *x;
-    *x ^= *y;
-  }
-}
-
-gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p) {
+void gmnt6753_affine_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
 //void gmnt6753_affine_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
 
+  *r = gmnt6753_zero;
   if (is_zero(p)) {
-    return gmnt6753_zero;
+    return;
   }
   if (scalar6753_is_zero(k)) {
-    return gmnt6753_zero;
+    return;
   }
 
   gmnt6753 q = gmnt6753_zero;
@@ -338,5 +331,5 @@ gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p) {
       // q1 = temp;
     }
   }
-  return q;
+  *r = q;
 }
