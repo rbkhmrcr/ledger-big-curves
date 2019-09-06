@@ -25,6 +25,7 @@ typedef unsigned char group[gmnt6753_BYTES];
 typedef struct gmnt6753 {
   fmnt6753 X;
   fmnt6753 Y;
+  fmnt6753 Z;
 } gmnt6753;
 
 extern const fmnt6753 fmnt6753_modulus;
@@ -50,6 +51,6 @@ void gmnt6753_copy(gmnt6753 *r, gmnt6753 *p);
 
 void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q);
 void gmnt6753_affine_double(gmnt6753 *r, const gmnt6753 *p);
-gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p);
+void gmnt6753_affine_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p);
 
 #endif // CODA_CRYPTO_UTILS
