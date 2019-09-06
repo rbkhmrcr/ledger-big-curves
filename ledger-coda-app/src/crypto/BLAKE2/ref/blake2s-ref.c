@@ -1,5 +1,7 @@
-// From https://github.com/BLAKE2/BLAKE2/blob/master/ref/blake2s-ref.c
-// August 11, 2019
+/* 
+ * From https://github.com/BLAKE2/BLAKE2/blob/master/ref/blake2s-ref.c
+ * August 11, 2019
+*/
 
 /*
    BLAKE2 reference source code package - reference C implementations
@@ -288,7 +290,7 @@ int crypto_hash(unsigned char *out, unsigned char *in,
                 unsigned long long inlen) {
   return blake2s(out, BLAKE2S_OUTBYTES, in, inlen, NULL, 0);
 }
-#endif // SUPERCOP
+#endif /* SUPERCOP */
 
 #if defined(BLAKE2S_SELFTEST)
 #include "blake2-kat.h"
@@ -354,4 +356,4 @@ fail:
   puts("error");
   return -1;
 }
-#endif // BLAKE2S_SELFTEST
+#endif /* BLAKE2S_SELFTEST */

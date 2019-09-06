@@ -1,5 +1,7 @@
-// From https://github.com/BLAKE2/BLAKE2/blob/master/ref/blake2s-impl.h
-// August 11, 2019
+/* 
+ * From https://github.com/BLAKE2/BLAKE2/blob/master/ref/blake2s-impl.h
+ * August 11, 2019
+*/
 
 /*
    BLAKE2 reference source code package - reference C implementations
@@ -138,4 +140,4 @@ static BLAKE2_INLINE void secure_zero_memory(void *v, size_t n) {
   memset_v(v, 0, n);
 }
 
-#endif // BLAKE2_IMPL_H
+#endif /* BLAKE2_IMPL_H */

@@ -1,5 +1,6 @@
-// From https://github.com/BLAKE2/BLAKE2/blob/master/ref/blake2.h
-// August 11, 2019
+/* From https://github.com/BLAKE2/BLAKE2/blob/master/ref/blake2.h
+ * August 11, 2019
+*/
 
 /*
    BLAKE2 reference source code package - reference C implementations
@@ -194,4 +195,4 @@ int blake2(void *out, size_t outlen, const void *in, size_t inlen,
 }
 #endif
 
-#endif // BLAKE2_H
+#endif /* BLAKE2_H */
