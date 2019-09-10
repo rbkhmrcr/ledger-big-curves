@@ -195,34 +195,25 @@ const affine6753 affine6753_zero = {
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 
 
+// do we want these to be able to handle a += a
 void fmnt6753_add(fmnt6753 c, const fmnt6753 a, const fmnt6753 b) {
-  fmnt6753 d;
-  cx_math_addm(d, a, b, fmnt6753_modulus, fmnt6753_BYTES);
-  c = d;
+  cx_math_addm(c, a, b, fmnt6753_modulus, fmnt6753_BYTES);
 }
 
 void fmnt6753_sub(fmnt6753 c, const fmnt6753 a, const fmnt6753 b) {
-  fmnt6753 d;
-  cx_math_subm(d, a, b, fmnt6753_modulus, fmnt6753_BYTES);
-  c = d;
+  cx_math_subm(c, a, b, fmnt6753_modulus, fmnt6753_BYTES);
 }
 
 void fmnt6753_mul(fmnt6753 c, const fmnt6753 a, const fmnt6753 b) {
-  fmnt6753 d;
-  cx_math_multm(d, a, b, fmnt6753_modulus, fmnt6753_BYTES);
-  c = d;
+  cx_math_multm(c, a, b, fmnt6753_modulus, fmnt6753_BYTES);
 }
 
 void fmnt6753_sq(fmnt6753 c, const fmnt6753 a) {
-  scalar6753 d;
-  cx_math_multm(d, a, a, fmnt6753_modulus, fmnt6753_BYTES);
-  c = d;
+  cx_math_multm(c, a, a, fmnt6753_modulus, fmnt6753_BYTES);
 }
 
 void fmnt6753_inv(fmnt6753 c, const fmnt6753 a) {
-  fmnt6753 d;
-  cx_math_invprimem(d, a, fmnt6753_modulus, fmnt6753_BYTES);
-  c = d;
+  cx_math_invprimem(c, a, fmnt6753_modulus, fmnt6753_BYTES);
 }
 
 bool fmnt6753_is_zero(const fmnt6753 k) {
@@ -239,15 +230,11 @@ bool scalar6753_is_zero(const scalar6753 k) {
 }
 
 void scalar6753_add(scalar6753 c, const scalar6753 a, const scalar6753 b) {
-  scalar6753 d;
   cx_math_addm(c, a, b, gmnt6753_group_order, scalar6753_BYTES);
-  c = d;
 }
 
 void scalar6753_mul(scalar6753 c, const scalar6753 a, const scalar6753 b) {
-  scalar6753 d;
   cx_math_multm(c, a, b, gmnt6753_group_order, scalar6753_BYTES);
-  c = d;
 }
 
 bool is_zero(const gmnt6753 *p) {

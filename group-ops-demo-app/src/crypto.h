@@ -48,6 +48,7 @@ void fmnt6753_add(fmnt6753 c, const fmnt6753 a, const fmnt6753 b);
 void fmnt6753_sub(fmnt6753 c, const fmnt6753 a, const fmnt6753 b);
 void fmnt6753_mul(fmnt6753 c, const fmnt6753 a, const fmnt6753 b);
 void fmnt6753_dbl(fmnt6753 c, const fmnt6753 a);
+void fmnt6753_inv(fmnt6753 c, const fmnt6753 a);
 
 void scalar6753_add(scalar6753 c, const scalar6753 a, const scalar6753 b);
 void scalar6753_mul(scalar6753 c, const scalar6753 a, const scalar6753 b);

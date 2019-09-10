@@ -54,6 +54,9 @@ def point_add(P1, P2):
 
 N = 753
 
+bigk_inv = pow(bigk, p-2, p)
+print(hex(bigk_inv))
+
 def point_mul(P, n):
     R = None
     for i in range(N):
