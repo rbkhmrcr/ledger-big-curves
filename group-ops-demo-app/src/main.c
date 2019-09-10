@@ -394,12 +394,12 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
   // os_memmove(G_io_apdu_buffer, xy, 2 * fmnt6753_BYTES);
   // tx = 2 * fmnt6753_BYTES;
 
-  affine6753 ap;
-  projective_to_affine(&ap, &p);
+  gmnt6753 projq;
+  affine_to_projective(&projq, &q);
 
   //os_memcpy(ap.x, p.X, fmnt6753_BYTES);
 
-  os_memmove(G_io_apdu_buffer, ap.x, fmnt6753_BYTES);
+  os_memmove(G_io_apdu_buffer, projq.Z, fmnt6753_BYTES);
   tx = fmnt6753_BYTES;
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;

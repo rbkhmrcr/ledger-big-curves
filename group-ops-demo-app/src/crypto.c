@@ -274,11 +274,9 @@ bool is_on_curve(const gmnt6753 *p) {
 }
 
 void affine_to_projective(gmnt6753 *r, const affine6753 *p) {
-  //os_memcpy(r->x, p->X, fmnt6753_BYTES);
-  //os_memcpy(r->y, p->Y, fmnt6753_BYTES);
-  *r->X = *p->x;
-  *r->Y = *p->y;
-  *r->Z = *fmnt6753_one;
+  os_memcpy(r->X, p->x, fmnt6753_BYTES);
+  os_memcpy(r->Y, p->y, fmnt6753_BYTES);
+  os_memcpy(r->Z, fmnt6753_one, fmnt6753_BYTES);
   return;
 }
 
