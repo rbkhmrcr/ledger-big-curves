@@ -295,7 +295,7 @@ static const bagl_element_t *io_seproxyhal_touch_exit(const bagl_element_t *e) {
 static const bagl_element_t *
 io_seproxyhal_touch_approve(const bagl_element_t *e) {
 
-  const affine6753 pointypoint = {
+  const affine6753 q = {
     {0x00, 0x00, 0x25, 0x5f, 0x8e, 0x87, 0x6e, 0x83, 0x11, 0x47, 0x41, 0x2c,
      0xfb, 0x10, 0x02, 0x28, 0x4f, 0x30, 0x33, 0x80, 0x88, 0x13, 0x1c, 0x24,
      0x37, 0xe8, 0x84, 0xc4, 0x99, 0x7f, 0xd1, 0xdc, 0xb4, 0x09, 0x36, 0x7d,
@@ -394,12 +394,12 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
   // os_memmove(G_io_apdu_buffer, xy, 2 * fmnt6753_BYTES);
   // tx = 2 * fmnt6753_BYTES;
 
+  affine6753 ap;
+  projective_to_affine(&ap, &p);
 
-  fmnt6753 d;
-  fmnt6753_inv(d, bigk);
-  //cx_math_invprimem(d, fmnt6753_one, fmnt6753_modulus, fmnt6753_BYTES);
+  //os_memcpy(ap.x, p.X, fmnt6753_BYTES);
 
-  os_memmove(G_io_apdu_buffer, d, fmnt6753_BYTES);
+  os_memmove(G_io_apdu_buffer, ap.x, fmnt6753_BYTES);
   tx = fmnt6753_BYTES;
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;

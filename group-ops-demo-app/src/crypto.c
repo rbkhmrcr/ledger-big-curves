@@ -274,6 +274,8 @@ bool is_on_curve(const gmnt6753 *p) {
 }
 
 void affine_to_projective(gmnt6753 *r, const affine6753 *p) {
+  //os_memcpy(r->x, p->X, fmnt6753_BYTES);
+  //os_memcpy(r->y, p->Y, fmnt6753_BYTES);
   *r->X = *p->x;
   *r->Y = *p->y;
   *r->Z = *fmnt6753_one;
@@ -282,11 +284,11 @@ void affine_to_projective(gmnt6753 *r, const affine6753 *p) {
 
 void projective_to_affine(affine6753 *r, const gmnt6753 *p) {
   fmnt6753 zi, zi2, zi3;
-  fmnt6753_inv(zi, p->Z);             // 1/Z
-  fmnt6753_mul(zi2, zi, zi);          // 1/Z^2
-  fmnt6753_mul(zi3, zi2, zi);         // 1/Z^3
-  fmnt6753_mul(r->x, p->X, zi2);      // X/Z^2
-  fmnt6753_mul(r->y, p->Y, zi3);      // Y/Z^3
+  fmnt6753_inv(zi, p->Z);               // 1/Z
+  fmnt6753_mul(zi2, zi, zi);            // 1/Z^2
+  fmnt6753_mul(zi3, zi2, zi);           // 1/Z^3
+  fmnt6753_mul(r->x, p->X, zi2);        // X/Z^2
+  fmnt6753_mul(r->y, p->Y, zi3);        // Y/Z^3
   return;
 }
 
