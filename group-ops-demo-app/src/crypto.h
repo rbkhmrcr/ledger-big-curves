@@ -62,6 +62,7 @@ void affine_to_projective(gmnt6753 *r, const affine6753 *p);
 void projective_to_affine(affine6753 *r, const gmnt6753 *p);
 
 void gmnt6753_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q);
+void gmnt6753_madd(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q);
 void gmnt6753_double(gmnt6753 *r, const gmnt6753 *p);
 void gmnt6753_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p);
 

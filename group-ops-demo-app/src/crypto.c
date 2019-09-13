@@ -239,7 +239,8 @@ void scalar6753_mul(scalar6753 c, const scalar6753 a, const scalar6753 b) {
 
 bool is_zero(const gmnt6753 *p) {
   return (os_memcmp(p->X, fmnt6753_zero, fmnt6753_BYTES) == 0 &&
-      os_memcmp(p->Y, fmnt6753_zero, fmnt6753_BYTES) == 0);
+      os_memcmp(p->Y, fmnt6753_one, fmnt6753_BYTES) == 0 &&
+      os_memcmp(p->X, fmnt6753_zero, fmnt6753_BYTES) == 0);
 }
 
 bool is_on_curve(const gmnt6753 *p) {
@@ -294,6 +295,35 @@ void projective_to_affine(affine6753 *r, const gmnt6753 *p) {
 // for p = (X1, Y1, Z1), q = (X2, Y2, Z2);
 void gmnt6753_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
 
+  if (is_zero(p)) {
+    *r = *q;
+    return;
+  }
+  if (is_zero(q)) {
+    *r = *p;
+    return;
+  }
+  /*
+  if (os_memcmp(p->X, q->X, fmnt6753_BYTES) == 0) {
+    if (os_memcmp(p->Y, q->Y, fmnt6753_BYTES) == 0) {
+      gmnt6753_double(r, p);
+      return;
+    }
+    else {
+      *r = gmnt6753_zero;
+      return;
+    }
+  }
+  if (os_memcmp(q->Z, fmnt6753_one, fmnt6753_BYTES) == 0) {
+    gmnt6753_madd(r, p, q);
+    return;
+  }
+  if (os_memcmp(p->Z, fmnt6753_one, fmnt6753_BYTES) == 0) {
+    gmnt6753_madd(r, q, p);
+    return;
+  }
+  */
+
   fmnt6753 z1z1, z2z2;
   fmnt6753_sq(z1z1, p->Z);                  // Z1Z1 = Z1^2
   fmnt6753_sq(z2z2, q->Z);                  // Z2Z2 = Z2^2
@@ -342,6 +372,15 @@ void gmnt6753_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
 // for p = (X1, Y1, Z1), q = (X2, Y2, Z2); assumes Z2 = 1
 void gmnt6753_madd(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
 
+  if (is_zero(p)) {
+    *r = *q;
+    return;
+  }
+  if (is_zero(q)) {
+    *r = *p;
+    return;
+  }
+
   fmnt6753 z1z1, u2;
   fmnt6753_sq(z1z1, p->Z);                // Z1Z1 = Z1^2
   fmnt6753_mul(u2, q->X, z1z1);           // U2 = X2*Z1Z1
@@ -384,6 +423,10 @@ void gmnt6753_madd(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
 // https://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian.html#doubling-dbl-2007-bl
 void gmnt6753_double(gmnt6753 *r, const gmnt6753 *p) {
 
+  if (is_zero(p)) {
+    *r = *p;
+  }
+
   fmnt6753 xx;
   fmnt6753_sq(xx, p->X);                    // XX = X1^2
 
@@ -423,6 +466,37 @@ void gmnt6753_double(gmnt6753 *r, const gmnt6753 *p) {
   fmnt6753_sub(r->Z, r->Z, zz);             // (Y1+Z1)^2-YY-ZZ
 };
 
+
+void gmnt6753_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
+
+  /*
+  if (is_zero(p)) {
+    return gmnt6753_zero;
+  }
+  if (scalar6753_is_zero(k)) {
+    return gmnt6753_zero;
+  }
+  */
+
+  gmnt6753 q = gmnt6753_zero;
+  // 96 bytes = 8 * 96 = 768. we want 753, 768 - 753 = 15 bits
+  // which means we have an offset of 15 bits
+  // could do i = len(k) - 753; i < len(k); i++ ?
+   // for (int i = 15; i < (scalar6753_BITS + 15); i++) {
+   //for (int i = 760; i < (scalar6753_BITS + 15); i++) {
+    //int di = k[i/8] & (1 << ((7-i) % 8));
+    //gmnt6753 q0 = gmnt6753_zero;
+    //gmnt6753_double(&q0, &q);
+    //q = q0;
+    // if (di) {
+  gmnt6753 q1 = gmnt6753_one;
+  gmnt6753_add(&q1, &q, p);
+  r = &q1;
+    //}
+  //}}
+}
+
+/*
 void gmnt6753_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
 
   *r = gmnt6753_zero;
@@ -450,8 +524,6 @@ void gmnt6753_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
   *r = q;
 }
 
-
-/*
 void affine6753_add(affine6753 *r, const affine6753 *p, const affine6753 *q) {
 
   if (is_zero(p)) {

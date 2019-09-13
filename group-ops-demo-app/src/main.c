@@ -394,14 +394,38 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
   // os_memmove(G_io_apdu_buffer, xy, 2 * fmnt6753_BYTES);
   // tx = 2 * fmnt6753_BYTES;
 
-  gmnt6753 projq;
   affine6753 aq;
+  gmnt6753 projq, qq;
 
-  gmnt6753_add(&projq, &p, &r);
+  /*
+  gmnt6753 qq = gmnt6753_zero;
+  // 96 bytes = 8 * 96 = 768. we want 753, 768 - 753 = 15 bits
+  // which means we have an offset of 15 bits
+  // could do i = len(k) - 753; i < len(k); i++ ?
+  for (int i = 15; i < (scalar6753_BITS + 15); i++) {
+    int di = three[i/8] & (1 << ((7-i) % 8));
+    gmnt6753 q0 = gmnt6753_zero;
+    gmnt6753_double(&q0, &qq);
+    qq = q0;
+    if (di) {
+      gmnt6753 q1 = gmnt6753_one;
+      gmnt6753_add(&q1, &qq, &p);
+      qq = q1;
+    }
+  }
+  */
+
+  // gmnt6753_scalar_mul(&projq, three, &p);
+  gmnt6753_double(&qq, &p);
+  // gmnt6753_double(&projq, &qq);
+  gmnt6753_add(&projq, &qq, &p);
+  // gmnt6753_add(&qq, &projq, &p);
   projective_to_affine(&aq, &projq);
-
   os_memmove(G_io_apdu_buffer, aq.x, fmnt6753_BYTES);
   tx = fmnt6753_BYTES;
+
+  // os_memmove(G_io_apdu_buffer + tx, aq.x, fmnt6753_BYTES);
+  // tx += fmnt6753_BYTES;
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;
   // Send back the response, do not restart the event loop
@@ -438,8 +462,7 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
       return 0; // nothing received from the master so far (it's a tx
                 // transaction)
     } else {
-      return io_seproxyhal_spi_recv(G_io_apdu_buffer, sizeof(G_io_apdu_buffer),
-                                    0);
+      return io_seproxyhal_spi_recv(G_io_apdu_buffer, sizeof(G_io_apdu_buffer), 0);
     }
 
   default:

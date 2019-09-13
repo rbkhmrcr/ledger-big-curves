@@ -56,7 +56,7 @@ N = 753
 
 # bigk_inv = pow(bigk, p-2, p)
 # print(hex(bigk_inv))
-# print(hex(point_add(mnt6_g1, mnt6_g1_old)[0]))
+# print(hex(point_mul(mnt6_g1, 4)[0]))
 
 
 def point_mul(P, n):
@@ -68,7 +68,11 @@ def point_mul(P, n):
     return R
 
 # testpt = point_mul(mnt6_g1, bigk)
-# print(hex(testpt[0]), hex(testpt[1]))
+# testpt = point_mul(mnt6_g1, 3)
+# print(hex(testpt[0]))
+print(hex(point_mul(mnt6_g1, 4)[0]))
+
+
 
 textToSign = b''
 while True:
@@ -101,21 +105,22 @@ try:
                 received = dongle.exchange(apdu)
                 offset += len(chunk)
         print('received ', received.hex())
-        print('expected', hex(point_add(mnt6_g1, mnt6_g1_old)[0]))
+        # print('expected', hex(point_add(mnt6_g1, mnt6_g1_old)[0]))
+        # print('expected', hex(point_add(mnt6_g1, mnt6_g1)[0]))
         # print('expected ', hex(bigk + bigk % group_order))
 
-        # ans = point_add(mnt6_g1, mnt6_q)
-        # print("g", hex(mnt6_g1[0]), hex(mnt6_g1[1]))
-        # ans = point_add(mnt6_g1, mnt6_g1)
-        # print("2g", hex(ans[0]), hex(ans[1]))
-        # ans = point_add(ans, mnt6_g1)
-        # print("3g", hex(ans[0]), hex(ans[1]))
-        # ans = point_add(ans, mnt6_g1)
-        # print("4g", hex(ans[0]), hex(ans[1]))
-        # ans = point_add(ans, mnt6_g1)
-        # print("5g", hex(ans[0]), hex(ans[1]))
-        # ans = point_add(ans, mnt6_g1)
-        # print("6g", hex(ans[0]), hex(ans[1]))
+        ans = point_add(mnt6_g1, mnt6_q)
+        print("g", hex(mnt6_g1[0]), hex(mnt6_g1[1]))
+        ans = point_add(mnt6_g1, mnt6_g1)
+        print("2g", hex(ans[0]), hex(ans[1]))
+        ans = point_add(ans, mnt6_g1)
+        print("3g", hex(ans[0]), hex(ans[1]))
+        ans = point_add(ans, mnt6_g1)
+        print("4g", hex(ans[0]), hex(ans[1]))
+        ans = point_add(ans, mnt6_g1)
+        print("5g", hex(ans[0]), hex(ans[1]))
+        ans = point_add(ans, mnt6_g1)
+        print("6g", hex(ans[0]), hex(ans[1]))
 
 except CommException as comm:
         if comm.sw == 0x6985:
