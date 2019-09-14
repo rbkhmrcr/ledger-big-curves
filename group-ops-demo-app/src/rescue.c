@@ -1,6 +1,8 @@
+/*
+#include "os.h"
+#include "cx.h"
 #include "rescue.h"
 #include "crypto.h"
-#include "cx.h"
 
 // alpha = smallest prime st gcd(p, alpha) = 1
 // m = number of field elements in the state
@@ -397,3 +399,4 @@ void rescue(fmnt6753 state, const fmnt6753 input) {
     }
   }
 }
+*/

@@ -64,6 +64,22 @@ static const unsigned char N_initialized;
 static char lineBuffer[50];
 static cx_sha256_t hash;
 
+
+// This symbol is defined by the link script to be at the start of the stack
+// area.
+extern unsigned long _stack;
+
+#define STACK_CANARY (*((volatile uint32_t*) &_stack))
+
+void init_canary() {
+    STACK_CANARY = 0xDEADBEEF;
+}
+
+void check_canary() {
+    if (STACK_CANARY != 0xDEADBEEF)
+        THROW(EXCEPTION_OVERFLOW);
+}
+
 static const bagl_element_t bagl_ui_idle_nanos[] = {
     // {
     //     {type, userid, x, y, width, height, stroke, radius, fill, fgcolor,
@@ -295,6 +311,7 @@ static const bagl_element_t *io_seproxyhal_touch_exit(const bagl_element_t *e) {
 static const bagl_element_t *
 io_seproxyhal_touch_approve(const bagl_element_t *e) {
 
+  init_canary();
   const affine6753 q = {
     {0x00, 0x00, 0x25, 0x5f, 0x8e, 0x87, 0x6e, 0x83, 0x11, 0x47, 0x41, 0x2c,
      0xfb, 0x10, 0x02, 0x28, 0x4f, 0x30, 0x33, 0x80, 0x88, 0x13, 0x1c, 0x24,
@@ -397,7 +414,7 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
   affine6753 aq;
   gmnt6753 projq, qq;
 
-  /*
+ /*
   gmnt6753 qq = gmnt6753_zero;
   // 96 bytes = 8 * 96 = 768. we want 753, 768 - 753 = 15 bits
   // which means we have an offset of 15 bits
@@ -416,9 +433,9 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
   */
 
   // gmnt6753_scalar_mul(&projq, three, &p);
-  gmnt6753_double(&qq, &p);
-  // gmnt6753_double(&projq, &qq);
-  gmnt6753_add(&projq, &qq, &p);
+  //gmnt6753_double(&qq, &p);
+  //gmnt6753_double(&projq, &qq);
+  // gmnt6753_add(&projq, &qq, &p);
   // gmnt6753_add(&qq, &projq, &p);
   projective_to_affine(&aq, &projq);
   os_memmove(G_io_apdu_buffer, aq.x, fmnt6753_BYTES);
