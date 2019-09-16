@@ -3,71 +3,58 @@
 
 #include <stdbool.h>
 
-/* length in uint64_t */
-#define fmnt6753_uint64 12
-/* length in bytes */
-#define fmnt6753_BYTES 96
-/* length in bits */
-#define fmnt6753_BITS 753
+#define field_uint64 12
+#define field_BYTES 96
+#define field_BITS 753
 
-/* scalar length in uint64_t */
-#define scalar6753_uint64 12
-/* scalar length in bytes */
-#define scalar6753_BYTES 96
-/* scalar length in bits */
-#define scalar6753_BITS 753
+#define scalar_uint64 12
+#define scalar_BYTES 96
+#define scalar_BITS 753
 
-/* (x, y, z) length in bytes */
-#define gmnt6753_BYTES 288
-/* (x, y) length in bytes */
-#define affine6753_BYTES 192
+#define group_BYTES 288
+#define affine_BYTES 192
 
-typedef unsigned char fmnt6753[fmnt6753_BYTES];
-typedef unsigned char scalar6753[scalar6753_BYTES];
+typedef unsigned char field[field_BYTES];
+typedef unsigned char scalar[scalar_BYTES];
 
-typedef struct gmnt6753 {
-  fmnt6753 X;
-  fmnt6753 Y;
-  fmnt6753 Z;
-} gmnt6753;
+typedef struct group {
+  field X;
+  field Y;
+  field Z;
+} group;
 
-typedef struct affine6753 {
-  fmnt6753 x;
-  fmnt6753 y;
-} affine6753;
+typedef struct affine {
+  field x;
+  field y;
+} affine;
 
-extern const fmnt6753 fmnt6753_modulus;
-extern const fmnt6753 fmnt6753_zero;
-extern const fmnt6753 fmnt6753_one;
-extern const fmnt6753 gmnt6753_coeff_a;
-extern const fmnt6753 gmnt6753_coeff_b;
-extern const struct gmnt6753 gmnt6753_zero;
-extern const struct gmnt6753 gmnt6753_one;
+extern const field field_modulus;
+extern const field field_zero;
+extern const field field_one;
+extern const field group_coeff_a;
+extern const field group_coeff_b;
+extern const struct group group_zero;
+extern const struct group group_one;
 
-void fmnt6753_add(fmnt6753 c, const fmnt6753 a, const fmnt6753 b);
-void fmnt6753_sub(fmnt6753 c, const fmnt6753 a, const fmnt6753 b);
-void fmnt6753_mul(fmnt6753 c, const fmnt6753 a, const fmnt6753 b);
-void fmnt6753_dbl(fmnt6753 c, const fmnt6753 a);
-void fmnt6753_inv(fmnt6753 c, const fmnt6753 a);
+void field_add(field c, const field a, const field b);
+void field_sub(field c, const field a, const field b);
+void field_mul(field c, const field a, const field b);
+void field_dbl(field c, const field a);
+void field_inv(field c, const field a);
 
-void scalar6753_add(scalar6753 c, const scalar6753 a, const scalar6753 b);
-void scalar6753_mul(scalar6753 c, const scalar6753 a, const scalar6753 b);
+void scalar_add(scalar c, const scalar a, const scalar b);
+void scalar_mul(scalar c, const scalar a, const scalar b);
 
-/* TODO : do we need these exposed? */
-bool gmnt6753_is_zero(gmnt6753 *p);
-bool gmnt6753_is_on_curve(gmnt6753 *p);
-void gmnt6753_copy(gmnt6753 *r, gmnt6753 *p);
+void affine_to_projective(group *r, const affine *p);
+void projective_to_affine(affine *r, const group *p);
 
-void affine_to_projective(gmnt6753 *r, const affine6753 *p);
-void projective_to_affine(affine6753 *r, const gmnt6753 *p);
+void group_add(group *r, const group *p, const group *q);
+void group_madd(group *r, const group *p, const group *q);
+void group_double(group *r, const group *p);
+void group_scalar_mul(group *r, const scalar k, const group *p);
 
-void gmnt6753_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q);
-void gmnt6753_madd(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q);
-void gmnt6753_double(gmnt6753 *r, const gmnt6753 *p);
-void gmnt6753_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p);
-
-void affine6753_add(affine6753 *r, const affine6753 *p, const affine6753 *q);
-void affine6753_double(affine6753 *r, const affine6753 *p);
-void affine6753_scalar_mul(affine6753 *r, const scalar6753 k, const affine6753 *p);
+void affine_add(affine *r, const affine *p, const affine *q);
+void affine_double(affine *r, const affine *p);
+void affine_scalar_mul(affine *r, const scalar k, const affine *p);
 
 #endif /* CODA_CRYPTO_UTILS */
