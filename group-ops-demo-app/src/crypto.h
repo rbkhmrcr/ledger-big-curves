@@ -5,7 +5,6 @@
 
 #define field_BYTES 96
 #define field_BITS 753
-#define scalar_uint64 12
 #define scalar_BYTES 96
 #define scalar_BITS 753
 
