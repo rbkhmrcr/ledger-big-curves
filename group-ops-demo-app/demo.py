@@ -30,13 +30,18 @@ group_order = 0x0001c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d873
 
 bigk = 0x30bd0dcb53b85bd013043029438966ffec9438150ad06f59b4cc8dda8bff0fe5d3f4f63e46ac91576d1b4a15076774feb51ba730f83fc9eb56e9bcc9233e031577a744c336e1edff5513bf5c9a4d234bcc4ad6d9f1b3fdf00e16446a8268
 
-# def is_on_curve(P1):
-#     lhs = (pow(P1[0], 3, p) + P1[0] * a + b) % p
-#     rhs = pow(P1[1], 2, p)
-#     print("x^3 + ax + b", lhs)
-#     print("y^2", rhs)
-#     return lhs == rhs
+new_one = 0xe41e93acde012cab875fe72705e435e027785d45960369e5fbf2578299e00e2de683a82dfae41694f5eed605a51b55e3a5a6cca7b875f8f277ef6f9bb3ae7d568583fdd9c0d34d9dccaabbbe8725fb7a429d98f1742fef934c9dafd5400e
+new_two = 0x531f1dea3304278bd3bf14f82d05c38342e0fbe8a2971b1d3e8957878dc9395d9aded081483c066b5df957ee2a891507815d3349aa2fedbee49a107bedbfb40d19f81d073730493840e07595008fa081f616c7012879b957f591aec3164c
+new_three = 0x1bbed033fb3b720957f478ac81c7145f59e8aea129c363f6c3fb4f91fe576efe095ed75213f6cf8b3a5943ec69ebf71f35dceca15e3048aab8b16989c78f76af8210182ec0af13583e866689611eb6bb0d1f340c4dc92608eae1659afee82
+new_four = 0x771e8f98bf7d84c98691db1e340d2f383e6d1069a6c74924a1c2f68e9b4d6a65fea5c8db95532aea3cfa6d6a485c10d8a89d4686f4eb8891210b483ecd3a8f9d27606db75f90a112db1ea3908bbb8744f2c1adf8e1f5258af202bf1c6355
+new_five = 0x166e9626c93320502c19c21abfc08d7d883306a7f85bd12721b43b987da67893d836a00c9c90a84fed959d9884ab1ac85e25c034ecc4792e294501c03ed9ced34f6b30309e83cea655ed9ef0f785fa4336265af7c3115b4063425b92eea71
 
+def is_on_curve(P1):
+    lhs = (pow(P1[0], 3, p) + P1[0] * a + b) % p
+    rhs = pow(P1[1], 2, p)
+    print("x^3 + ax + b", lhs)
+    print("y^2", rhs)
+    return lhs == rhs
 
 def point_add(P1, P2):
     if (P1 is None):
@@ -54,11 +59,6 @@ def point_add(P1, P2):
 
 N = 753
 
-# bigk_inv = pow(bigk, p-2, p)
-# print(hex(bigk_inv))
-# print(hex(point_mul(mnt6_g1, 4)[0]))
-
-
 def point_mul(P, n):
     R = None
     for i in range(N):
@@ -66,13 +66,6 @@ def point_mul(P, n):
             R = point_add(R, P)
         P = point_add(P, P)
     return R
-
-# testpt = point_mul(mnt6_g1, bigk)
-# testpt = point_mul(mnt6_g1, 3)
-# print(hex(testpt[0]))
-print(hex(point_mul(mnt6_g1, 4)[0]))
-
-
 
 textToSign = b''
 while True:
@@ -105,22 +98,6 @@ try:
                 received = dongle.exchange(apdu)
                 offset += len(chunk)
         print('received ', received.hex())
-        # print('expected', hex(point_add(mnt6_g1, mnt6_g1_old)[0]))
-        # print('expected', hex(point_add(mnt6_g1, mnt6_g1)[0]))
-        # print('expected ', hex(bigk + bigk % group_order))
-
-        ans = point_add(mnt6_g1, mnt6_q)
-        print("g", hex(mnt6_g1[0]), hex(mnt6_g1[1]))
-        ans = point_add(mnt6_g1, mnt6_g1)
-        print("2g", hex(ans[0]), hex(ans[1]))
-        ans = point_add(ans, mnt6_g1)
-        print("3g", hex(ans[0]), hex(ans[1]))
-        ans = point_add(ans, mnt6_g1)
-        print("4g", hex(ans[0]), hex(ans[1]))
-        ans = point_add(ans, mnt6_g1)
-        print("5g", hex(ans[0]), hex(ans[1]))
-        ans = point_add(ans, mnt6_g1)
-        print("6g", hex(ans[0]), hex(ans[1]))
 
 except CommException as comm:
         if comm.sw == 0x6985:
