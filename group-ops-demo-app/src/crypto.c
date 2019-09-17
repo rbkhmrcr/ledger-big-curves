@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-const fmnt6753 fmnt6753_modulus = {
+const field field_modulus = {
     0x00, 0x01, 0xc4, 0xc6, 0x2d, 0x92, 0xc4, 0x11, 0x10, 0x22, 0x90, 0x22,
     0xee, 0xe2, 0xcd, 0xad, 0xb7, 0xf9, 0x97, 0x50, 0x5b, 0x8f, 0xaf, 0xed,
     0x5e, 0xb7, 0xe8, 0xf9, 0x6c, 0x97, 0xd8, 0x73, 0x07, 0xfd, 0xb9, 0x25,
@@ -14,7 +14,7 @@ const fmnt6753 fmnt6753_modulus = {
     0xd6, 0xc3, 0x81, 0xbc, 0x3f, 0x00, 0x57, 0x97, 0x4e, 0xa0, 0x99, 0x17,
     0x0f, 0xa1, 0x3a, 0x4f, 0xd9, 0x07, 0x76, 0xe2, 0x40, 0x00, 0x00, 0x01};
 
-const fmnt6753 fmnt6753_zero = {
+const field field_zero = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -24,7 +24,7 @@ const fmnt6753 fmnt6753_zero = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-const fmnt6753 fmnt6753_one = {
+const field field_one = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -34,7 +34,7 @@ const fmnt6753 fmnt6753_one = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
 
-const fmnt6753 gmnt6753_coeff_a = {
+const field group_coeff_a = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -44,7 +44,7 @@ const fmnt6753 gmnt6753_coeff_a = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0b};
 
-const fmnt6753 gmnt6753_coeff_b = {
+const field group_coeff_b = {
     0x00, 0x00, 0x7d, 0xa2, 0x85, 0xe7, 0x08, 0x63, 0xc7, 0x9d, 0x56, 0x44,
     0x62, 0x37, 0xce, 0x2e, 0x14, 0x68, 0xd1, 0x4a, 0xe9, 0xbb, 0x64, 0xb2,
     0xbb, 0x01, 0xb1, 0x0e, 0x60, 0xa5, 0xd5, 0xdf, 0xe0, 0xa2, 0x57, 0x14,
@@ -54,7 +54,7 @@ const fmnt6753 gmnt6753_coeff_b = {
     0x86, 0x7c, 0x4e, 0x80, 0xf4, 0x74, 0x7f, 0xde, 0x5a, 0xba, 0x75, 0x05,
     0xba, 0x6f, 0xcf, 0x24, 0x85, 0x54, 0x0b, 0x13, 0xdf, 0xc8, 0x46, 0x8a};
 
-const gmnt6753 gmnt6753_zero = {
+const group group_zero = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -82,7 +82,7 @@ const gmnt6753 gmnt6753_zero = {
 //  7647351483823436111485517548824200743143907422382774281391189981793072811229
 //  7763448010814764117701403540298764970469500339646563344680868495474127850569"
 
-const gmnt6753 gmnt6753_one = {
+const group group_one = {
     {0x00, 0x00, 0x25, 0x5f, 0x8e, 0x87, 0x6e, 0x83, 0x11, 0x47, 0x41, 0x2c,
      0xfb, 0x10, 0x02, 0x28, 0x4f, 0x30, 0x33, 0x80, 0x88, 0x13, 0x1c, 0x24,
      0x37, 0xe8, 0x84, 0xc4, 0x99, 0x7f, 0xd1, 0xdc, 0xb4, 0x09, 0x36, 0x7d,
@@ -100,7 +100,7 @@ const gmnt6753 gmnt6753_one = {
      0xb2, 0xcc, 0x4c, 0x42, 0xef, 0xf9, 0xa5, 0xa6, 0xc4, 0x52, 0x1d, 0xf9,
      0x85, 0x56, 0x87, 0x13, 0x9f, 0x0c, 0x51, 0x75, 0x4c, 0x0c, 0xcc, 0x49}};
 
-const scalar6753 scalar6753_zero = {
+const scalar scalar_zero = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -110,7 +110,7 @@ const scalar6753 scalar6753_zero = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-const scalar6753 gmnt6753_group_order = {
+const scalar group_group_order = {
     0x00, 0x01, 0xc4, 0xc6, 0x2d, 0x92, 0xc4, 0x11, 0x10, 0x22, 0x90, 0x22,
     0xee, 0xe2, 0xcd, 0xad, 0xb7, 0xf9, 0x97, 0x50, 0x5b, 0x8f, 0xaf, 0xed,
     0x5e, 0xb7, 0xe8, 0xf9, 0x6c, 0x97, 0xd8, 0x73, 0x07, 0xfd, 0xb9, 0x25,
@@ -120,46 +120,45 @@ const scalar6753 gmnt6753_group_order = {
     0x63, 0x88, 0x10, 0x71, 0x9a, 0xc4, 0x25, 0xf0, 0xe3, 0x9d, 0x54, 0x52,
     0x2c, 0xdd, 0x11, 0x9f, 0x5e, 0x90, 0x63, 0xde, 0x24, 0x5e, 0x80, 0x01};
 
-bool is_scalar_zero(const scalar6753 k) {
-  if (os_memcmp(k, scalar6753_zero, scalar6753_BYTES) == 0) {
+bool is_scalar_zero(const scalar k) {
+  if (os_memcmp(k, scalar_zero, scalar_BYTES) == 0) {
     return true;
   }
   return false;
 }
 
-bool is_zero(const gmnt6753 *p) {
-  if (os_memcmp(p->X, fmnt6753_zero, fmnt6753_BYTES) == 0 &&
-      os_memcmp(p->Y, fmnt6753_zero, fmnt6753_BYTES) == 0) {
+bool is_zero(const group *p) {
+  if (os_memcmp(p->x, field_zero, field_BYTES) == 0 &&
+      os_memcmp(p->y, field_zero, field_BYTES) == 0) {
     return true;
   }
   return false;
 }
 
-bool is_on_curve(const gmnt6753 *p) {
+bool is_on_curve(const group *p) {
   if (is_zero(p)) {
     return true;
   }
 
-  fmnt6753 x2, x2a, x3ax, x3axb, y2;
-  cx_math_multm(y2, p->Y, p->Y, fmnt6753_modulus, fmnt6753_BYTES);                  // y^2
-  cx_math_multm(x2, p->X, p->X, fmnt6753_modulus, fmnt6753_BYTES);                  // x^2
-  cx_math_addm(x2a, x2, gmnt6753_coeff_a, fmnt6753_modulus, fmnt6753_BYTES);        // x^2 + a
-  cx_math_multm(x3ax, x2a, p->X, fmnt6753_modulus, fmnt6753_BYTES);                 // x^3 + ax
-  cx_math_addm(x3axb, x3ax, gmnt6753_coeff_b, fmnt6753_modulus, fmnt6753_BYTES);    // x^3 + ax + b
+  field x2, x2a, x3ax, x3axb, y2;
+  cx_math_multm(y2, p->y, p->y, field_modulus, field_BYTES);              // y^2
+  cx_math_multm(x2, p->x, p->x, field_modulus, field_BYTES);              // x^2
+  cx_math_addm(x2a, x2, group_coeff_a, field_modulus, field_BYTES);       // x^2 + a
+  cx_math_multm(x3ax, x2a, p->x, field_modulus, field_BYTES);             // x^3 + ax
+  cx_math_addm(x3axb, x3ax, group_coeff_b, field_modulus, field_BYTES);   // x^3 + ax + b
 
-  return (os_memcmp(y2, x3axb, fmnt6753_BYTES) == 0);
+  return (os_memcmp(y2, x3axb, field_BYTES) == 0);
 }
 
-// FIXME make these macros?
-void scalar6753_add(scalar6753 c, scalar6753 a, scalar6753 b) {
-  cx_math_addm(c, a, b, gmnt6753_group_order, scalar6753_BYTES);
+void scalar_add(scalar c, scalar a, scalar b) {
+  cx_math_addm(c, a, b, group_group_order, scalar_BYTES);
 }
 
-void scalar6753_mul(scalar6753 c, scalar6753 a, scalar6753 b) {
-  cx_math_multm(c, a, b, gmnt6753_group_order, scalar6753_BYTES);
+void scalar_mul(scalar c, scalar a, scalar b) {
+  cx_math_multm(c, a, b, group_group_order, scalar_BYTES);
 }
 
-void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
+void group_add(group *r, const group *p, const group *q) {
 
   if (is_zero(p)) {
     *r = *q;
@@ -170,83 +169,73 @@ void gmnt6753_affine_add(gmnt6753 *r, const gmnt6753 *p, const gmnt6753 *q) {
     return;
   }
 
-  fmnt6753 lambda, xqxp, yqyp, ixqxp;
-  cx_math_subm(xqxp, q->X, p->X, fmnt6753_modulus, fmnt6753_BYTES);     // xq - xp
-  cx_math_subm(yqyp, q->Y, p->Y, fmnt6753_modulus, fmnt6753_BYTES);     // yq - yp
-  cx_math_invprimem(ixqxp, xqxp, fmnt6753_modulus, fmnt6753_BYTES);     // 1 / (xq - xp)
-  cx_math_multm(lambda, yqyp, ixqxp, fmnt6753_modulus, fmnt6753_BYTES); // (yq - yp)/(xq - xp)
+  field lambda, xqxp, yqyp, ixqxp;
+  cx_math_subm(xqxp, q->x, p->x, field_modulus, field_BYTES);     // xq - xp
+  cx_math_subm(yqyp, q->y, p->y, field_modulus, field_BYTES);     // yq - yp
+  cx_math_invprimem(ixqxp, xqxp, field_modulus, field_BYTES);     // 1 / (xq - xp)
+  cx_math_multm(lambda, yqyp, ixqxp, field_modulus, field_BYTES); // (yq - yp)/(xq - xp)
 
-  fmnt6753 l2, lxp;
-  cx_math_multm(l2, lambda, lambda, fmnt6753_modulus, fmnt6753_BYTES);  // lambda^2
-  cx_math_subm(lxp, l2, p->X, fmnt6753_modulus, fmnt6753_BYTES);        // lambda^2 - xp
-  cx_math_subm(r->X, lxp, q->X, fmnt6753_modulus, fmnt6753_BYTES);      // lambda^2 - xp - xq
+  field l2, lxp;
+  cx_math_multm(l2, lambda, lambda, field_modulus, field_BYTES);  // lambda^2
+  cx_math_subm(lxp, l2, p->x, field_modulus, field_BYTES);        // lambda^2 - xp
+  cx_math_subm(r->x, lxp, q->x, field_modulus, field_BYTES);      // lambda^2 - xp - xq
 
-  fmnt6753 xpxr, lxpxr;
-  cx_math_subm(xpxr, p->X, r->X, fmnt6753_modulus, fmnt6753_BYTES);     // xp - xr
-  cx_math_multm(lxpxr, lambda, xpxr, fmnt6753_modulus, fmnt6753_BYTES); // lambda(xp - xr)
-  cx_math_subm(r->Y, lxpxr, p->Y, fmnt6753_modulus, fmnt6753_BYTES);    // lambda(xp - xr) - yp
+  field xpxr, lxpxr;
+  cx_math_subm(xpxr, p->x, r->x, field_modulus, field_BYTES);     // xp - xr
+  cx_math_multm(lxpxr, lambda, xpxr, field_modulus, field_BYTES); // lambda(xp - xr)
+  cx_math_subm(r->y, lxpxr, p->y, field_modulus, field_BYTES);    // lambda(xp - xr) - yp
 }
 
-void gmnt6753_affine_double(gmnt6753 *r, const gmnt6753 *p) {
+void group_double(group *r, const group *p) {
 
   if (is_zero(p)) {
-    *r = gmnt6753_zero;
+    *r = group_zero;
     return;
   }
 
-  fmnt6753 lambda, xp2, xp22, xp23, xp23a, yp2, iyp2;
-  cx_math_multm(xp2, p->X, p->X, fmnt6753_modulus, fmnt6753_BYTES);     // xp^2
-  cx_math_addm(xp22, xp2, xp2, fmnt6753_modulus, fmnt6753_BYTES);       // 2xp^2
-  cx_math_addm(xp23, xp22, xp2, fmnt6753_modulus, fmnt6753_BYTES);      // 3xp^2
-  cx_math_addm(xp23a, xp23, gmnt6753_coeff_a, fmnt6753_modulus, fmnt6753_BYTES);  // 3xp^2 + a
-  cx_math_addm(yp2, p->Y, p->Y, fmnt6753_modulus, fmnt6753_BYTES);      // 2yp
-  cx_math_invprimem(iyp2, yp2, fmnt6753_modulus, fmnt6753_BYTES);       // 1/2yp
-  cx_math_multm(lambda, xp23a, iyp2, fmnt6753_modulus, fmnt6753_BYTES); // (3xp^2 + a)/2yp
+  field lambda, xp2, xp22, xp23, xp23a, yp2, iyp2;
+  cx_math_multm(xp2, p->x, p->x, field_modulus, field_BYTES);     // xp^2
+  cx_math_addm(xp22, xp2, xp2, field_modulus, field_BYTES);       // 2xp^2
+  cx_math_addm(xp23, xp22, xp2, field_modulus, field_BYTES);      // 3xp^2
+  cx_math_addm(xp23a, xp23, group_coeff_a, field_modulus, field_BYTES);  // 3xp^2 + a
+  cx_math_addm(yp2, p->y, p->y, field_modulus, field_BYTES);      // 2yp
+  cx_math_invprimem(iyp2, yp2, field_modulus, field_BYTES);       // 1/2yp
+  cx_math_multm(lambda, xp23a, iyp2, field_modulus, field_BYTES); // (3xp^2 + a)/2yp
 
-  fmnt6753 l2, lxp;
-  cx_math_multm(l2, lambda, lambda, fmnt6753_modulus, fmnt6753_BYTES);  // lambda^2
-  cx_math_subm(lxp, l2, p->X, fmnt6753_modulus, fmnt6753_BYTES);        // lambda^2 - xp
-  cx_math_subm(r->X, lxp, p->X, fmnt6753_modulus, fmnt6753_BYTES);      // lambda^2 - xp - xp
+  field l2, lxp;
+  cx_math_multm(l2, lambda, lambda, field_modulus, field_BYTES);  // lambda^2
+  cx_math_subm(lxp, l2, p->x, field_modulus, field_BYTES);        // lambda^2 - xp
+  cx_math_subm(r->x, lxp, p->x, field_modulus, field_BYTES);      // lambda^2 - xp - xp
 
-  fmnt6753 xpxr, lxpxr;
-  cx_math_subm(xpxr, p->X, r->X, fmnt6753_modulus, fmnt6753_BYTES);     // xp - xr
-  cx_math_multm(lxpxr, lambda, xpxr, fmnt6753_modulus, fmnt6753_BYTES); // lambda(xp - xr)
-  cx_math_subm(r->Y, lxpxr, p->Y, fmnt6753_modulus, fmnt6753_BYTES);    // lambda(xp - xr) - yp
+  field xpxr, lxpxr;
+  cx_math_subm(xpxr, p->x, r->x, field_modulus, field_BYTES);     // xp - xr
+  cx_math_multm(lxpxr, lambda, xpxr, field_modulus, field_BYTES); // lambda(xp - xr)
+  cx_math_subm(r->y, lxpxr, p->y, field_modulus, field_BYTES);    // lambda(xp - xr) - yp
 }
 
-// we can do temp = q, q = q0, q0 = temp instead probably
-void xorswap(unsigned char *x, unsigned char *y) {
-  if (x != y) {
-    *x ^= *y;
-    *y ^= *x;
-    *x ^= *y;
-  }
-}
+group group_scalar_mul(const scalar k, const group *p) {
 
-gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p) {
-//void gmnt6753_affine_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
-  
   if (is_zero(p)) {
-    return gmnt6753_zero;
+    return group_zero;
   }
   if (is_scalar_zero(k)) {
-    return gmnt6753_zero;
+    return group_zero;
   }
-  
-  gmnt6753 q = gmnt6753_zero;
+
+  group q = group_zero;
   // 96 bytes = 8 * 96 = 768. we want 753, 768 - 753 = 15 bits
   // which means we have an offset of 15 bits
-   for (int i = 15; i < (scalar6753_BITS + 15); i++) {
+   for (int i = 15; i < (scalar_BITS + 15); i++) {
     int di = k[i/8] & (1 << ((7-i) % 8));
-    gmnt6753 q0 = gmnt6753_zero;
-    gmnt6753_affine_double(&q0, &q);
-    // gmnt6753 temp = q;
+    group q0 = group_zero;
+    group_double(&q0, &q);
+    // group temp = q;
     q = q0;
     // q0 = temp;
     if (di != 0) {
-      gmnt6753 q1 = gmnt6753_zero;
-      gmnt6753_affine_add(&q1, &q, p);
-      // gmnt6753 temp = q;
+      group q1 = group_zero;
+      group_add(&q1, &q, p);
+      // group temp = q;
       q = q1;
       // q1 = temp;
     }
@@ -254,60 +243,19 @@ gmnt6753 gmnt6753_affine_scalar_mul(const scalar6753 k, const gmnt6753 *p) {
   return q;
 }
 
-void gmnt6753_affine_constant_time_scalar_mul(gmnt6753 *r, const scalar6753 k, const gmnt6753 *p) {
-  gmnt6753 r1;
-  os_memcpy(r1.X, p->X, fmnt6753_BYTES);
-  os_memcpy(r1.Y, p->Y, fmnt6753_BYTES);
+void constant_time_scalar_mul(group *r, const scalar k, const group *p) {
+  group r1;
+  os_memcpy(r1.x, p->x, field_BYTES);
+  os_memcpy(r1.y, p->y, field_BYTES);
 
-   for (int i = 0; i < scalar6753_BITS; i++) {
+   for (int i = 0; i < scalar_BITS; i++) {
     int di = k[i/8] & (1 << (i % 8));
     if (di == 0) {
-      gmnt6753_affine_add(&r1, r, &r1);
-      gmnt6753_affine_double(r, r);
+      group_add(&r1, r, &r1);
+      group_double(r, r);
     } else {
-      gmnt6753_affine_add(r, r, &r1);
-      gmnt6753_affine_double(&r1, &r1);
+      group_add(r, r, &r1);
+      group_double(&r1, &r1);
     }
   }
-}
-
-void group_add(group xy, const gmnt6753 *p, const gmnt6753 *q) {
-
-  fmnt6753 lambda, xqxp, yqyp, ixqxp;
-  cx_math_subm(xqxp, q->X, p->X, fmnt6753_modulus, fmnt6753_BYTES);     // xq - xp
-  cx_math_subm(yqyp, q->Y, p->Y, fmnt6753_modulus, fmnt6753_BYTES);     // yq - yp
-  cx_math_invprimem(ixqxp, xqxp, fmnt6753_modulus, fmnt6753_BYTES);     // 1 / (xq - xp)
-  cx_math_multm(lambda, yqyp, ixqxp, fmnt6753_modulus, fmnt6753_BYTES); // (yq - yp)/(xq - xp)
-
-  fmnt6753 l2, lxp;
-  cx_math_multm(l2, lambda, lambda, fmnt6753_modulus, fmnt6753_BYTES);  // lambda^2
-  cx_math_subm(lxp, l2, p->X, fmnt6753_modulus, fmnt6753_BYTES);        // lambda^2 - xp
-  cx_math_subm(xy, lxp, q->X, fmnt6753_modulus, fmnt6753_BYTES);        // lambda^2 - xp - xq
-
-  fmnt6753 xpxr, lxpxr;
-  cx_math_subm(xpxr, p->X, xy, fmnt6753_modulus, fmnt6753_BYTES);       // xp - xr
-  cx_math_multm(lxpxr, lambda, xpxr, fmnt6753_modulus, fmnt6753_BYTES); // lambda(xp - xr)
-  cx_math_subm(xy + fmnt6753_BYTES, lxpxr, p->Y, fmnt6753_modulus, fmnt6753_BYTES); // lambda(xp - xr) - yp
-}
-
-void group_double(group xy, const gmnt6753 *p) {
-
-  fmnt6753 lambda, xp2, xp22, xp23, xp23a, yp2, iyp2;
-  cx_math_multm(xp2, p->X, p->X, fmnt6753_modulus, fmnt6753_BYTES);     // xp^2
-  cx_math_addm(xp22, xp2, xp2, fmnt6753_modulus, fmnt6753_BYTES);       // 2xp^2
-  cx_math_addm(xp23, xp22, xp2, fmnt6753_modulus, fmnt6753_BYTES);      // 3xp^2
-  cx_math_addm(xp23a, xp23, gmnt6753_coeff_a, fmnt6753_modulus, fmnt6753_BYTES);  // 3xp^2 + a
-  cx_math_addm(yp2, p->Y, p->Y, fmnt6753_modulus, fmnt6753_BYTES);      // 2yp
-  cx_math_invprimem(iyp2, yp2, fmnt6753_modulus, fmnt6753_BYTES);       // 1/2yp
-  cx_math_multm(lambda, xp23a, iyp2, fmnt6753_modulus, fmnt6753_BYTES); // (3xp^2 + a)/2yp
-
-  fmnt6753 l2, lxp;
-  cx_math_multm(l2, lambda, lambda, fmnt6753_modulus, fmnt6753_BYTES);  // lambda^2
-  cx_math_subm(lxp, l2, p->X, fmnt6753_modulus, fmnt6753_BYTES);        // lambda^2 - xp
-  cx_math_subm(xy, lxp, p->X, fmnt6753_modulus, fmnt6753_BYTES);        // lambda^2 - xp - xp
-
-  fmnt6753 xpxr, lxpxr;
-  cx_math_subm(xpxr, p->X, xy, fmnt6753_modulus, fmnt6753_BYTES);       // xp - xr
-  cx_math_multm(lxpxr, lambda, xpxr, fmnt6753_modulus, fmnt6753_BYTES); // lambda(xp - xr)
-  cx_math_subm(xy + fmnt6753_BYTES, lxpxr, p->Y, fmnt6753_modulus, fmnt6753_BYTES); // lambda(xp - xr) - yp
 }
