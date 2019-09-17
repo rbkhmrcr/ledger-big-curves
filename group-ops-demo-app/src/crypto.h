@@ -17,6 +17,17 @@ typedef struct group {
   field y;
 } group;
 
+void field_add(field c, const field a, const field b);
+void field_sub(field c, const field a, const field b);
+void field_mul(field c, const field a, const field b);
+void field_sq(field c, const field a);
+void field_inv(field c, const field a);
+
+void scalar_add(scalar c, const scalar a, const scalar b);
+void scalar_sub(scalar c, const scalar a, const scalar b);
+void scalar_mul(scalar c, const scalar a, const scalar b);
+void scalar_sq(scalar c, const scalar a);
+
 void group_add(group *r, const group *p, const group *q);
 void group_double(group *r, const group *p);
 group group_scalar_mul(const scalar k, const group *p);

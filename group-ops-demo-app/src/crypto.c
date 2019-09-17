@@ -110,7 +110,7 @@ const scalar scalar_zero = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-const scalar group_group_order = {
+const scalar group_order = {
     0x00, 0x01, 0xc4, 0xc6, 0x2d, 0x92, 0xc4, 0x11, 0x10, 0x22, 0x90, 0x22,
     0xee, 0xe2, 0xcd, 0xad, 0xb7, 0xf9, 0x97, 0x50, 0x5b, 0x8f, 0xaf, 0xed,
     0x5e, 0xb7, 0xe8, 0xf9, 0x6c, 0x97, 0xd8, 0x73, 0x07, 0xfd, 0xb9, 0x25,
@@ -119,6 +119,43 @@ const scalar group_group_order = {
     0xcb, 0x53, 0x7e, 0x38, 0x68, 0x5a, 0xcc, 0xe9, 0x76, 0x72, 0x54, 0xa4,
     0x63, 0x88, 0x10, 0x71, 0x9a, 0xc4, 0x25, 0xf0, 0xe3, 0x9d, 0x54, 0x52,
     0x2c, 0xdd, 0x11, 0x9f, 0x5e, 0x90, 0x63, 0xde, 0x24, 0x5e, 0x80, 0x01};
+
+void field_add(field c, const field a, const field b) {
+  cx_math_addm(c, a, b, field_modulus, field_BYTES);
+}
+
+void field_sub(field c, const field a, const field b) {
+  cx_math_subm(c, a, b, field_modulus, field_BYTES);
+}
+
+void field_mul(field c, const field a, const field b) {
+  cx_math_multm(c, a, b, field_modulus, field_BYTES);
+}
+
+void field_sq(field c, const field a) {
+  cx_math_multm(c, a, a, field_modulus, field_BYTES);
+}
+
+void field_inv(field c, const field a) {
+  cx_math_invprimem(c, a, field_modulus, field_BYTES);
+}
+
+void scalar_add(scalar c, const scalar a, const scalar b) {
+  cx_math_addm(c, a, b, group_order, scalar_BYTES);
+}
+
+void scalar_sub(scalar c, const scalar a, const scalar b) {
+  cx_math_subm(c, a, b, group_order, scalar_BYTES);
+}
+
+void scalar_mul(scalar c, const scalar a, const scalar b) {
+  cx_math_multm(c, a, b, group_order, scalar_BYTES);
+}
+
+void scalar_sq(scalar c, const scalar a) {
+  cx_math_multm(c, a, a, group_order, scalar_BYTES);
+}
+
 
 bool is_scalar_zero(const scalar k) {
   if (os_memcmp(k, scalar_zero, scalar_BYTES) == 0) {
@@ -141,21 +178,13 @@ bool is_on_curve(const group *p) {
   }
 
   field x2, x2a, x3ax, x3axb, y2;
-  cx_math_multm(y2, p->y, p->y, field_modulus, field_BYTES);              // y^2
-  cx_math_multm(x2, p->x, p->x, field_modulus, field_BYTES);              // x^2
-  cx_math_addm(x2a, x2, group_coeff_a, field_modulus, field_BYTES);       // x^2 + a
-  cx_math_multm(x3ax, x2a, p->x, field_modulus, field_BYTES);             // x^3 + ax
-  cx_math_addm(x3axb, x3ax, group_coeff_b, field_modulus, field_BYTES);   // x^3 + ax + b
+  field_mul(y2, p->y, p->y);                // y^2
+  field_mul(x2, p->x, p->x);                // x^2
+  field_add(x2a, x2, group_coeff_a);        // x^2 + a
+  field_mul(x3ax, x2a, p->x);               // x^3 + ax
+  field_add(x3axb, x3ax, group_coeff_b);    // x^3 + ax + b
 
   return (os_memcmp(y2, x3axb, field_BYTES) == 0);
-}
-
-void scalar_add(scalar c, scalar a, scalar b) {
-  cx_math_addm(c, a, b, group_group_order, scalar_BYTES);
-}
-
-void scalar_mul(scalar c, scalar a, scalar b) {
-  cx_math_multm(c, a, b, group_group_order, scalar_BYTES);
 }
 
 void group_add(group *r, const group *p, const group *q) {
@@ -170,20 +199,20 @@ void group_add(group *r, const group *p, const group *q) {
   }
 
   field lambda, xqxp, yqyp, ixqxp;
-  cx_math_subm(xqxp, q->x, p->x, field_modulus, field_BYTES);     // xq - xp
-  cx_math_subm(yqyp, q->y, p->y, field_modulus, field_BYTES);     // yq - yp
-  cx_math_invprimem(ixqxp, xqxp, field_modulus, field_BYTES);     // 1 / (xq - xp)
-  cx_math_multm(lambda, yqyp, ixqxp, field_modulus, field_BYTES); // (yq - yp)/(xq - xp)
+  field_sub(xqxp, q->x, p->x);              // xq - xp
+  field_sub(yqyp, q->y, p->y);              // yq - yp
+  field_inv(ixqxp, xqxp);                   // 1 / (xq - xp)
+  field_mul(lambda, yqyp, ixqxp);           // (yq - yp)/(xq - xp)
 
   field l2, lxp;
-  cx_math_multm(l2, lambda, lambda, field_modulus, field_BYTES);  // lambda^2
-  cx_math_subm(lxp, l2, p->x, field_modulus, field_BYTES);        // lambda^2 - xp
-  cx_math_subm(r->x, lxp, q->x, field_modulus, field_BYTES);      // lambda^2 - xp - xq
+  field_mul(l2, lambda, lambda);            // lambda^2
+  field_sub(lxp, l2, p->x);                 // lambda^2 - xp
+  field_sub(r->x, lxp, q->x);               // lambda^2 - xp - xq
 
   field xpxr, lxpxr;
-  cx_math_subm(xpxr, p->x, r->x, field_modulus, field_BYTES);     // xp - xr
-  cx_math_multm(lxpxr, lambda, xpxr, field_modulus, field_BYTES); // lambda(xp - xr)
-  cx_math_subm(r->y, lxpxr, p->y, field_modulus, field_BYTES);    // lambda(xp - xr) - yp
+  field_sub(xpxr, p->x, r->x);              // xp - xr
+  field_mul(lxpxr, lambda, xpxr);           // lambda(xp - xr)
+  field_sub(r->y, lxpxr, p->y);             // lambda(xp - xr) - yp
 }
 
 void group_double(group *r, const group *p) {
@@ -193,24 +222,25 @@ void group_double(group *r, const group *p) {
     return;
   }
 
-  field lambda, xp2, xp22, xp23, xp23a, yp2, iyp2;
-  cx_math_multm(xp2, p->x, p->x, field_modulus, field_BYTES);     // xp^2
-  cx_math_addm(xp22, xp2, xp2, field_modulus, field_BYTES);       // 2xp^2
-  cx_math_addm(xp23, xp22, xp2, field_modulus, field_BYTES);      // 3xp^2
-  cx_math_addm(xp23a, xp23, group_coeff_a, field_modulus, field_BYTES);  // 3xp^2 + a
-  cx_math_addm(yp2, p->y, p->y, field_modulus, field_BYTES);      // 2yp
-  cx_math_invprimem(iyp2, yp2, field_modulus, field_BYTES);       // 1/2yp
-  cx_math_multm(lambda, xp23a, iyp2, field_modulus, field_BYTES); // (3xp^2 + a)/2yp
+  field lambda, xp2, xp22, xp23, xp23a;
+  field yp2, iyp2;
+  field_mul(xp2, p->x, p->x);               // xp^2
+  field_add(xp22, xp2, xp2);                // 2xp^2
+  field_add(xp23, xp22, xp2);               // 3xp^2
+  field_add(xp23a, xp23, group_coeff_a);    // 3xp^2 + a
+  field_add(yp2, p->y, p->y);               // 2yp
+  field_inv(iyp2, yp2);                     // 1/2yp
+  field_mul(lambda, xp23a, iyp2);           // (3xp^2 + a)/2yp
 
   field l2, lxp;
-  cx_math_multm(l2, lambda, lambda, field_modulus, field_BYTES);  // lambda^2
-  cx_math_subm(lxp, l2, p->x, field_modulus, field_BYTES);        // lambda^2 - xp
-  cx_math_subm(r->x, lxp, p->x, field_modulus, field_BYTES);      // lambda^2 - xp - xp
+  field_mul(l2, lambda, lambda);            // lambda^2
+  field_sub(lxp, l2, p->x);                 // lambda^2 - xp
+  field_sub(r->x, lxp, p->x);               // lambda^2 - xp - xp
 
   field xpxr, lxpxr;
-  cx_math_subm(xpxr, p->x, r->x, field_modulus, field_BYTES);     // xp - xr
-  cx_math_multm(lxpxr, lambda, xpxr, field_modulus, field_BYTES); // lambda(xp - xr)
-  cx_math_subm(r->y, lxpxr, p->y, field_modulus, field_BYTES);    // lambda(xp - xr) - yp
+  field_sub(xpxr, p->x, r->x);              // xp - xr
+  field_mul(lxpxr, lambda, xpxr);           // lambda(xp - xr)
+  field_sub(r->y, lxpxr, p->y);             // lambda(xp - xr) - yp
 }
 
 group group_scalar_mul(const scalar k, const group *p) {
