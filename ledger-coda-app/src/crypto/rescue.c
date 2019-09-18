@@ -1,7 +1,7 @@
 #include "os.h"
 #include "cx.h"
 #include "rescue.h"
-#include "crypto.h"
+#include "group.h"
 
 // alpha = smallest prime st gcd(p, alpha) = 1
 // m = number of field elements in the state
@@ -12,7 +12,7 @@
 #define RESCUE_ROUNDS 11
 #define RESCUE_SPONGE_SIZE 3
 
-const fmnt6753 alpha = {
+const field alpha = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -23,7 +23,7 @@ const fmnt6753 alpha = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-const fmnt6753 alpha_inv = {
+const field alpha_inv = {
     0x00, 0x00, 0x00, 0x00, 0x01, 0x9b, 0x9c, 0xe3, 0x9c, 0xb2, 0x3e,
     0x0e, 0xab, 0x0e, 0xab, 0x64, 0xce, 0x2f, 0x58, 0x1b, 0x9d, 0x15,
     0x31, 0xc7, 0x99, 0xe5, 0xc0, 0x84, 0xa7, 0x30, 0xe2, 0xbf, 0xcf,
@@ -34,7 +34,7 @@ const fmnt6753 alpha_inv = {
     0xd3, 0x08, 0x39, 0x46, 0x21, 0x15, 0x30, 0x34, 0xe8, 0x43, 0x82,
     0x92, 0x92, 0x1a, 0x0b, 0x1e, 0x0e, 0xfc, 0x3a, 0x2e, 0x8b, 0xa3};
 
-const fmnt6753 rescue_keys[RESCUE_ROUNDS * 2 + 1][RESCUE_SPONGE_SIZE] = {
+const field rescue_keys[RESCUE_ROUNDS * 2 + 1][RESCUE_SPONGE_SIZE] = {
     {
         {0xac, 0xb6, 0x46, 0x32, 0x16, 0x9b, 0x32, 0xea, 0xac, 0xa0, 0x21,
          0xd8, 0x5a, 0x37, 0xe6, 0x2b, 0x12, 0x74, 0x4b, 0xd1, 0x2a, 0x71,
@@ -289,7 +289,7 @@ const fmnt6753 rescue_keys[RESCUE_ROUNDS * 2 + 1][RESCUE_SPONGE_SIZE] = {
          0xc6, 0xb8, 0x8c, 0x38, 0xfa, 0x28, 0x9b, 0x07, 0x1c, 0xfe},
     }};
 
-const fmnt6753 rescue_MDS[RESCUE_SPONGE_SIZE][RESCUE_SPONGE_SIZE] = {
+const field rescue_MDS[RESCUE_SPONGE_SIZE][RESCUE_SPONGE_SIZE] = {
     {
         {0x00, 0xc2, 0x9b, 0x4a, 0xf8, 0x2e, 0x80, 0xfd, 0xfb, 0xae, 0x68, 0x0d,
          0x1e, 0xd1, 0x71, 0xba, 0xa0, 0xd5, 0xc8, 0xa1, 0x4e, 0xda, 0xcf, 0x0c,
@@ -370,20 +370,20 @@ const fmnt6753 rescue_MDS[RESCUE_SPONGE_SIZE][RESCUE_SPONGE_SIZE] = {
     }};
 
 // s = x^(1/alpha)
-void alphath_root(fmnt6753 c, fmnt6753 x) {
+void alphath_root(field c, field x) {
   // calculates a^e mod m, with
   // cx_math_powm(result_pointer, a, e, len_e, m, len(result, a, m)
-  cx_math_powm(c, x, alpha_inv, fmnt6753_BYTES, fmnt6753_modulus,
-               fmnt6753_BYTES);
+  cx_math_powm(c, x, alpha_inv, field_BYTES, field_modulus,
+               field_BYTES);
 }
 
-void to_the_alpha(fmnt6753 c, fmnt6753 x) {
-  cx_math_powm(c, x, alpha, fmnt6753_BYTES, fmnt6753_modulus, fmnt6753_BYTES);
+void to_the_alpha(field c, field x) {
+  cx_math_powm(c, x, alpha, field_BYTES, field_modulus, field_BYTES);
 }
 
-void rescue(fmnt6753 state, const fmnt6753 input) {
+void rescue(field state, const field input) {
   // Evaluates the block cipher with key=0 in forward direction.
-  fmnt6753_add(state, input, rescue_keys[0]);
+  field_add(state, input, rescue_keys[0]);
   for (int r = 1; r < (2 * RESCUE_ROUNDS); r++) {
     for (int i = 1; i < RESCUE_SPONGE_SIZE; i++) {
       if (r % 2 == 0) {
@@ -391,8 +391,8 @@ void rescue(fmnt6753 state, const fmnt6753 input) {
       } else {
         to_the_alpha(state[i]);
       }
-      fmnt6753_add(state, state, rescue_keys[r][i]);
-      fmnt6753_mul(state, state, rescue_MDS[i]);
+      field_add(state, state, rescue_keys[r][i]);
+      field_mul(state, state, rescue_MDS[i]);
     }
   }
 }

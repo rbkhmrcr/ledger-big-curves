@@ -1,7 +1,7 @@
 #ifndef RESCUE
 #define RESCUE
 
-#include "crypto.h"
-void rescue(fmnt6753 state, fmnt6753 input);
+#include "group.h"
+void rescue(field state, feild input);
 
 #endif /* RESCUE */
