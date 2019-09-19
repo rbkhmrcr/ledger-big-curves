@@ -1,13 +1,19 @@
 #ifndef CODA_SIGN
 #define CODA_SIGN
 
-#include "arith/field.h"
-#include "arith/group-utils.h"
-#include "arith/group.h"
+#include "group.h"
 
-int sign(scalar6753 *private_key, gmnt6753 *public_key,
-         const unsigned char WIDE *hash PLENGTH(hash_len),
-         unsigned int hash_len, unsigned char *sig PLENGTH(sig_len),
-         unsigned int sig_len) {
+typedef struct signature {
+  field rx;
+  scalar s;
+} signature;
+
+
+int sign(
+    signature *sig,
+    scalar *private_key, 
+    group *public_key,
+    scalar *hash,
+    unsigned int sig_len);
 
 #endif // CODA_SIGN

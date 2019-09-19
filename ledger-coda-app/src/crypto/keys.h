@@ -1,5 +1,9 @@
-#include "cx.h"
-#include "crypto/group-utils.h"
+#ifndef CODA_KEYS
+#define CODA_KEYS
 
-void generate_keypair(scalar6753 priv_key, gmnt6753 *pub_key);
-void generate_public_key(gmnt6753 *pub_key);
+#include "group.h"
+
+void generate_keypair(scalar priv_key, group *pub_key);
+void generate_public_key(group *pub_key);
+
+#endif // CODA_KEYS

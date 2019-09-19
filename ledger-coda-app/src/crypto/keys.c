@@ -1,6 +1,6 @@
 #include "os.h"
 #include "cx.h"
-#include "crypto/group-utils.h"
+#include "group.h"
 #include "keys.h"
 
 // Ledger uses:
@@ -17,7 +17,7 @@
 // We will have to replace cx_ecfp_init_public_key and
 // cx_ecfp_generate_pair entirely
 
-void generate_keypair(scalar6753 priv_key, gmnt6753 *pub_key) {
+void generate_keypair(scalar priv_key, group *pub_key) {
 
   cx_ecfp_public_key_t *public_key = 0;
   cx_ecfp_private_key_t *private_key = 0;
@@ -49,8 +49,8 @@ void generate_keypair(scalar6753 priv_key, gmnt6753 *pub_key) {
   os_memset(&private_key, 0, sizeof(private_key));
 }
 
-void generate_public_key(gmnt6753 *pub_key) {
-  scalar6753 priv_key;
+void generate_public_key(group *pub_key) {
+  scalar priv_key;
   generate_keypair(pub_key, priv_key);
   os_memset(priv_key, 0, sizeof(priv_key));
 }

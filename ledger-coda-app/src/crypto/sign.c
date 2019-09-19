@@ -1,6 +1,5 @@
-#include "crypto/field.h"
-#include "crypto/group-utils.h"
-#include "crypto/group.h"
+#include "group.h"
+#include "rescue.h"
 #include <string.h>
 
 /* we are using this to replace `cx_ecdsa_sign` in the boilerplate code,
@@ -24,56 +23,40 @@
   info = NULL
  */
 
-void get_x(fmnt6753 x, gmnt6753 *p) {
-  fmnt6753 invz;
-  fmnt6753_inv(invz, p->Z);    // 1/Z
-  fmnt6753_sq(invz, invz);     // 1/Z^2
-  fmnt6753_mul(x, invz, p->X); // X/Z^2
-}
-
-void get_y(fmnt6753 y, gmnt6753 *p) {
-  fmnt6753 invz, temp;
-  fmnt6753_inv(invz, p->Z);       // 1/Z
-  fmnt6753_sq(temp, invz);        // 1/Z^2
-  fmnt6753_mul(temp, temp, invz); // 1/Z^3
-  fmnt6753_mul(y, temp, p->Y);    // Y/Z^3
-}
-
-bool is_even(fmnt6753 y) {
+bool is_even(field y) {
   // FIXME get smallest bit
   return false;
 }
 
-int schnorr_sign(scalar6753 *private_key, gmnt6753 *public_key,
-         const unsigned char WIDE *hash PLENGTH(hash_len),
-         unsigned int hash_len, unsigned char *sig PLENGTH(sig_len),
-         unsigned int sig_len) {
+int schnorr_sign(
+    signature *sig,
+    scalar *private_key,
+    group *public_key,
+    scalar *hash,
+    unsigned int sig_len) {
 
-  gmnt6753 *r = 0;
-  scalar6753 k_prime;
-  random_oracle(k_prime, hash, private_key, NULL);
-  gmnt6753_scalar_mul(r, k_prime, &gmnt6753_one);
+  group *r = 0;
+  scalar k_prime;
+  rescue(k_prime, hash, private_key, NULL);
+  group_scalar_mul(r, k_prime, &group_one);
 
-  fmnt6753 k, rx, ry, pkx;
-  get_x(rx, r);
-  get_y(ry, r);
-  get_x(pkx, public_key);
+  field k;
   // if ry is even, k = k'
-  if (is_even(ry)) {
-    os_memcpy(k, k_prime, scalar6753_BYTES);
+  if (is_even(r->y)) {
+    os_memcpy(k, k_prime, scalar_BYTES);
   }
   // else k = - k'
   else {
-    fmnt6753_negate(k, k_prime);
+    field_negate(k, k_prime);
   }
 
-  scalar6753 s, e;
-  random_oracle(e, hash, rx, pkx);
-  scalar6753_mul(s, e, *private_key); // e*sk
-  scalar6753_add(s, k, s);      // k + e*sk
+  scalar s, e;
+  rescue(e, hash, r->x, public_key->x);
+  scalar_mul(s, e, *private_key); // e*sk
+  scalar_add(s, k, s);      // k + e*sk
 
-  os_memcpy(sig, rx, fmnt6753_BYTES);
-  os_memcpy(sig + fmnt6753_BYTES, s, scalar6753_BYTES);
+  os_memcpy(sig, r->x, field_BYTES);
+  os_memcpy(sig + field_BYTES, s, scalar_BYTES);
 
-  return (fmnt6753_BYTES + scalar6753_BYTES);
+  return (field_BYTES + scalar_BYTES);
 };

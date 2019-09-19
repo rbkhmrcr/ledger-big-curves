@@ -1,6 +1,5 @@
 #include "os.h"
 #include "cx.h"
-#include "crypto.h"
 #include <string.h>
 #include <stdbool.h>
 
