@@ -19,7 +19,7 @@
 #include "cx.h"
 #include "os_io_seproxyhal.h"
 
-#include "crypto/group-utils.h"
+#include "crypto/group.h"
 #include "transaction.h"
 #include "keys.h"
 #include "ui.h"
@@ -76,8 +76,8 @@ void transaction_approve() {
 
   PRINTF("Signing message: %.*h\n", msg_len, msg);
 
-  scalar6753 private_key;
-  gmnt6753 *public_key = 0;
+  scalar private_key;
+  group *public_key = 0;
   generate_keypair(private_key, public_key);
   int sig_len = schnorr_sign(private_key, msg, msg_len, G_io_apdu_buffer);
 
@@ -150,7 +150,7 @@ static void coda_main(void) {
         } break;
 
         case INS_GET_PUBLIC_KEY: {
-          gmnt6753 *public_key = 0; // should have printable type? base58
+          group *public_key = 0; // should have printable type? base58
           generate_public_key(public_key);
           os_memmove(G_io_apdu_buffer, public_key, sizeof(public_key));
           tx = sizeof(public_key);
