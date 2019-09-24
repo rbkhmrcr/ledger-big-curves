@@ -1,5 +1,6 @@
 #include "group.h"
-#include "rescue.h"
+#include "sign.h"
+#include "poseidon.h"
 #include <string.h>
 
 /* we are using this to replace `cx_ecdsa_sign` in the boilerplate code,
@@ -37,7 +38,7 @@ int schnorr_sign(
 
   group *r = 0;
   scalar k_prime;
-  rescue(k_prime, hash, private_key, NULL);
+  poseidon(k_prime, hash, private_key, NULL);
   group_scalar_mul(r, k_prime, &group_one);
 
   field k;
@@ -51,7 +52,7 @@ int schnorr_sign(
   }
 
   scalar s, e;
-  rescue(e, hash, r->x, public_key->x);
+  poseidon(e, hash, r->x, public_key->x);
   scalar_mul(s, e, *private_key); // e*sk
   scalar_add(s, k, s);      // k + e*sk
 
