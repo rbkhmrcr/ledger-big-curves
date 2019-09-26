@@ -17,7 +17,7 @@
 // We will have to replace cx_ecfp_init_public_key and
 // cx_ecfp_generate_pair entirely
 
-void generate_keypair(scalar priv_key, group *pub_key) {
+void generate_keypair(group *pub_key, scalar priv_key) {
 
   cx_ecfp_public_key_t *public_key = 0;
   cx_ecfp_private_key_t *private_key = 0;

@@ -1,45 +1,24 @@
+#include "os.h"
 #include "group.h"
 #include "sign.h"
 #include "poseidon.h"
 #include <string.h>
-
-/* we are using this to replace `cx_ecdsa_sign` in the boilerplate code,
- * which has the signature:
- * SYSCALL int cx_ecdsa_sign(const cx_ecfp_private_key_t WIDE *private_key PLENGTH(
-                              scc__cx_scc_struct_size_ecfp_privkey__private_key),
-                          int mode, cx_md_t hashID,
-                          const unsigned char WIDE *hash PLENGTH(hash_len),
-                          unsigned int hash_len,
-                          unsigned char *sig PLENGTH(sig_len),
-                          unsigned int sig_len,
-                          unsigned int *info PLENGTH(sizeof(unsigned int)));
-
-  private_key = &N_privateKey,
-  mode = CX_RND_RFC6979 | CX_LAST,
-  hashID = CX_SHA256,
-  hash = result,
-  hash_len = sizeof(result),
-  sig = G_io_apdu_buffer,
-  sig_len ?
-  info = NULL
- */
 
 bool is_even(field y) {
   // FIXME get smallest bit
   return false;
 }
 
-int schnorr_sign(
-    signature *sig,
-    scalar *private_key,
-    group *public_key,
-    scalar *hash,
-    unsigned int sig_len) {
+unsigned int sign(signature *sig, group *public_key, scalar private_key,
+                  scalar hash, unsigned int sig_len) {
 
   group *r = 0;
   scalar k_prime;
-  poseidon(k_prime, hash, private_key, NULL);
-  group_scalar_mul(r, k_prime, &group_one);
+  poseidon(k_prime);
+  poseidon(hash);
+  poseidon(private_key);
+  poseidon_digest(k_prime);                   // k' = hash(sk || m)
+  *r = group_scalar_mul(k_prime, &group_one); // r = k*g
 
   field k;
   // if ry is even, k = k'
@@ -52,9 +31,13 @@ int schnorr_sign(
   }
 
   scalar s, e;
-  poseidon(e, hash, r->x, public_key->x);
-  scalar_mul(s, e, *private_key); // e*sk
-  scalar_add(s, k, s);      // k + e*sk
+  poseidon(hash);
+  poseidon(r->x);
+  poseidon(public_key->x);
+  poseidon(hash);
+  poseidon_digest(e);             // e = hash(xr || pk || m)
+  scalar_mul(s, e, private_key); // e*sk
+  scalar_add(s, k, s);            // k + e*sk
 
   os_memcpy(sig, r->x, field_BYTES);
   os_memcpy(sig + field_BYTES, s, scalar_BYTES);

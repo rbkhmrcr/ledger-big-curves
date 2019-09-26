@@ -20,6 +20,7 @@
 #include "os_io_seproxyhal.h"
 
 #include "crypto/group.h"
+#include "crypto/sign.h"
 #include "transaction.h"
 #include "keys.h"
 #include "ui.h"
@@ -69,21 +70,26 @@ void transaction_approve() {
 
   // Avoid large stack allocation; there is no reentry into
   // transaction_approve().
-  static unsigned char msg[256];
-  unsigned int msg_len;
+  static unsigned char msg[96];
+  signature *sig = NULL;
+  unsigned int msg_len, sig_len;
 
   msg_len = sizeof(msg);
+  sig_len = sizeof(sig);
 
   PRINTF("Signing message: %.*h\n", msg_len, msg);
 
   scalar private_key;
   group *public_key = 0;
-  generate_keypair(private_key, public_key);
-  int sig_len = schnorr_sign(private_key, msg, msg_len, G_io_apdu_buffer);
+  generate_keypair(public_key, private_key);
+  sig_len = sign(sig, public_key, private_key, msg, sig_len);
 
   tx = sig_len;
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;
+
+  os_memmove(G_io_apdu_buffer, sig->rx, field_BYTES);
+  os_memmove(G_io_apdu_buffer + field_BYTES, sig->s, scalar_BYTES);
 
   // Send back the response, do not restart the event loop
   io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);

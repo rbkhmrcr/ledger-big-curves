@@ -9,11 +9,11 @@ typedef struct signature {
 } signature;
 
 
-int sign(
+unsigned int sign(
     signature *sig,
-    scalar *private_key, 
     group *public_key,
-    scalar *hash,
+    scalar private_key, 
+    scalar hash,
     unsigned int sig_len);
 
 #endif // CODA_SIGN
