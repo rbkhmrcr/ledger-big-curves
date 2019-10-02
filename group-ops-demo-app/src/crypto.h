@@ -1,5 +1,5 @@
-#ifndef CODA_CRYPTO_UTILS
-#define CODA_CRYPTO_UTILS
+#ifndef CODA_CRYPTO
+#define CODA_CRYPTO
 
 #include <stdbool.h>
 
@@ -7,6 +7,7 @@
 #define field_BITS 753
 #define scalar_BYTES 96
 #define scalar_BITS 753
+#define group_BYTES 192
 
 typedef unsigned char field[field_BYTES];
 typedef unsigned char scalar[scalar_BYTES];
@@ -16,19 +17,8 @@ typedef struct group {
   field y;
 } group;
 
-void field_add(field c, const field a, const field b);
-void field_sub(field c, const field a, const field b);
-void field_mul(field c, const field a, const field b);
-void field_sq(field c, const field a);
-void field_inv(field c, const field a);
-
-void scalar_add(scalar c, const scalar a, const scalar b);
-void scalar_sub(scalar c, const scalar a, const scalar b);
-void scalar_mul(scalar c, const scalar a, const scalar b);
-void scalar_sq(scalar c, const scalar a);
-
-void group_add(group *r, const group *p, const group *q);
-void group_double(group *r, const group *p);
 group group_scalar_mul(const scalar k, const group *p);
+void generate_keypair(group *pub_key, scalar priv_key);
+void generate_public_key(group *pub_key);
 
-#endif // CODA_CRYPTO_UTILS
+#endif // CODA_CRYPTO

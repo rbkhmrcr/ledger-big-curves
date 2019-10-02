@@ -57,7 +57,7 @@ static void ui_approval(void);
 #define P1_MORE 0x00
 
 // private key in flash. const and N_ variable name are mandatory here
-static const cx_ecfp_private_key_t N_privateKey;
+static const scalar N_privateKey;
 // initialization marker in flash. const and N_ variable name are mandatory here
 static const unsigned char N_initialized;
 
@@ -331,7 +331,7 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
        0xed, 0xff, 0x55, 0x13, 0xbf, 0x5c, 0x9a, 0x4d, 0x23, 0x4b, 0xcc, 0x4a,
        0xd6, 0xd9, 0xf1, 0xb3, 0xfd, 0xf0, 0x0e, 0x16, 0x44, 0x6a, 0x82, 0x68}};
 
-    const scalar new_one = {
+  const scalar new_one = {
       0x00, 0x00, 0xe4, 0x1e, 0x93, 0xac, 0xde, 0x01, 0x2c, 0xab, 0x87, 0x5f,
       0xe7, 0x27, 0x05, 0xe4, 0x35, 0xe0, 0x27, 0x78, 0x5d, 0x45, 0x96, 0x03,
       0x69, 0xe5, 0xfb, 0xf2, 0x57, 0x82, 0x99, 0xe0, 0x0e, 0x2d, 0xe6, 0x83,
@@ -381,14 +381,14 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
   unsigned int tx = 0;
   unsigned char xy[2 * field_BYTES];
 
-  group w = group_scalar_mul(new_one, &p);
-  w = group_scalar_mul(new_two, &p);
-  //w = group_scalar_mul(new_three, &p);
-  //w = group_scalar_mul(new_four, &p);
-  //w = group_scalar_mul(new_five, &p);
+  // group w = group_scalar_mul(new_one, &p);
+  // w = group_scalar_mul(new_two, &p);
+  // w = group_scalar_mul(new_three, &p);
+  // w = group_scalar_mul(new_four, &p);
+  // w = group_scalar_mul(new_five, &p);
 
-  os_memmove(xy, w.x, field_BYTES);
-  os_memmove(xy + field_BYTES, w.y, field_BYTES);
+  os_memmove(xy, p.x, field_BYTES);
+  os_memmove(xy + field_BYTES, p.y, field_BYTES);
   os_memmove(G_io_apdu_buffer, xy, 2 * field_BYTES);
   tx = 2 * field_BYTES;
 
@@ -474,7 +474,7 @@ static void sample_main(void) {
         }
 
         switch (G_io_apdu_buffer[1]) {
-        case INS_SIGN: {
+        case INS_SIGN:
           if ((G_io_apdu_buffer[2] != P1_MORE) &&
               (G_io_apdu_buffer[2] != P1_LAST)) {
             THROW(0x6A86);
@@ -492,15 +492,15 @@ static void sample_main(void) {
           ui_text();
 
           flags |= IO_ASYNCH_REPLY;
-        } break;
+          break;
 
         case INS_GET_PUBLIC_KEY: {
-          cx_ecfp_public_key_t publicKey;
-          cx_ecfp_private_key_t privateKey;
-          os_memmove(&privateKey, &N_privateKey, sizeof(cx_ecfp_private_key_t));
-          cx_ecfp_generate_pair(CX_CURVE_256K1, &publicKey, &privateKey, 1);
-          os_memmove(G_io_apdu_buffer, publicKey.W, 65);
-          tx = 65;
+          group *public_key = NULL;
+          scalar private_key;
+          os_memmove(&private_key, &N_privateKey, scalar_BYTES);
+          generate_keypair(public_key, private_key);
+          os_memmove(G_io_apdu_buffer, public_key, group_BYTES);
+          tx = group_BYTES;
           THROW(0x9000);
         } break;
 
@@ -676,10 +676,12 @@ __attribute__((section(".boot"))) int main(void) {
       // Create the private key if not initialized
       if (N_initialized != 0x01) {
         unsigned char canary;
-        cx_ecfp_private_key_t privateKey;
-        cx_ecfp_public_key_t publicKey;
-        cx_ecfp_generate_pair(CX_CURVE_256K1, &publicKey, &privateKey, 0);
-        nvm_write((void *)&N_privateKey, &privateKey, sizeof(privateKey));
+        // group *public_key = NULL;
+        // scalar private_key;
+        // generate_keypair(public_key, private_key);
+        // os_memmove(G_io_apdu_buffer, public_key, group_BYTES);
+        // nvm_write((void *)&N_privateKey, &private_key,
+        //          sizeof(private_key));
         canary = 0x01;
         nvm_write((void *)&N_initialized, &canary, sizeof(canary));
       }

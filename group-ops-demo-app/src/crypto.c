@@ -120,51 +120,51 @@ const scalar group_order = {
     0x63, 0x88, 0x10, 0x71, 0x9a, 0xc4, 0x25, 0xf0, 0xe3, 0x9d, 0x54, 0x52,
     0x2c, 0xdd, 0x11, 0x9f, 0x5e, 0x90, 0x63, 0xde, 0x24, 0x5e, 0x80, 0x01};
 
-void field_add(field c, const field a, const field b) {
+inline void field_add(field c, const field a, const field b) {
   cx_math_addm(c, a, b, field_modulus, field_BYTES);
 }
 
-void field_sub(field c, const field a, const field b) {
+inline void field_sub(field c, const field a, const field b) {
   cx_math_subm(c, a, b, field_modulus, field_BYTES);
 }
 
-void field_mul(field c, const field a, const field b) {
+inline void field_mul(field c, const field a, const field b) {
   cx_math_multm(c, a, b, field_modulus, field_BYTES);
 }
 
-void field_sq(field c, const field a) {
+inline void field_sq(field c, const field a) {
   cx_math_multm(c, a, a, field_modulus, field_BYTES);
 }
 
-void field_inv(field c, const field a) {
+inline void field_inv(field c, const field a) {
   cx_math_invprimem(c, a, field_modulus, field_BYTES);
 }
 
-void scalar_add(scalar c, const scalar a, const scalar b) {
+inline void scalar_add(scalar c, const scalar a, const scalar b) {
   cx_math_addm(c, a, b, group_order, scalar_BYTES);
 }
 
-void scalar_sub(scalar c, const scalar a, const scalar b) {
+inline void scalar_sub(scalar c, const scalar a, const scalar b) {
   cx_math_subm(c, a, b, group_order, scalar_BYTES);
 }
 
-void scalar_mul(scalar c, const scalar a, const scalar b) {
+inline void scalar_mul(scalar c, const scalar a, const scalar b) {
   cx_math_multm(c, a, b, group_order, scalar_BYTES);
 }
 
-void scalar_sq(scalar c, const scalar a) {
+inline void scalar_sq(scalar c, const scalar a) {
   cx_math_multm(c, a, a, group_order, scalar_BYTES);
 }
 
 
-bool is_scalar_zero(const scalar k) {
+inline bool is_scalar_zero(const scalar k) {
   if (os_memcmp(k, scalar_zero, scalar_BYTES) == 0) {
     return true;
   }
   return false;
 }
 
-bool is_zero(const group *p) {
+inline bool is_zero(const group *p) {
   if (os_memcmp(p->x, field_zero, field_BYTES) == 0 &&
       os_memcmp(p->y, field_zero, field_BYTES) == 0) {
     return true;
@@ -172,7 +172,7 @@ bool is_zero(const group *p) {
   return false;
 }
 
-bool is_on_curve(const group *p) {
+inline bool is_on_curve(const group *p) {
   if (is_zero(p)) {
     return true;
   }
@@ -288,4 +288,36 @@ void constant_time_scalar_mul(group *r, const scalar k, const group *p) {
       group_double(&r1, &r1);
     }
   }
+}
+
+// Ledger uses:
+// - BIP 39 to generate and interpret the master seed, which
+//   produces the 24 words shown on the device at startup.
+// - BIP 32 for HD key derivation (using the child key derivation function)
+// - BIP 44 for HD account derivation (so e.g. btc and coda keys don't clash)
+
+void generate_keypair(group *pub_key, scalar priv_key) {
+
+  // unsigned char private_key_data[64];
+  unsigned int bip32_path[5];
+
+  bip32_path[0] = 44     | 0x80000000;
+  bip32_path[1] = 49370  | 0x80000000;
+  bip32_path[2] = 0      | 0x80000000;
+  bip32_path[3] = 0;
+  bip32_path[4] = 0;
+
+  /*
+  os_perso_derive_node_bip32(CX_CURVE_256K1, bip32_path,
+                             sizeof(bip32_path) / sizeof(bip32_path[0]),
+                             priv_key,
+                             NULL); //last entry is chainvalue
+*/
+
+}
+
+void generate_public_key(group *pub_key) {
+  scalar priv_key;
+  generate_keypair(pub_key, priv_key);
+  os_memset(priv_key, 0, sizeof(priv_key));
 }
