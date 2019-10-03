@@ -368,6 +368,7 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
       0x48, 0x3e, 0xcd, 0x3a, 0x8f, 0x9d, 0x27, 0x60, 0x6d, 0xb7, 0x5f, 0x90,
       0xa1, 0x12, 0xdb, 0x1e, 0xa3, 0x90, 0x8b, 0xbb, 0x87, 0x44, 0xf2, 0xc1,
       0xad, 0xf8, 0xe1, 0xf5, 0x25, 0x8a, 0xf2, 0x02, 0xbf, 0x1c, 0x63, 0x55};
+*/
   const scalar new_five = {
       0x00, 0x01, 0x66, 0xe9, 0x62, 0x6c, 0x93, 0x32, 0x05, 0x02, 0xc1, 0x9c,
       0x21, 0xab, 0xfc, 0x08, 0xd7, 0xd8, 0x83, 0x30, 0x6a, 0x7f, 0x85, 0xbd,
@@ -377,18 +378,18 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
       0x1c, 0x03, 0xed, 0x9c, 0xed, 0x34, 0xf6, 0xb3, 0x03, 0x09, 0xe8, 0x3c,
       0xea, 0x65, 0x5e, 0xd9, 0xef, 0x0f, 0x78, 0x5f, 0xa4, 0x33, 0x62, 0x65,
       0xaf, 0x7c, 0x31, 0x15, 0xb4, 0x06, 0x34, 0x25, 0xb9, 0x2e, 0xea, 0x71};
-*/
+  
   unsigned int tx = 0;
   unsigned char xy[2 * field_BYTES];
 
-  // group w = group_scalar_mul(new_one, &p);
+  group w = group_scalar_mul(new_one, &p);
   // w = group_scalar_mul(new_two, &p);
   // w = group_scalar_mul(new_three, &p);
   // w = group_scalar_mul(new_four, &p);
-  // w = group_scalar_mul(new_five, &p);
+  w = group_scalar_mul(new_five, &p);
 
-  os_memmove(xy, p.x, field_BYTES);
-  os_memmove(xy + field_BYTES, p.y, field_BYTES);
+  os_memmove(xy, w.x, field_BYTES);
+  os_memmove(xy + field_BYTES, w.y, field_BYTES);
   os_memmove(G_io_apdu_buffer, xy, 2 * field_BYTES);
   tx = 2 * field_BYTES;
 
@@ -495,11 +496,11 @@ static void sample_main(void) {
           break;
 
         case INS_GET_PUBLIC_KEY: {
-          group *public_key = NULL;
+          group public_key;
           scalar private_key;
           os_memmove(&private_key, &N_privateKey, scalar_BYTES);
-          generate_keypair(public_key, private_key);
-          os_memmove(G_io_apdu_buffer, public_key, group_BYTES);
+          generate_keypair(&public_key, private_key);
+          os_memmove(G_io_apdu_buffer, &public_key, group_BYTES);
           tx = group_BYTES;
           THROW(0x9000);
         } break;
