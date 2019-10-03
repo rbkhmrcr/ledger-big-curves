@@ -17,7 +17,7 @@ typedef struct group {
   field y;
 } group;
 
-group group_scalar_mul(const scalar k, const group *p);
+void group_scalar_mul(group *r, const scalar k, const group *p);
 void generate_keypair(group *pub_key, scalar priv_key);
 void generate_public_key(group *pub_key);
 

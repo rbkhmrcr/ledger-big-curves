@@ -378,19 +378,12 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
       0x1c, 0x03, 0xed, 0x9c, 0xed, 0x34, 0xf6, 0xb3, 0x03, 0x09, 0xe8, 0x3c,
       0xea, 0x65, 0x5e, 0xd9, 0xef, 0x0f, 0x78, 0x5f, 0xa4, 0x33, 0x62, 0x65,
       0xaf, 0x7c, 0x31, 0x15, 0xb4, 0x06, 0x34, 0x25, 0xb9, 0x2e, 0xea, 0x71};
-  
+
   unsigned int tx = 0;
-  unsigned char xy[2 * field_BYTES];
-
-  group w = group_scalar_mul(new_one, &p);
-  // w = group_scalar_mul(new_two, &p);
-  // w = group_scalar_mul(new_three, &p);
-  // w = group_scalar_mul(new_four, &p);
-  w = group_scalar_mul(new_five, &p);
-
-  os_memmove(xy, w.x, field_BYTES);
-  os_memmove(xy + field_BYTES, w.y, field_BYTES);
-  os_memmove(G_io_apdu_buffer, xy, 2 * field_BYTES);
+  group w;
+  group_scalar_mul(&w, new_five, &p);
+  os_memmove(G_io_apdu_buffer, w.x, field_BYTES);
+  os_memmove(G_io_apdu_buffer + field_BYTES, w.y, field_BYTES);
   tx = 2 * field_BYTES;
 
   G_io_apdu_buffer[tx++] = 0x90;
@@ -498,7 +491,6 @@ static void sample_main(void) {
         case INS_GET_PUBLIC_KEY: {
           group public_key;
           scalar private_key;
-          os_memmove(&private_key, &N_privateKey, scalar_BYTES);
           generate_keypair(&public_key, private_key);
           os_memmove(G_io_apdu_buffer, &public_key, group_BYTES);
           tx = group_BYTES;
@@ -673,19 +665,6 @@ __attribute__((section(".boot"))) int main(void) {
   BEGIN_TRY {
     TRY {
       io_seproxyhal_init();
-
-      // Create the private key if not initialized
-      if (N_initialized != 0x01) {
-        unsigned char canary;
-        // group *public_key = NULL;
-        // scalar private_key;
-        // generate_keypair(public_key, private_key);
-        // os_memmove(G_io_apdu_buffer, public_key, group_BYTES);
-        // nvm_write((void *)&N_privateKey, &private_key,
-        //          sizeof(private_key));
-        canary = 0x01;
-        nvm_write((void *)&N_initialized, &canary, sizeof(canary));
-      }
 
 #ifdef LISTEN_BLE
       if (os_seph_features() & SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_BLE) {

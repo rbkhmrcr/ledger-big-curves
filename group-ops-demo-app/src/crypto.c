@@ -271,13 +271,15 @@ void group_add(group *r, const group *p, const group *q) {
 }
 
 
-group group_scalar_mul(const scalar k, const group *p) {
+void group_scalar_mul(group *r, const scalar k, const group *p) {
 
   if (is_zero(p)) {
-    return group_zero;
+    *r = group_zero;
+    return;
   }
   if (is_scalar_zero(k)) {
-    return group_zero;
+    *r = group_zero;
+    return;
   }
 
   group q = group_zero;
@@ -294,7 +296,8 @@ group group_scalar_mul(const scalar k, const group *p) {
       q = q1;
     }
   }
-  return q;
+  *r = q;
+  return;
 }
 
 
@@ -315,17 +318,15 @@ void generate_keypair(group *pub_key, scalar priv_key) {
   bip32_path[3] = 0;
   bip32_path[4] = 0;
 
-  /*
   os_perso_derive_node_bip32(CX_CURVE_256K1, bip32_path,
                              sizeof(bip32_path) / sizeof(bip32_path[0]),
                              priv_key,
+                             priv_key + 32); //last entry is chainvalue
+  os_perso_derive_node_bip32(CX_CURVE_256K1, bip32_path,
+                             sizeof(bip32_path) / sizeof(bip32_path[0]),
+                             priv_key + 64,
                              NULL); //last entry is chainvalue
-*/
 
-}
-
-void generate_public_key(group *pub_key) {
-  scalar priv_key;
-  generate_keypair(pub_key, priv_key);
-  os_memset(priv_key, 0, sizeof(priv_key));
+  group_scalar_mul(pub_key, priv_key, &group_one);
+  // os_memset(priv_key, 0, sizeof(priv_key));
 }
