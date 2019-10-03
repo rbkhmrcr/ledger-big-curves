@@ -283,13 +283,13 @@ group group_scalar_mul(const scalar k, const group *p) {
   group q = group_zero;
   // 96 bytes = 8 * 96 = 768. we want 753, 768 - 753 = 15 bits
   // which means we have an offset of 15 bits
-   for (int i = 15; i < (scalar_BITS + 15); i++) {
-    int di = k[i/8] & (1 << ((7-i) % 8));
-    group q0 = group_zero;
+   for (unsigned int i = scalar_offset; i < scalar_bits; i++) {
+    unsigned int di = k[i/8] & (1 << (7 - (i % 8)));
+    group q0;
     group_double(&q0, &q);
     q = q0;
     if (di != 0) {
-      group q1 = group_zero;
+      group q1;
       group_add(&q1, &q, p);
       q = q1;
     }
@@ -297,22 +297,6 @@ group group_scalar_mul(const scalar k, const group *p) {
   return q;
 }
 
-void constant_time_scalar_mul(group *r, const scalar k, const group *p) {
-  group r1;
-  os_memcpy(r1.x, p->x, field_BYTES);
-  os_memcpy(r1.y, p->y, field_BYTES);
-
-   for (int i = 0; i < scalar_BITS; i++) {
-    int di = k[i/8] & (1 << (i % 8));
-    if (di == 0) {
-      group_add(&r1, r, &r1);
-      group_double(r, r);
-    } else {
-      group_add(r, r, &r1);
-      group_double(&r1, &r1);
-    }
-  }
-}
 
 // Ledger uses:
 // - BIP 39 to generate and interpret the master seed, which

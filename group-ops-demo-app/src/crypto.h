@@ -4,10 +4,10 @@
 #include <stdbool.h>
 
 #define field_BYTES 96
-#define field_BITS 753
 #define scalar_BYTES 96
-#define scalar_BITS 753
 #define group_BYTES 192
+#define scalar_bits 768   // scalar_BYTES * 8
+#define scalar_offset 15  // scalars have 753 ( = 768 - 15 ) used bits
 
 typedef unsigned char field[field_BYTES];
 typedef unsigned char scalar[scalar_BYTES];

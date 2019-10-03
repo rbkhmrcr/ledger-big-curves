@@ -98,7 +98,7 @@ try:
                 received = dongle.exchange(apdu)
                 offset += len(chunk)
         print('received ', received.hex())
-        print('comp mul', hex(point_mul(mnt6_g1, new_five)))
+        print('comp mul', hex(point_mul(mnt6_g1, new_five)[0]))
 
 except CommException as comm:
         if comm.sw == 0x6985:
