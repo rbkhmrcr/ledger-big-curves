@@ -1,8 +1,7 @@
 #include "os.h"
 #include "cx.h"
 #include "crypto.h"
-#include <string.h>
-#include <stdbool.h>
+#include "poseidon.h"
 
 static const field field_modulus = {
     0x00, 0x01, 0xc4, 0xc6, 0x2d, 0x92, 0xc4, 0x11, 0x10, 0x22, 0x90, 0x22,
@@ -120,74 +119,70 @@ static const scalar group_order = {
     0x63, 0x88, 0x10, 0x71, 0x9a, 0xc4, 0x25, 0xf0, 0xe3, 0x9d, 0x54, 0x52,
     0x2c, 0xdd, 0x11, 0x9f, 0x5e, 0x90, 0x63, 0xde, 0x24, 0x5e, 0x80, 0x01};
 
-inline void field_add(field c, const field a, const field b) {
+void field_add(field c, const field a, const field b) {
   cx_math_addm(c, a, b, field_modulus, field_BYTES);
 }
 
-inline void field_sub(field c, const field a, const field b) {
+void field_sub(field c, const field a, const field b) {
   cx_math_subm(c, a, b, field_modulus, field_BYTES);
 }
 
-inline void field_mul(field c, const field a, const field b) {
+void field_mul(field c, const field a, const field b) {
   cx_math_multm(c, a, b, field_modulus, field_BYTES);
 }
 
-inline void field_sq(field c, const field a) {
+void field_sq(field c, const field a) {
   cx_math_multm(c, a, a, field_modulus, field_BYTES);
 }
 
-inline void field_inv(field c, const field a) {
+void field_inv(field c, const field a) {
   cx_math_invprimem(c, a, field_modulus, field_BYTES);
 }
 
-inline void scalar_add(scalar c, const scalar a, const scalar b) {
+void field_negate(field c, const field a) {
+  cx_math_subm(c, field_modulus, a, field_modulus, field_BYTES);
+}
+
+unsigned int field_eq(const field a, const field b) {
+  return (os_memcmp(a, b, field_BYTES) == 0);
+}
+
+
+void scalar_add(scalar c, const scalar a, const scalar b) {
   cx_math_addm(c, a, b, group_order, scalar_BYTES);
 }
 
-inline void scalar_sub(scalar c, const scalar a, const scalar b) {
+void scalar_sub(scalar c, const scalar a, const scalar b) {
   cx_math_subm(c, a, b, group_order, scalar_BYTES);
 }
 
-inline void scalar_mul(scalar c, const scalar a, const scalar b) {
+void scalar_mul(scalar c, const scalar a, const scalar b) {
   cx_math_multm(c, a, b, group_order, scalar_BYTES);
 }
 
-inline void scalar_sq(scalar c, const scalar a) {
+void scalar_sq(scalar c, const scalar a) {
   cx_math_multm(c, a, a, group_order, scalar_BYTES);
 }
 
-inline bool is_field_zero(const field k) {
-  if (os_memcmp(k, field_zero, field_BYTES) == 0) {
-    return true;
-  }
-  return false;
+// c = a^e mod m
+// cx_math_powm(result_pointer, a, e, len_e, m, len(result, a, m)
+void scalar_pow(scalar c, const scalar a, const scalar e) {
+  cx_math_powm(c, a, e, scalar_BYTES, group_order, scalar_BYTES);
 }
 
-inline bool field_eq(const field a, const field b) {
-  if (os_memcmp(a, b, field_BYTES) == 0) {
-    return true;
-  }
-  return false;
+unsigned int scalar_eq(const scalar a, const scalar b) {
+  return (os_memcmp(a, b, scalar_BYTES) == 0);
 }
 
-inline bool is_scalar_zero(const scalar k) {
-  if (os_memcmp(k, scalar_zero, scalar_BYTES) == 0) {
-    return true;
-  }
-  return false;
+
+unsigned int is_zero(const group *p) {
+  return (os_memcmp(p->x, field_zero, field_BYTES) == 0 &&
+      os_memcmp(p->y, field_zero, field_BYTES) == 0);
 }
 
-inline bool is_zero(const group *p) {
-  if (os_memcmp(p->x, field_zero, field_BYTES) == 0 &&
-      os_memcmp(p->y, field_zero, field_BYTES) == 0) {
-    return true;
-  }
-  return false;
-}
-
-inline bool is_on_curve(const group *p) {
+unsigned int is_on_curve(const group *p) {
   if (is_zero(p)) {
-    return true;
+    return 1;
   }
 
   field x2, x2a, x3ax, x3axb, y2;
@@ -241,7 +236,7 @@ void group_add(group *r, const group *p, const group *q) {
 
   field temp;
   field_mul(temp, p->x, q->x);
-  if (is_field_zero(temp)) {
+  if (field_eq(temp, field_zero)) {
     // if pxqx == 0, either p = q -> p + q = 2p
     if (field_eq(p->y, q->y)) {
       group_double(r, p);
@@ -277,7 +272,7 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
     *r = group_zero;
     return;
   }
-  if (is_scalar_zero(k)) {
+  if (scalar_eq(k, scalar_zero)) {
     *r = group_zero;
     return;
   }
@@ -330,3 +325,38 @@ void generate_keypair(group *pub_key, scalar priv_key) {
   group_scalar_mul(pub_key, priv_key, &group_one);
   // os_memset(priv_key, 0, sizeof(priv_key));
 }
+
+inline unsigned int is_odd(field y) {
+  return (y[95] & 1);
+}
+
+unsigned int sign(signature *sig, group *public_key, scalar private_key,
+                  scalar hash, unsigned int sig_len) {
+
+  group r;
+  scalar k_prime;
+  poseidon(k_prime);
+  poseidon(hash);
+  poseidon(private_key);
+  poseidon_digest(k_prime);                   // k' = hash(sk || m)
+  group_scalar_mul(&r, k_prime, &group_one);  // r = k*g
+
+  field k;
+  if (is_odd(r.y)) {
+    field_negate(k, k_prime);                 // if ry is odd, k = - k'
+  } else {
+    os_memcpy(k, k_prime, scalar_BYTES);      // if ry is even, k = k'
+  }
+
+  scalar s, e;
+  poseidon(hash);
+  poseidon(r.x);
+  poseidon(public_key->x);
+  poseidon(hash);
+  poseidon_digest(e);                         // e = hash(xr || pk || m)
+  scalar_mul(s, e, private_key);              // e*sk
+  scalar_add(sig->s, k, s);                    // k + e*sk
+  os_memcpy(sig->rx, r.x, field_BYTES);
+
+  return (field_BYTES + scalar_BYTES);
+};
