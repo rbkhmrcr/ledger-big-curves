@@ -1,7 +1,7 @@
 #ifndef POSEIDON
 #define POSEIDON
 
-#include "group.h"
+#include "crypto.h"
 
 // alpha = smallest prime st gcd(p, alpha) = 1
 // m = number of field elements in the state

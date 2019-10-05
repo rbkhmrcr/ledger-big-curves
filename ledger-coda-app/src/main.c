@@ -1,6 +1,6 @@
 /*******************************************************************************
- *   Ledger Blue
  *   (c) 2016 Ledger
+ *   (c) 2018 Nebulous
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,161 +15,115 @@
  *  limitations under the License.
  ********************************************************************************/
 
-#include "os.h"
-#include "cx.h"
-#include "os_io_seproxyhal.h"
+#include <os.h>
+#include <cx.h>
+#include <os_io_seproxyhal.h>
+#include "glyphs.h"
+#include "crypto.h"
+#include "ux.h"
 
-#include "crypto/group.h"
-#include "crypto/sign.h"
-#include "transaction.h"
-#include "keys.h"
-#include "ui.h"
+command_context global;
+ux_state_t ux;
 
-unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
+static const ux_menu_entry_t menu_main[];
 
+static const ux_menu_entry_t menu_about[] = {
+  {
+    .menu     = NULL,       // another menu entry, displayed when this item is "entered"
+    .callback = NULL,       // a function that takes a userid, called when this item is entered
+    .userid   = 0,          // a custom identifier, helpful for implementing custom menu behavior
+    .icon     = NULL,       // the glyph displayed next to the item text
+    .line1    = "Version",  // the first line of text
+    .line2    = APPVERSION, // the second line of text; if NULL, line1 will be vertically centered
+    .text_x   = 0,          // the x offset of the lines of text; only used if non-zero
+    .icon_x   = 0,          // the x offset of the icon; only used if non-zero
+  },
+  {menu_main, NULL, 0, &C_icon_back, "Back", NULL, 61, 40},
+  UX_MENU_END,
+};
 
-#define OFFSET_CLA    0
-#define OFFSET_INS    1
-#define OFFSET_P1     2
-#define OFFSET_P2     3
-#define OFFSET_LC     4
-#define OFFSET_CDATA  5
+static const ux_menu_entry_t menu_main[] = {
+  {NULL, NULL, 0, NULL, "Waiting for", "commands...", 0, 0},
+  {menu_about, NULL, 0, NULL, "About", NULL, 0, 0},
+  {NULL, os_sched_exit, 0, &C_icon_dashboard, "Quit app", NULL, 50, 29},
+  UX_MENU_END,
+};
 
-
-#define CLA 		  0x80
-#define INS_SIGN 	0x02
-#define INS_GET_PUBLIC_KEY 0x04
-#define P1_LAST 	0x80
-#define P1_MORE 	0x00
-
-// From Ledger docs:
-// All global variables that are declared as const are stored in read-only flash
-// memory, right next to code.
-//
-// All normal global variables that are declared as non-const are stored in RAM.
-// However, thanks to the link script (script.ld) in the SDK, global variables
-// that are declared as non-const and are given the prefix N_ are placed in a
-// special write-permitted location of NVRAM. This data can be read in the same
-// way that regular global variables are read.
-//
-// However, writing to NVRAM variables must be done using the nvm_write(...)
-// function defined by the SDK, which performs a syscall. When loading the app,
-// NVRAM variables are initialized with data specified in the app's hexfile
-// (this is usually just zero bytes).
-//
-// Warning: Initializers of global non-const variables (including NVRAM
-// variables) are ignored.  As such, this data must be initialized by
-// application code.
-
-unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
-
-struct transaction current_transaction;
-
-void transaction_approve() {
-  unsigned int tx = 0;
-
-  // Avoid large stack allocation; there is no reentry into
-  // transaction_approve().
-  static unsigned char msg[96];
-  signature *sig = NULL;
-  unsigned int msg_len, sig_len;
-
-  msg_len = sizeof(msg);
-  sig_len = sizeof(sig);
-
-  PRINTF("Signing message: %.*h\n", msg_len, msg);
-
-  scalar private_key;
-  group *public_key = 0;
-  generate_keypair(public_key, private_key);
-  sig_len = sign(sig, public_key, private_key, msg, sig_len);
-
-  tx = sig_len;
-  G_io_apdu_buffer[tx++] = 0x90;
-  G_io_apdu_buffer[tx++] = 0x00;
-
-  os_memmove(G_io_apdu_buffer, sig->rx, field_BYTES);
-  os_memmove(G_io_apdu_buffer + field_BYTES, sig->s, scalar_BYTES);
-
-  // Send back the response, do not restart the event loop
-  io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-
-  // Display back the original UX
-  ui_idle();
+// ui_idle displays the main menu.
+void ui_idle(void) {
+  UX_MENU_DISPLAY(0, menu_main, NULL);
 }
 
-void transaction_deny() {
-  G_io_apdu_buffer[0] = 0x69;
-  G_io_apdu_buffer[1] = 0x85;
+#define INS_VERSION     0x01
+#define INS_PUBLIC_KEY  0x02
+#define INS_SIGN        0x04
 
-  // Send back the response, do not restart the event loop
-  io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
+typedef void handler_fn_t(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx);
 
-  // Display back the original UX
-  ui_idle();
+handler_fn_t handle_version;
+handler_fn_t handle_pubkey;
+handler_fn_t handle_sign;
+
+static handler_fn_t* lookupHandler(uint8_t ins) {
+  switch (ins) {
+  case INS_VERSION:     return handle_version;
+  case INS_PUBLIC_KEY:  return handle_pubkey;
+  case INS_SIGN:        return handle_sign;
+  default:              return NULL;
+  }
 }
+
+// These are the offsets of various parts of a request APDU packet. INS
+// identifies the requested command (see above), and P1 and P2 are parameters
+// to the command.
+#define CLA          0xE0
+#define OFFSET_CLA   0x00
+#define OFFSET_INS   0x01
+#define OFFSET_P1    0x02
+#define OFFSET_P2    0x03
+#define OFFSET_LC    0x04
+#define OFFSET_CDATA 0x05
 
 static void coda_main(void) {
+
   volatile unsigned int rx = 0;
   volatile unsigned int tx = 0;
   volatile unsigned int flags = 0;
 
-  // next timer callback in 500 ms
-  UX_CALLBACK_SET_INTERVAL(500);
-
-  // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
-  // goal is to retrieve APDU.
-  // When APDU are to be fetched from multiple IOs, like NFC+USB+BLE, make
-  // sure the io_event is called with a
-  // switch event, before the apdu is replied to the bootloader. This avoid
-  // APDU injection faults.
+  // Exchange APDUs until EXCEPTION_IO_RESET is thrown.
   for (;;) {
     volatile unsigned short sw = 0;
 
+    // The Ledger SDK implements a form of exception handling. In addition
+    // to explicit THROWs in user code, syscalls (prefixed with os_ or
+    // cx_) may also throw exceptions. TRY catches thrown exceptions
+    // and convert them to response codes, which are then sent in APDUs.
+    // EXCEPTION_IO_RESET will be re-thrown and caught by main.
     BEGIN_TRY {
       TRY {
         rx = tx;
-        tx = 0; // ensure no race in catch_other if io_exchange throws
-                // an error
+        tx = 0; // ensure no race in CATCH_OTHER if io_exchange throws an error
         rx = io_exchange(CHANNEL_APDU | flags, rx);
         flags = 0;
 
-        // no apdu received, well, reset the session, and reset the
-        // bootloader configuration
+        // No APDU received; trigger a reset.
         if (rx == 0) {
-          THROW(0x6982);
+          THROW(EXCEPTION_IO_RESET);
         }
-
+        // Malformed APDU.
         if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
           THROW(0x6E00);
         }
-
-        uint8_t ins = G_io_apdu_buffer[OFFSET_INS];
-        switch (ins) {
-        case INS_SIGN: {
-          os_memset(&current_transaction, 0, sizeof(current_transaction));
-          uint8_t *p;
-          p = &G_io_apdu_buffer[OFFSET_CDATA];
-          os_memmove(p, &current_transaction, sizeof(current_transaction));
-          transaction_ui();
-          flags |= IO_ASYNCH_REPLY;
-        } break;
-
-        case INS_GET_PUBLIC_KEY: {
-          group *public_key = 0; // should have printable type? base58
-          generate_public_key(public_key);
-          os_memmove(G_io_apdu_buffer, public_key, sizeof(public_key));
-          tx = sizeof(public_key);
-          THROW(0x9000);
-        } break;
-
-        case 0xFF: // return to dashboard
-          goto return_to_dashboard;
-
-        default:
+        // Lookup and call the requested command handler.
+        handler_fn_t *handlerFn = lookupHandler(G_io_apdu_buffer[OFFSET_INS]);
+        if (!handlerFn) {
           THROW(0x6D00);
-          break;
         }
+        handlerFn(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2],
+                  G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], &flags, &tx);
+      }
+      CATCH(EXCEPTION_IO_RESET) {
+        THROW(EXCEPTION_IO_RESET);
       }
       CATCH_OTHER(e) {
         switch (e & 0xF000) {
@@ -181,52 +135,51 @@ static void coda_main(void) {
           sw = 0x6800 | (e & 0x7FF);
           break;
         }
-        // Unexpected exception => report
-        G_io_apdu_buffer[tx] = sw >> 8;
-        G_io_apdu_buffer[tx + 1] = sw;
-        tx += 2;
+        G_io_apdu_buffer[tx++] = sw >> 8;
+        G_io_apdu_buffer[tx++] = sw & 0xFF;
       }
-      FINALLY {}
+      FINALLY {
+      }
     }
     END_TRY;
   }
-
-return_to_dashboard:
-  return;
 }
 
+// override point, but nothing more to do
 void io_seproxyhal_display(const bagl_element_t *element) {
   io_seproxyhal_display_default((bagl_element_t *)element);
 }
 
-unsigned char io_event(unsigned char channel) {
-  // nothing done with the event, throw an error on the transport layer if
-  // needed
+unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
+unsigned char io_event(unsigned char channel) {
   // can't have more than one tag in the reply, not supported yet.
   switch (G_io_seproxyhal_spi_buffer[0]) {
   case SEPROXYHAL_TAG_FINGER_EVENT:
     UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
     break;
 
-  case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT: // for Nano S
+  case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:
     UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
     break;
 
+  case SEPROXYHAL_TAG_STATUS_EVENT:
+    if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID &&
+      !(U4BE(G_io_seproxyhal_spi_buffer, 3) &
+        SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
+      THROW(EXCEPTION_IO_RESET);
+    }
+    UX_DEFAULT_EVENT();
+    break;
+
   case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-    UX_DISPLAYED_EVENT();
+    UX_DISPLAYED_EVENT({});
     break;
 
   case SEPROXYHAL_TAG_TICKER_EVENT:
-    UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
-      // defaulty retrig very soon (will be overriden during
-      // stepper_prepro)
-      UX_CALLBACK_SET_INTERVAL(500);
-      UX_REDISPLAY();
-    });
+    UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {});
     break;
 
-  // unknown events are acknowledged
   default:
     UX_DEFAULT_EVENT();
     break;
@@ -245,53 +198,61 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
   switch (channel & ~(IO_FLAGS)) {
   case CHANNEL_KEYBOARD:
     break;
-
   // multiplexed io exchange over a SPI channel and TLV encapsulated protocol
   case CHANNEL_SPI:
     if (tx_len) {
       io_seproxyhal_spi_send(G_io_apdu_buffer, tx_len);
-
       if (channel & IO_RESET_AFTER_REPLIED) {
         reset();
       }
-      return 0; // nothing received from the master so far (it's a tx
-                // transaction)
+      return 0; // nothing received from the master so far (it's a tx transaction)
     } else {
-      return io_seproxyhal_spi_recv(G_io_apdu_buffer, sizeof(G_io_apdu_buffer),
-                                    0);
+      return io_seproxyhal_spi_recv(G_io_apdu_buffer, sizeof(G_io_apdu_buffer), 0);
     }
-
   default:
     THROW(INVALID_PARAMETER);
   }
   return 0;
 }
 
+static void app_exit(void) {
+  BEGIN_TRY_L(exit) {
+    TRY_L(exit) {
+      os_sched_exit(-1);
+    }
+    FINALLY_L(exit) {
+    }
+  }
+  END_TRY_L(exit);
+}
+
 __attribute__((section(".boot"))) int main(void) {
   // exit critical section
   __asm volatile("cpsie i");
 
-  line_buffer[0] = '\0';
-
-  // ensure exception will work as planned
-  os_boot();
-
-  UX_INIT();
-  UX_MENU_INIT();
-
-  BEGIN_TRY {
-    TRY {
-      io_seproxyhal_init();
-
-      USB_power(0);
-      USB_power(1);
-
-      ui_idle();
-
-      coda_main();
+  for (;;) {
+    UX_INIT();
+    os_boot();
+    BEGIN_TRY {
+      TRY {
+        io_seproxyhal_init();
+        USB_power(0);
+        USB_power(1);
+        ui_idle();
+        coda_main();
+      }
+      CATCH(EXCEPTION_IO_RESET) {
+        // reset IO and UX before continuing
+        continue;
+      }
+      CATCH_ALL {
+        break;
+      }
+      FINALLY {
+      }
     }
-    CATCH_OTHER(e) {}
-    FINALLY {}
+    END_TRY;
   }
-  END_TRY;
+  app_exit();
+  return 0;
 }

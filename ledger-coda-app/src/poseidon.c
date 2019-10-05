@@ -1,6 +1,6 @@
 #include "os.h"
 #include "cx.h"
-#include "group.h"
+#include "crypto.h"
 #include "poseidon.h"
 
 scalar state[SPONGE_SIZE];

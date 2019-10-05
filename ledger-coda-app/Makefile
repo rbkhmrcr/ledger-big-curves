@@ -102,8 +102,9 @@ check:
 delete:
 	python -m ledgerblue.deleteApp $(COMMON_DELETE_PARAMS)
 
+# import rules to compile glyphs
+include $(BOLOS_SDK)/Makefile.glyphs
 # Import generic rules from the SDK
-
 include $(BOLOS_SDK)/Makefile.rules
 
 listvariants:
