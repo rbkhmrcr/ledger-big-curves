@@ -120,64 +120,63 @@ static const scalar group_order = {
     0x2c, 0xdd, 0x11, 0x9f, 0x5e, 0x90, 0x63, 0xde, 0x24, 0x5e, 0x80, 0x01};
 
 void field_add(field c, const field a, const field b) {
-  cx_math_addm(c, a, b, field_modulus, field_BYTES);
+  cx_math_addm(c, a, b, field_modulus, field_bytes);
 }
 
 void field_sub(field c, const field a, const field b) {
-  cx_math_subm(c, a, b, field_modulus, field_BYTES);
+  cx_math_subm(c, a, b, field_modulus, field_bytes);
 }
 
 void field_mul(field c, const field a, const field b) {
-  cx_math_multm(c, a, b, field_modulus, field_BYTES);
+  cx_math_multm(c, a, b, field_modulus, field_bytes);
 }
 
 void field_sq(field c, const field a) {
-  cx_math_multm(c, a, a, field_modulus, field_BYTES);
+  cx_math_multm(c, a, a, field_modulus, field_bytes);
 }
 
 void field_inv(field c, const field a) {
-  cx_math_invprimem(c, a, field_modulus, field_BYTES);
+  cx_math_invprimem(c, a, field_modulus, field_bytes);
 }
 
 void field_negate(field c, const field a) {
-  cx_math_subm(c, field_modulus, a, field_modulus, field_BYTES);
+  cx_math_subm(c, field_modulus, a, field_modulus, field_bytes);
 }
 
 unsigned int field_eq(const field a, const field b) {
-  return (os_memcmp(a, b, field_BYTES) == 0);
+  return (os_memcmp(a, b, field_bytes) == 0);
 }
 
-
 void scalar_add(scalar c, const scalar a, const scalar b) {
-  cx_math_addm(c, a, b, group_order, scalar_BYTES);
+  cx_math_addm(c, a, b, group_order, scalar_bytes);
 }
 
 void scalar_sub(scalar c, const scalar a, const scalar b) {
-  cx_math_subm(c, a, b, group_order, scalar_BYTES);
+  cx_math_subm(c, a, b, group_order, scalar_bytes);
 }
 
 void scalar_mul(scalar c, const scalar a, const scalar b) {
-  cx_math_multm(c, a, b, group_order, scalar_BYTES);
+  cx_math_multm(c, a, b, group_order, scalar_bytes);
 }
 
 void scalar_sq(scalar c, const scalar a) {
-  cx_math_multm(c, a, a, group_order, scalar_BYTES);
+  cx_math_multm(c, a, a, group_order, scalar_bytes);
 }
 
 // c = a^e mod m
 // cx_math_powm(result_pointer, a, e, len_e, m, len(result, a, m)
 void scalar_pow(scalar c, const scalar a, const scalar e) {
-  cx_math_powm(c, a, e, scalar_BYTES, group_order, scalar_BYTES);
+  cx_math_powm(c, a, e, scalar_bytes, group_order, scalar_bytes);
 }
 
 unsigned int scalar_eq(const scalar a, const scalar b) {
-  return (os_memcmp(a, b, scalar_BYTES) == 0);
+  return (os_memcmp(a, b, scalar_bytes) == 0);
 }
 
 
 unsigned int is_zero(const group *p) {
-  return (os_memcmp(p->x, field_zero, field_BYTES) == 0 &&
-      os_memcmp(p->y, field_zero, field_BYTES) == 0);
+  return (os_memcmp(p->x, field_zero, field_bytes) == 0 &&
+      os_memcmp(p->y, field_zero, field_bytes) == 0);
 }
 
 unsigned int is_on_curve(const group *p) {
@@ -192,7 +191,7 @@ unsigned int is_on_curve(const group *p) {
   field_mul(x3ax, x2a, p->x);               // x^3 + ax
   field_add(x3axb, x3ax, group_coeff_b);    // x^3 + ax + b
 
-  return (os_memcmp(y2, x3axb, field_BYTES) == 0);
+  return (os_memcmp(y2, x3axb, field_bytes) == 0);
 }
 
 void group_double(group *r, const group *p) {
@@ -296,11 +295,11 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
 }
 
 
-// Ledger uses:
-// - BIP 39 to generate and interpret the master seed, which
+// ledger uses:
+// - bip 39 to generate and interpret the master seed, which
 //   produces the 24 words shown on the device at startup.
-// - BIP 32 for HD key derivation (using the child key derivation function)
-// - BIP 44 for HD account derivation (so e.g. btc and coda keys don't clash)
+// - bip 32 for hd key derivation (using the child key derivation function)
+// - bip 44 for hd account derivation (so e.g. btc and coda keys don't clash)
 
 void generate_keypair(group *pub_key, scalar priv_key) {
 
@@ -331,51 +330,23 @@ inline unsigned int is_odd(field y) {
 }
 
 unsigned int sign(signature *sig, const group *public_key, const scalar private_key,
-                  const scalar hash, const unsigned int sig_len) {
+                  const scalar hash, unsigned int sig_len) {
 
-
-scalar state[SPONGE_SIZE] = {
-    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
-
-
-
+  scalar state[SPONGE_SIZE] = {{0}, {0}, {0}};
 
   group r;
   scalar k_prime;
   poseidon(state, k_prime);
   poseidon(state, hash);
   poseidon(state, private_key);
-  poseidon_digest(state, k_prime);                   // k' = hash(sk || m)
+  poseidon_digest(state, k_prime);            // k' = hash(sk || m)
   group_scalar_mul(&r, k_prime, &group_one);  // r = k*g
 
   field k;
   if (is_odd(r.y)) {
     field_negate(k, k_prime);                 // if ry is odd, k = - k'
   } else {
-    os_memcpy(k, k_prime, scalar_BYTES);      // if ry is even, k = k'
+    os_memcpy(k, k_prime, scalar_bytes);      // if ry is even, k = k'
   }
 
   scalar s, e;
@@ -383,10 +354,10 @@ scalar state[SPONGE_SIZE] = {
   poseidon(state, r.x);
   poseidon(state, public_key->x);
   poseidon(state, hash);
-  poseidon_digest(state, e);                         // e = hash(xr || pk || m)
+  poseidon_digest(state, e);                  // e = hash(xr || pk || m)
   scalar_mul(s, e, private_key);              // e*sk
-  scalar_add(sig->s, k, s);                    // k + e*sk
-  os_memcpy(sig->rx, r.x, field_BYTES);
+  scalar_add(sig->s, k, s);                   // k + e*sk
+  os_memcpy(sig->rx, r.x, field_bytes);
 
-  return (field_BYTES + scalar_BYTES);
+  return (field_bytes + scalar_bytes);
 };
