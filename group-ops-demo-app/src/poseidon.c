@@ -1421,7 +1421,6 @@ static const scalar MDS[SPONGE_SIZE][SPONGE_SIZE] = {
          0xd1, 0x86, 0x6d, 0xf6, 0xe3, 0x5f, 0x17, 0x7e, 0xb2, 0x1a, 0xb5},
     }
 };
-
 void alphath_root(scalar xa, const scalar x) { scalar_pow(xa, x, alpha_inv); }
 
 void to_the_alpha(scalar xa, const scalar x) { scalar_pow(xa, x, alpha); }

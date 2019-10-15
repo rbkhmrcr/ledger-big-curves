@@ -393,19 +393,18 @@ static const scalar scalar_one = {
   scalar state[SPONGE_SIZE] = {{0}, {0}, {0}};
 
   unsigned int tx = 0;
-  // group pk;
-  // scalar sk;
-  // generate_keypair(&pk, sk);
-  // signature s;
-  // sign(&s, &p, scalar_one, new_five, sizeof(s));
-  // os_memmove(G_io_apdu_buffer, s.rx, field_bytes);
-  // os_memmove(g_io_apdu_buffer + field_bytes, s.s, scalar_bytes);
-  // tx = field_bytes + scalar_bytes;
-  poseidon(state, scalar_one);
-  poseidon(state, scalar_one);
-
-  os_memmove(G_io_apdu_buffer, state, scalar_bytes);
-  tx = scalar_bytes;
+  group pk;
+  scalar sk;
+  generate_keypair(&pk, sk);
+  signature s;
+  sign(&s, &p, scalar_one, new_five, sizeof(s));
+  os_memmove(G_io_apdu_buffer, s.rx, field_bytes);
+  os_memmove(g_io_apdu_buffer + field_bytes, s.s, scalar_bytes);
+  tx = field_bytes + scalar_bytes;
+  //poseidon(state, scalar_one);
+  //poseidon(state, scalar_one);
+  //os_memmove(G_io_apdu_buffer, state, scalar_bytes);
+  //tx = scalar_bytes;
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;
   // Send back the response, do not restart the event loop
