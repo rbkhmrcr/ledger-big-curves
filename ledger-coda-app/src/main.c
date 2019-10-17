@@ -54,21 +54,24 @@ void ui_idle(void) {
   UX_MENU_DISPLAY(0, menu_main, NULL);
 }
 
-#define INS_VERSION     0x01
-#define INS_PUBLIC_KEY  0x02
-#define INS_SIGN        0x04
+#define INS_VERSION       0x01
+#define INS_PUBLIC_KEY    0x02
+#define INS_SIGN          0x04
+#define INS_HASH          0x08
 
 typedef void handler_fn_t(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx);
 
 handler_fn_t handle_version;
 handler_fn_t handle_pubkey;
 handler_fn_t handle_sign;
+handler_fn_t handle_hash;
 
 static handler_fn_t* lookupHandler(uint8_t ins) {
   switch (ins) {
   case INS_VERSION:     return handle_version;
   case INS_PUBLIC_KEY:  return handle_pubkey;
   case INS_SIGN:        return handle_sign;
+  case INS_HASH:        return handle_hash;
   default:              return NULL;
   }
 }
