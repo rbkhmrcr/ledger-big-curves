@@ -399,7 +399,7 @@ static const scalar scalar_one = {
   signature s;
   sign(&s, &p, scalar_one, new_five, sizeof(s));
   os_memmove(G_io_apdu_buffer, s.rx, field_bytes);
-  os_memmove(g_io_apdu_buffer + field_bytes, s.s, scalar_bytes);
+  os_memmove(G_io_apdu_buffer + field_bytes, s.s, scalar_bytes);
   tx = field_bytes + scalar_bytes;
   //poseidon(state, scalar_one);
   //poseidon(state, scalar_one);
