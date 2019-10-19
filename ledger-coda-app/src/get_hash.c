@@ -92,9 +92,12 @@ static unsigned int ui_hash_sign_button(unsigned int button_mask, unsigned int b
   case BUTTON_EVT_RELEASED | BUTTON_RIGHT: {
     field sk;
     group pk;
-    generate_keypair(ctx->key_index, sk, &pk);
-    sign(G_io_apdu_buffer, &pk, sk, ctx->txn.hash, ctx->key_index);
-    io_exchange_with_code(SW_OK, 64);
+    signature s;
+    generate_keypair(ctx->key_index, &pk, sk);
+    sign(&s, &pk, sk, ctx->txn.hash, ctx->key_index);
+    os_memmove(G_io_apdu_buffer, s.rx, field_bytes);
+    os_memmove(G_io_apdu_buffer + field_bytes, s.s, scalar_bytes);
+    io_exchange_with_code(SW_OK, field_bytes + scalar_bytes);
     ui_idle();
     }
     break;
@@ -125,48 +128,29 @@ static const bagl_element_t* ui_prepro_hash_elem(const bagl_element_t *element) 
 static void fmtTxnElem(hash_context *ctx) {
   txn_state *txn = &ctx->txn;
 
-  switch (txn->elemType) {
-  case TXN_ELEM_SC_OUTPUT:
+  switch (txn->elem_type) {
+  case TXN_ELEM_TO:
     os_memmove(ctx->label_str, "Output #", 16);
     bin2dec(ctx->label_str+16, txn->slice_index);
     if (ctx->elem_part == 0) {
-      os_memmove(ctx->full_str, txn->out_addr, sizeof(txn->out_addr));
+      os_memmove(ctx->full_str, txn->out_key, sizeof(txn->out_key));
       os_memmove(ctx->partial_str, ctx->full_str, 12);
       ctx->elem_len = 76;
       ctx->elem_part++;
     } else {
       os_memmove(ctx->full_str, txn->out_val, sizeof(txn->out_val));
-      ctx->elem_len = formatSC(ctx->full_str, txn->val_len);
+      ctx->elem_len = format(ctx->full_str, txn->val_len);
       os_memmove(ctx->partial_str, ctx->full_str, 12);
       ctx->elem_part = 0;
     }
     break;
 
-  // TODO: do we need this? give a more descriptive name?
-  // change addr to key?
-  case TXN_ELEM_SF_OUTPUT:
-    os_memmove(ctx->label_str, "Output #", 16);
-    bin2dec(ctx->label_str+16, txn->slice_index);
-    if (ctx->elem_part == 0) {
-      os_memmove(ctx->full_str, txn->out_addr, sizeof(txn->out_addr));
-      os_memmove(ctx->partial_str, ctx->full_str, 12);
-      ctx->elem_len = 76;
-      ctx->elem_part++;
-    } else {
-      os_memmove(ctx->full_str, txn->out_val, sizeof(txn->out_val));
-      os_memmove(ctx->full_str+txn->val_len, " SF", 4);
-      os_memmove(ctx->partial_str, ctx->full_str, 12);
-      ctx->elem_len = txn->val_len + 4;
-      ctx->elem_part = 0;
-    }
-    break;
-
-  case TXN_ELEM_MINER_FEE:
+  case TXN_ELEM_FEE:
     // Miner fees only have one part.
     os_memmove(ctx->label_str, "Miner Fee #", 11);
     bin2dec(ctx->label_str+11, txn->slice_index);
     os_memmove(ctx->full_str, txn->out_val, sizeof(txn->out_val));
-    ctx->elem_len = formatSC(ctx->full_str, txn->val_len);
+    ctx->elem_len = format(ctx->full_str, txn->val_len);
     os_memmove(ctx->partial_str, ctx->full_str, 12);
     ctx->elem_part = 0;
     break;

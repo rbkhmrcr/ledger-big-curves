@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  */
 
-#include "crypto.h"
-
 // exception codes
 #define SW_DEVELOPER_ERR 0x6B00
 #define SW_INVALID_PARAM 0x6B01
@@ -54,37 +52,32 @@ typedef enum {
 
 // txn_elem_type_e indicates a transaction element type.
 typedef enum {
-  TXN_ELEM_SC_INPUT,
-  TXN_ELEM_SC_OUTPUT,
-  TXN_ELEM_FC,
-  TXN_ELEM_FCR,
-  TXN_ELEM_SP,
-  TXN_ELEM_SF_INPUT,
-  TXN_ELEM_SF_OUTPUT,
-  TXN_ELEM_MINER_FEE,
-  TXN_ELEM_ARB_DATA,
-  TXN_ELEM_TXN_SIG,
+  TXN_ELEM_IS_DELEGATION,
+  TXN_ELEM_NONCE,
+  TXN_ELEM_FROM,
+  TXN_ELEM_TO,
+  TXN_ELEM_AMOUNT,
+  TXN_ELEM_FEE,
+  TXN_ELEM_MEMO,
 } txn_elem_type_e;
 
-// TODO : change these
 // txn_state is a helper object for computing the hash of a streamed
 // transaction.
 typedef struct {
-  uint8_t buf[510];         // holds raw tx bytes; large enough for two 0xFF reads
-  uint16_t buflen;          // number of valid bytes in buf
-  uint16_t pos;             // mid-decode offset; reset to 0 after each elem
+  uint8_t buf[510];           // holds raw tx bytes; large enough for two 0xFF reads
+  uint16_t buf_len;           // number of valid bytes in buf
+  uint16_t pos;               // mid-decode offset; reset to 0 after each elem
 
-  txn_elem_type_e elemType; // type of most-recently-seen element
-  uint64_t slice_len;       // most-recently-seen slice length prefix
-  uint16_t slice_index;     // offset within current element slice
+  txn_elem_type_e elem_type;  // type of most-recently-seen element
+  uint64_t slice_len;         // most-recently-seen slice length prefix
+  uint16_t slice_index;       // offset within current element slice
 
-  uint16_t sig_index;       // index of TxnSig being computed
-  field   poseidon;         // hash state
-  uint8_t hash[32];         // buffer to hold final hash
+  uint16_t sig_index;         // index of TxnSig being computed
+  uint8_t hash[96];           // buffer to hold final hash
 
-  uint8_t out_val[128];     // most-recently-seen currency value, in decimal
-  uint8_t val_len;          // length of out_val
-  uint8_t out_addr[77];     // most-recently-seen address
+  uint8_t out_val[128];       // currency value, in decimal
+  uint8_t val_len;            // length of out_val
+  uint8_t out_key[96];        // public key
 } txn_state;
 
 // txn_init initializes a transaction decoder, preparing it to calculate the
