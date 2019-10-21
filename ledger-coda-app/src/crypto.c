@@ -174,6 +174,11 @@ unsigned int scalar_eq(const scalar a, const scalar b) {
   return (os_memcmp(a, b, scalar_bytes) == 0);
 }
 
+void pad_to_scalar(scalar r, unsigned char *s, unsigned char len) {
+  os_memmove(r, scalar_zero, scalar_bytes);
+  os_memmove(r + (scalar_bytes - len), s, len);
+}
+
 
 unsigned int is_zero(const group *p) {
   return (os_memcmp(p->x, field_zero, field_bytes) == 0 &&
@@ -330,15 +335,18 @@ inline unsigned int is_odd(field y) {
   return (y[95] & 1);
 }
 
-unsigned int sign(signature *sig, group *public_key, scalar private_key,
-                  scalar hash, unsigned int sig_len) {
+
+unsigned int sign(signature *sig, const group *public_key, const scalar private_key,
+                  const scalar hash, unsigned int sig_len) {
+
+  scalar state[SPONGE_SIZE] = {{0}, {0}, {0}};
 
   group r;
   scalar k_prime;
-  poseidon(k_prime);
-  poseidon(hash);
-  poseidon(private_key);
-  poseidon_digest(k_prime);                   // k' = hash(sk || m)
+  poseidon(state, k_prime);
+  poseidon(state, hash);
+  poseidon(state, private_key);
+  poseidon_digest(state, k_prime);            // k' = hash(sk || m)
   group_scalar_mul(&r, k_prime, &group_one);  // r = k*g
 
   field k;
@@ -349,13 +357,13 @@ unsigned int sign(signature *sig, group *public_key, scalar private_key,
   }
 
   scalar s, e;
-  poseidon(hash);
-  poseidon(r.x);
-  poseidon(public_key->x);
-  poseidon(hash);
-  poseidon_digest(e);                         // e = hash(xr || pk || m)
+  poseidon(state, hash);
+  poseidon(state, r.x);
+  poseidon(state, public_key->x);
+  poseidon(state, hash);
+  poseidon_digest(state, e);                  // e = hash(xr || pk || m)
   scalar_mul(s, e, private_key);              // e*sk
-  scalar_add(sig->s, k, s);                    // k + e*sk
+  scalar_add(sig->s, k, s);                   // k + e*sk
   os_memcpy(sig->rx, r.x, field_bytes);
 
   return (field_bytes + scalar_bytes);

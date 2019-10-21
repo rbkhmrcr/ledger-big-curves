@@ -1,5 +1,6 @@
 #include <os.h>
 #include <os_io_seproxyhal.h>
+#include "crypto.h"
 #include "ux.h"
 
 void io_exchange_with_code(uint16_t code, uint16_t tx) {

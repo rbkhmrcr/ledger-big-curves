@@ -24,8 +24,8 @@
 
 #include <os.h>
 #include <os_io_seproxyhal.h>
-#include "ux.h"
 #include "crypto.h"
+#include "ux.h"
 
 static hash_context *ctx = &global.h;
 

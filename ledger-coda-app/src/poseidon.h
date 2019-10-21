@@ -15,7 +15,7 @@
 #define ROUNDS 41
 #define SPONGE_SIZE 3
 
-void poseidon(scalar input);
-void poseidon_digest(scalar out);
+void poseidon(scalar state[3], const scalar input);
+void poseidon_digest(scalar state[3], scalar out);
 
 #endif /* POSEIDON */

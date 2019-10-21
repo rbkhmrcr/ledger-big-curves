@@ -73,11 +73,15 @@ typedef struct {
   uint16_t slice_index;       // offset within current element slice
 
   uint16_t sig_index;         // index of TxnSig being computed
-  uint8_t hash[96];           // buffer to hold final hash
+  scalar hash_state[3];       // buffer to hold intermediate hash state
+  scalar hash;                // buffer to hold final hash
 
+  uint8_t del;                // is delegation : 1 = true, 0 = false
   uint8_t out_val[128];       // currency value, in decimal
   uint8_t val_len;            // length of out_val
-  uint8_t out_key[96];        // public key
+  uint8_t fee_val[128];       // currency value, in decimal
+  scalar in_key;              // 'from' public key
+  scalar out_key;             // 'to' public key
 } txn_state;
 
 // txn_init initializes a transaction decoder, preparing it to calculate the

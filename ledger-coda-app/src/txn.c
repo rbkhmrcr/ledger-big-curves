@@ -19,12 +19,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <os.h>
-#include "ux.h"
 #include "crypto.h"
 #include "poseidon.h"
+#include "ux.h"
 
 static void divWW10(uint64_t u1, uint64_t u0, uint64_t *q, uint64_t *r) {
   const uint64_t s = 60ULL;
@@ -136,11 +135,11 @@ static void seek(txn_state *txn, uint64_t n) {
 static void advance(txn_state *txn) {
   // if elem is covered, add it to the hash
   if (txn->slice_index == txn->sig_index && txn->pos >= 96) {
-    poseidon(&txn->hash, txn->buf);
+    poseidon(txn->hash_state, txn->buf);
   } else {
     field temp;
-    pad_to_field(temp, txn->buf, txn->pos);
-    poseidon(&txn->hash, temp);
+    pad_to_scalar(temp, txn->buf, txn->pos);
+    poseidon(txn->hash_state, temp);
   }
 
   txn->buf_len -= txn->pos;
@@ -155,6 +154,7 @@ static uint64_t read_int(txn_state *txn) {
   return u;
 }
 
+// should we not make the value have a fixed length?
 static void read_currency(txn_state *txn, uint8_t *out_val) {
   uint64_t val_len = read_int(txn);
   need_at_least(txn, val_len);
@@ -164,6 +164,11 @@ static void read_currency(txn_state *txn, uint8_t *out_val) {
   seek(txn, val_len);
 }
 
+static void read_key(txn_state *txn) {
+  need_at_least(txn, group_bytes);
+  seek(txn, group_bytes);
+}
+
 // throws txn_decoder_state_e
 static void __txn_next_elem(txn_state *txn) {
   // if we're on a slice boundary, read the next length prefix and bump the
@@ -171,7 +176,7 @@ static void __txn_next_elem(txn_state *txn) {
   while (txn->slice_index == txn->slice_len) {
     if (txn->elem_type == TXN_ELEM_MEMO) {
       // store final hash
-      poseidon_digest(&txn->hash);
+      poseidon_digest(txn->hash_state, txn->hash);
       THROW(TXN_STATE_FINISHED);
     }
     txn->slice_len = read_int(txn);
@@ -199,25 +204,25 @@ static void __txn_next_elem(txn_state *txn) {
   // these elements should be displayed
 
   case TXN_ELEM_IS_DELEGATION:
-    read_int(txn, txn->out_val);
+    read_int(txn);                // read the first element of txn, txn.del
     advance(txn);
     txn->slice_index++;
     THROW(TXN_STATE_READY);
 
   case TXN_ELEM_NONCE:
-    read_int(txn, txn->out_val);
+    read_int(txn);                // read the second element of txn, txn.nonce
     advance(txn);
     txn->slice_index++;
     THROW(TXN_STATE_READY);
 
   case TXN_ELEM_FROM:
-    read_key(txn, txn->in_addr);
+    read_key(txn);                // read 'from' key : txn->in_key
     advance(txn);
     txn->slice_index++;
     THROW(TXN_STATE_READY);
 
   case TXN_ELEM_TO:
-    read_hash(txn, txn->out_key);
+    read_key(txn);                // read 'to' key : txn->out_key
     advance(txn);
     txn->slice_index++;
     THROW(TXN_STATE_READY);
@@ -229,7 +234,7 @@ static void __txn_next_elem(txn_state *txn) {
     THROW(TXN_STATE_READY);
 
   case TXN_ELEM_FEE:
-    read_currency(txn, txn->out_val);
+    read_currency(txn, txn->fee_val);
     advance(txn);
     txn->slice_index++;
     THROW(TXN_STATE_READY);
@@ -278,7 +283,7 @@ txn_decoder_state_e txn_next_elem(txn_state *txn) {
 void txn_init(txn_state *txn, uint16_t sig_index) {
   os_memset(txn, 0, sizeof(txn_state));
   txn->buf_len = txn->pos = txn->slice_index = txn->slice_len = txn->val_len = 0;
-  txn->elem_type = -1; // first increment brings it to INPUT
+  txn->elem_type = -1;
   txn->sig_index = sig_index;
 }
 
