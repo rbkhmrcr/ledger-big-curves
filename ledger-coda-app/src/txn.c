@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <os.h>
+#include <os_io_seproxyhal.h>
 #include "crypto.h"
 #include "poseidon.h"
 #include "ux.h"

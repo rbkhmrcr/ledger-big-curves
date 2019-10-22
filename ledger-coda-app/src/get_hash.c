@@ -45,6 +45,30 @@ static const bagl_element_t* ui_prepro_hash_compare(const bagl_element_t *elemen
   return element;
 }
 
+#define ZEROS 24
+
+int format(uint8_t *buf, uint8_t dec_len) {
+  if (dec_len < ZEROS + 1) {
+    // if < 1, pad with leading zeros
+    os_memmove(buf + (ZEROS - dec_len) + 2, buf, dec_len+1);
+    os_memset(buf, '0', ZEROS + 2 - dec_len);
+    dec_len = ZEROS + 1;
+  } else {
+    os_memmove(buf + (dec_len - ZEROS)+2, buf + (dec_len - ZEROS + 1), ZEROS + 1);
+  }
+  // add decimal point, trim trailing zeros, and add units
+  buf[dec_len - ZEROS] = '.';
+  while (dec_len > 0 && buf[dec_len] == '0') {
+    dec_len--;
+  }
+  if (buf[dec_len] == '.') {
+    dec_len--;
+  }
+  os_memmove(buf + dec_len + 1, " CODA", 6);
+  return dec_len + 6;
+}
+
+
 static unsigned int ui_hash_compare_button(unsigned int button_mask, unsigned int button_mask_counter) {
   switch (button_mask) {
   case BUTTON_LEFT:
@@ -125,7 +149,7 @@ static const bagl_element_t* ui_prepro_hash_elem(const bagl_element_t *element) 
 // display. It stores the type of the element in label_str, and a human-
 // readable representation of the element in full_str. As in previous screens,
 // partial_str holds the visible portion of full_str.
-static void fmtTxnElem(hash_context *ctx) {
+static void format_txn_elem(hash_context *ctx) {
   txn_state *txn = &ctx->txn;
 
   switch (txn->elem_type) {
@@ -191,7 +215,7 @@ static unsigned int ui_hash_elem_button(unsigned int button_mask, unsigned int b
     if (ctx->elem_part > 0) {
       // We're in the middle of displaying a multi-part element; display
       // the next part.
-      fmtTxnElem(ctx);
+      format_txn_elem(ctx);
       UX_REDISPLAY();
       break;
     }
@@ -211,7 +235,7 @@ static unsigned int ui_hash_elem_button(unsigned int button_mask, unsigned int b
       // We successively decoded one or more elements; display the first
       // part of the first element.
       ctx->elem_part = 0;
-      fmtTxnElem(ctx);
+      format_txn_elem(ctx);
       UX_REDISPLAY();
       break;
     case TXN_STATE_FINISHED:
@@ -305,7 +329,7 @@ void handle_hash(uint8_t p1, uint8_t p2, uint8_t *data_buffer, uint16_t data_len
     THROW(SW_OK);
   case TXN_STATE_READY:
     ctx->elem_part = 0;
-    fmtTxnElem(ctx);
+    format_txn_elem(ctx);
     UX_DISPLAY(ui_hash_elem, ui_prepro_hash_elem);
     *flags |= IO_ASYNCH_REPLY;
     break;
