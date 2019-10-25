@@ -112,13 +112,7 @@ static unsigned int ui_pubkey_approve_button(unsigned int button_mask, unsigned 
   return 0;
 }
 
-#define P2_DISPLAY_ADDRESS 0x00
-#define P2_DISPLAY_PUBKEY  0x01
-
 void handle_pubkey(uint8_t p1, uint8_t p2, uint8_t *data_buffer, uint16_t data_length, volatile unsigned int *flags, volatile unsigned int *tx) {
-  if ((p2 != P2_DISPLAY_ADDRESS) && (p2 != P2_DISPLAY_PUBKEY)) {
-    THROW(SW_INVALID_PARAM);
-  }
 
   ctx->key_index = U4LE(data_buffer, 0);
   os_memmove(ctx->type_str, "Public Key", 11);
