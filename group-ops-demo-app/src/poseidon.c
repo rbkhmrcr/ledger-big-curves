@@ -23,7 +23,7 @@ static const scalar alpha_inv = {
     0x09, 0x0e, 0xd3, 0x08, 0x39, 0x46, 0x21, 0x15, 0x30, 0x34, 0xe8, 0x43,
     0x82, 0x92, 0x92, 0x1a, 0x0b, 0x1e, 0x0e, 0xfc, 0x3a, 0x2e, 0x8b, 0xa3};
 
-static const scalar round_keys[ROUNDS][SPONGE_SIZE] = {
+static const scalar round_keys[rounds][sponge_size] = {
     {
         {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1331,7 +1331,7 @@ static const scalar round_keys[ROUNDS][SPONGE_SIZE] = {
     */
 };
 
-static const scalar MDS[SPONGE_SIZE][SPONGE_SIZE] = {
+static const scalar MDS[sponge_size][sponge_size] = {
     {
         {0x00, 0x00, 0xc2, 0x9b, 0x4a, 0xf8, 0x2e, 0x80, 0xfd, 0xfb, 0xae,
          0x68, 0x0d, 0x1e, 0xd1, 0x71, 0xba, 0xa0, 0xd5, 0xc8, 0xa1, 0x4e,
@@ -1417,13 +1417,12 @@ void alphath_root(scalar xa, const scalar x) { scalar_pow(xa, x, alpha_inv); }
 
 void to_the_alpha(scalar xa, const scalar x) { scalar_pow(xa, x, alpha); }
 
-// this could be SPONGE_SIZE instead of 3 and nested for loops
-void matrix_mul(scalar out[3], const scalar m[3][3], const scalar s[3]) {
+void matrix_mul(state out, const state m[sponge_size], const state s) {
   /* a b c     s0     as0 + bs1 + cs2
    * d e f  x  s1  =  ds0 + es1 + fs2
    * g h i     s2     gs0 + hs1 + is2  */
   scalar t0, t1, t2, t3;
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < sponge_size; i++) {
     scalar_mul(t0, m[i][0], s[0]);
     scalar_mul(t1, m[i][1], s[1]);
     scalar_mul(t2, m[i][2], s[2]);
@@ -1433,49 +1432,53 @@ void matrix_mul(scalar out[3], const scalar m[3][3], const scalar s[3]) {
   return;
 }
 
-
 void pretend_poseidon(state s, const scalar input) {
 }
 
 // this looks more complicated than it is because we cant use e.g. add(a, a, b)
-void poseidon(state s, const scalar input) {
+void poseidon(state s, const scalar input[sponge_size - 1]) {
   int half_rounds = 4;
   int partial_rounds = 33;
-  scalar si;
   state temp;
+
+  scalar_add(temp[0], s[0], input[0]);
+  scalar_add(temp[1], s[1], input[1]);
+  os_memcpy(temp[2], s[2], scalar_bytes);
 
   // half of the full rounds
   for (int r = 0; r < half_rounds; r++) {
-    for (int i = 0; i < SPONGE_SIZE; i++) {
-      scalar_add(si, s[i], input);
-      scalar_add(s[i], si, round_keys[r][i]);
+    for (int i = 0; i < sponge_size; i++) {
+      scalar_add(s[i], temp[i], round_keys[r][i]);
       to_the_alpha(temp[i], s[i]);
     }
-    matrix_mul(s, MDS, (const scalar *)temp);
+    matrix_mul(s, MDS, temp);
   }
 
   // all partial rounds
   int k = half_rounds;
   for (int r = k; r < k + partial_rounds; r++) {
-    for (int i = 0; i < SPONGE_SIZE; i++) {
-      os_memcpy(si, s[i], scalar_bytes);
-      scalar_add(s[i], si, round_keys[r][i]);
+    for (int i = 0; i < sponge_size; i++) {
+      os_memcpy(temp[i], s[i], scalar_bytes);
+      scalar_add(s[i], temp[i], round_keys[r][i]);
     }
     to_the_alpha(temp[0], s[0]);
     os_memcpy(temp[1], s[1], scalar_bytes);
     os_memcpy(temp[2], s[2], scalar_bytes);
-    matrix_mul(s, MDS, (const scalar *)temp);
+    matrix_mul(s, MDS, temp);
   }
+
+  os_memcpy(temp[0], s[0], scalar_bytes);
+  os_memcpy(temp[1], s[1], scalar_bytes);
+  os_memcpy(temp[2], s[2], scalar_bytes);
 
   // other half of the full rounds
   k = half_rounds + partial_rounds;
   for (int r = k; r < k + half_rounds; r++) {
-    for (int i = 0; i < SPONGE_SIZE; i++) {
-      os_memcpy(si, s[i], scalar_bytes);
-      scalar_add(s[i], si, round_keys[r][i]);
+    for (int i = 0; i < sponge_size; i++) {
+      scalar_add(s[i], temp[i], round_keys[r][i]);
       to_the_alpha(temp[i], s[i]);
     }
-    matrix_mul(s, MDS, (const scalar *)temp);
+    matrix_mul(s, MDS, temp);
   }
 }
 

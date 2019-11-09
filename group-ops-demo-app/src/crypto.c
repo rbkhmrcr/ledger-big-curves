@@ -326,19 +326,20 @@ void generate_keypair(group *pub_key, scalar priv_key) {
 }
 
 inline unsigned int is_odd(field y) {
-  return (y[95] & 1);
+  return (y[field_bytes - 1] & 1);
 }
 
 unsigned int sign(signature *sig, const group *public_key, const scalar private_key,
-                  const scalar hash, unsigned int sig_len) {
+                  const scalar msg, unsigned int sig_len) {
 
-  scalar state[SPONGE_SIZE] = {{0}, {0}, {0}};
+  scalar state[sponge_size] = {{0}, {0}, {0}};
 
   group r;
   scalar k_prime;
-  poseidon(state, k_prime);
-  poseidon(state, hash);
-  poseidon(state, private_key);
+  scalar tmp[sponge_size - 1];
+  os_memcpy(tmp[0], msg, scalar_bytes);
+  os_memcpy(tmp[1], private_key, scalar_bytes);
+  poseidon(state, tmp);
   poseidon_digest(state, k_prime);            // k' = hash(sk || m)
   group_scalar_mul(&r, k_prime, &group_one);  // r = k*g
 
@@ -350,14 +351,16 @@ unsigned int sign(signature *sig, const group *public_key, const scalar private_
   }
 
   scalar s, e;
-  poseidon(state, hash);
-  poseidon(state, r.x);
-  poseidon(state, public_key->x);
-  poseidon(state, hash);
+  os_memcpy(tmp[0], r.x, scalar_bytes);
+  os_memcpy(tmp[1], public_key->x, scalar_bytes);
+  poseidon(state, tmp);
+  os_memcpy(tmp[0], public_key->y, scalar_bytes);
+  os_memcpy(tmp[1], msg, scalar_bytes);
+  poseidon(state, tmp);
   poseidon_digest(state, e);                  // e = hash(xr || pk || m)
   scalar_mul(s, e, private_key);              // e*sk
   scalar_add(sig->s, k, s);                   // k + e*sk
   os_memcpy(sig->rx, r.x, field_bytes);
 
   return (field_bytes + scalar_bytes);
-};
+}
