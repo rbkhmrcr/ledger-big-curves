@@ -1186,8 +1186,6 @@ void matrix_mul(state out, const state m[sponge_size], const state s) {
   return;
 }
 
-void pretend_poseidon(state s, const scalar input) {}
-
 // this looks more complicated than it is because we cant use e.g. add(a, a, b)
 void poseidon(state s, const scalar input[sponge_size - 1]) {
   int half_rounds = 4;
@@ -1205,6 +1203,9 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
       to_the_alpha(temp[i], s[i]);
     }
     matrix_mul(s, MDS, temp);
+    os_memcpy(temp[0], s[0], scalar_bytes);
+    os_memcpy(temp[1], s[1], scalar_bytes);
+    os_memcpy(temp[2], s[2], scalar_bytes);
   }
 
   // all partial rounds
@@ -1218,6 +1219,9 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
     os_memcpy(temp[1], s[1], scalar_bytes);
     os_memcpy(temp[2], s[2], scalar_bytes);
     matrix_mul(s, MDS, temp);
+    os_memcpy(temp[0], s[0], scalar_bytes);
+    os_memcpy(temp[1], s[1], scalar_bytes);
+    os_memcpy(temp[2], s[2], scalar_bytes);
   }
 
   os_memcpy(temp[0], s[0], scalar_bytes);
@@ -1232,6 +1236,9 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
       to_the_alpha(temp[i], s[i]);
     }
     matrix_mul(s, MDS, temp);
+    os_memcpy(temp[0], s[0], scalar_bytes);
+    os_memcpy(temp[1], s[1], scalar_bytes);
+    os_memcpy(temp[2], s[2], scalar_bytes);
   }
 }
 
