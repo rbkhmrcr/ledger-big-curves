@@ -442,7 +442,7 @@ static const scalar scalar_one = {
   //os_memmove(G_io_apdu_buffer + field_bytes, s.s, scalar_bytes);
   //tx = field_bytes + scalar_bytes;
   scalar tmp[sponge_size - 1];
-  os_memcpy(tmp, msg0, scalar_bytes);
+  os_memcpy(tmp, scalar_zero, scalar_bytes);
   os_memcpy(tmp, scalar_zero, scalar_bytes);
   poseidon(state, tmp);
   poseidon_digest(state, G_io_apdu_buffer);
