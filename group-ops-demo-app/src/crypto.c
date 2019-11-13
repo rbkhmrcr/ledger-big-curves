@@ -189,9 +189,9 @@ void scalar_sq(scalar c, const scalar a) {
 }
 
 // c = a^e mod m
-// cx_math_powm(result_pointer, a, e, len_e, m, len(result, a, m)
+// cx_math_powm(result_pointer, a, e, len_e, m, len(result)  (which is also len(a) and len(m)) )
 void scalar_pow(scalar c, const scalar a, const scalar e) {
-  cx_math_powm(c, a, e, scalar_bytes, group_order, scalar_bytes);
+  cx_math_powm(c, a, e, 1, group_order, scalar_bytes);
 }
 
 unsigned int scalar_eq(const scalar a, const scalar b) {
@@ -354,18 +354,18 @@ inline unsigned int is_odd(field y) {
   return (y[field_bytes - 1] & 1);
 }
 
-unsigned int sign(signature *sig, const group *public_key, const scalar private_key,
-                  const scalar msg, unsigned int sig_len) {
+unsigned int sign(signature *sig, group *public_key, scalar private_key,
+    scalar msg, unsigned int sig_len) {
 
-  scalar state[sponge_size] = {{0}, {0}, {0}};
+  state pos = {{0}, {0}, {0}};
 
   group r;
   scalar k_prime;
   scalar tmp[sponge_size - 1];
   os_memcpy(tmp[0], msg, scalar_bytes);
   os_memcpy(tmp[1], private_key, scalar_bytes);
-  poseidon(state, tmp);
-  poseidon_digest(state, k_prime);            // k' = hash(sk || m)
+  poseidon(pos, tmp);
+  poseidon_digest(pos, k_prime);              // k' = hash(sk || m)
   group_scalar_mul(&r, k_prime, &group_one);  // r = k*g
 
   field k;
@@ -375,17 +375,22 @@ unsigned int sign(signature *sig, const group *public_key, const scalar private_
     os_memcpy(k, k_prime, scalar_bytes);      // if ry is even, k = k'
   }
 
+  /*
+
+  os_memcpy(pos[0], scalar_zero, scalar_bytes);
+  os_memcpy(pos[1], scalar_zero, scalar_bytes);
+  os_memcpy(pos[2], scalar_zero, scalar_bytes);
   scalar s, e;
   os_memcpy(tmp[0], r.x, scalar_bytes);
   os_memcpy(tmp[1], public_key->x, scalar_bytes);
-  poseidon(state, tmp);
+  poseidon(pos, tmp);
   os_memcpy(tmp[0], public_key->y, scalar_bytes);
   os_memcpy(tmp[1], msg, scalar_bytes);
-  poseidon(state, tmp);
-  poseidon_digest(state, e);                  // e = hash(xr || pk || m)
+  poseidon(pos, tmp);
+  poseidon_digest(pos, e);                    // e = hash(xr || pk || m)
   scalar_mul(s, e, private_key);              // e*sk
   scalar_add(sig->s, k, s);                   // k + e*sk
   os_memcpy(sig->rx, r.x, field_bytes);
-
+*/
   return (field_bytes + scalar_bytes);
 }
