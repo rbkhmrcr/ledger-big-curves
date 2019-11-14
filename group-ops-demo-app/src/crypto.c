@@ -356,15 +356,15 @@ void generate_keypair(group *pub_key, scalar priv_key) {
   // os_memset(priv_key, 0, sizeof(priv_key));
 }
 
-void generate_pubkey(group *pub_key, scalar priv_key) {
+void generate_pubkey(group *pub_key, const scalar priv_key) {
   group_scalar_mul(pub_key, priv_key, &group_one);
 }
 
-inline unsigned int is_odd(field y) {
+inline unsigned int is_odd(const field y) {
   return (y[field_bytes - 1] & 1);
 }
 
-void poseidon_2in(scalar out, scalar in1, scalar in2) {
+void poseidon_2in(scalar out, const scalar in1, const scalar in2) {
     state pos = {{0}, {0}, {0}};
     scalar tmp[sponge_size - 1];
     os_memcpy(tmp[0], in1, scalar_bytes);
@@ -373,7 +373,7 @@ void poseidon_2in(scalar out, scalar in1, scalar in2) {
     poseidon_digest(pos, out);
 }
 
-void poseidon_4in(scalar out, scalar in1, scalar in2, scalar in3, scalar in4) {
+void poseidon_4in(scalar out, const scalar in1, const scalar in2, const scalar in3, const scalar in4) {
     state pos = {{0}, {0}, {0}};
     scalar tmp[sponge_size - 1];
 
@@ -386,28 +386,7 @@ void poseidon_4in(scalar out, scalar in1, scalar in2, scalar in3, scalar in4) {
     poseidon_digest(pos, out);
 }
 
-void sign_half(group *r, scalar k, scalar private_key, scalar msg) {
-  poseidon_2in(k, private_key, msg);                      // k = hash(sk || m)
-  group_scalar_mul(r, k, &group_one);                    // r = k*g
-  return;
-}
-
-void sign_otherhalf(signature *sig, group *public_key, scalar private_key, scalar msg, group *r, scalar k) {
-  scalar s;
-  os_memcpy(sig->rx, r->x, field_bytes);
-  if (is_odd(r->y)) {
-    field_negate(r->y, k);                                 // if ry is odd, k = - k'
-  } else {
-    os_memcpy(r->y, k, scalar_bytes);                      // if ry is even, k = k'
-  }
-
-  poseidon_4in(sig->s, sig->rx, public_key->x, public_key->y, msg); // e = hash(xr || pk || m)
-  scalar_mul(s, sig->s, private_key);                           // e*sk
-  scalar_add(sig->s, r->y, s);                                   // k + e*sk
-  return;
-}
-
-void sign(signature *sig, group *public_key, scalar private_key, scalar msg) {
+void sign(signature *sig, const group *public_key, const scalar private_key, const scalar msg) {
   group r;
   union tmp {
       scalar s;
