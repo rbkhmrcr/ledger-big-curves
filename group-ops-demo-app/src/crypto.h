@@ -28,7 +28,11 @@ void group_scalar_mul(group *r, const scalar k, const group *p);
 void generate_pubkey(group *pub_key, scalar priv_key);
 void generate_keypair(group *pub_key, scalar priv_key);
 
-unsigned int sign(signature *sig, group *public_key, scalar private_key,
-    scalar msg, unsigned int sig_len);
+void sign_half(group *r, scalar k, scalar private_key, scalar msg);
+void sign_otherhalf(signature *sig, group *public_key, 
+    scalar private_key, scalar msg, group *r, scalar k);
+
+void sign(signature *sig, group *public_key, scalar private_key,
+    scalar msg);
 
 #endif // CODA_CRYPTO

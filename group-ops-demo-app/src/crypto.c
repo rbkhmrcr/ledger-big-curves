@@ -364,40 +364,67 @@ inline unsigned int is_odd(field y) {
   return (y[field_bytes - 1] & 1);
 }
 
-unsigned int sign(signature *sig, group *public_key, scalar private_key,
-    scalar msg, unsigned int sig_len) {
+void poseidon_2in(scalar out, scalar in1, scalar in2) {
+    state pos = {{0}, {0}, {0}};
+    scalar tmp[sponge_size - 1];
+    os_memcpy(tmp[0], in1, scalar_bytes);
+    os_memcpy(tmp[1], in2, scalar_bytes);
+    poseidon(pos, tmp);
+    poseidon_digest(pos, out);
+}
 
-  state pos = {{0}, {0}, {0}};
+void poseidon_4in(scalar out, scalar in1, scalar in2, scalar in3, scalar in4) {
+    state pos = {{0}, {0}, {0}};
+    scalar tmp[sponge_size - 1];
 
-  group r;
-  scalar k_prime;
-  scalar tmp[sponge_size - 1];
-  os_memcpy(tmp[0], msg, scalar_bytes);
-  os_memcpy(tmp[1], private_key, scalar_bytes);
-  poseidon(pos, tmp);
-  poseidon_digest(pos, k_prime);              // k' = hash(sk || m)
-  group_scalar_mul(&r, k_prime, &group_one);  // r = k*g
+    os_memcpy(tmp[0], in1, scalar_bytes);
+    os_memcpy(tmp[1], in2, scalar_bytes);
+    poseidon(pos, tmp);
+    os_memcpy(tmp[0], in3, scalar_bytes);
+    os_memcpy(tmp[1], in4, scalar_bytes);
+    poseidon(pos, tmp);
+    poseidon_digest(pos, out);
+}
 
-  field k;
-  if (is_odd(r.y)) {
-    field_negate(k, k_prime);                 // if ry is odd, k = - k'
+void sign_half(group *r, scalar k, scalar private_key, scalar msg) {
+  poseidon_2in(k, private_key, msg);                      // k = hash(sk || m)
+  group_scalar_mul(r, k, &group_one);                    // r = k*g
+  return;
+}
+
+void sign_otherhalf(signature *sig, group *public_key, scalar private_key, scalar msg, group *r, scalar k) {
+  scalar s;
+  os_memcpy(sig->rx, r->x, field_bytes);
+  if (is_odd(r->y)) {
+    field_negate(r->y, k);                                 // if ry is odd, k = - k'
   } else {
-    os_memcpy(k, k_prime, scalar_bytes);      // if ry is even, k = k'
+    os_memcpy(r->y, k, scalar_bytes);                      // if ry is even, k = k'
   }
 
-  os_memcpy(pos[0], scalar_zero, scalar_bytes);
-  os_memcpy(pos[1], scalar_zero, scalar_bytes);
-  os_memcpy(pos[2], scalar_zero, scalar_bytes);
-  scalar s, e;
-  os_memcpy(tmp[0], r.x, scalar_bytes);
-  os_memcpy(tmp[1], public_key->x, scalar_bytes);
-  poseidon(pos, tmp);
-  os_memcpy(tmp[0], public_key->y, scalar_bytes);
-  os_memcpy(tmp[1], msg, scalar_bytes);
-  poseidon(pos, tmp);
-  poseidon_digest(pos, e);                    // e = hash(xr || pk || m)
-  scalar_mul(s, e, private_key);              // e*sk
-  scalar_add(sig->s, k, s);                   // k + e*sk
+  poseidon_4in(sig->s, sig->rx, public_key->x, public_key->y, msg); // e = hash(xr || pk || m)
+  scalar_mul(s, sig->s, private_key);                           // e*sk
+  scalar_add(sig->s, r->y, s);                                   // k + e*sk
+  return;
+}
+
+void sign(signature *sig, group *public_key, scalar private_key, scalar msg) {
+  group r;
+  union tmp {
+      scalar s;
+      scalar k_prime;
+  } tmp;
+
+  poseidon_2in(tmp.k_prime, private_key, msg);                      // k = hash(sk || m)
+  group_scalar_mul(&r, tmp.k_prime, &group_one);                    // r = k*g
   os_memcpy(sig->rx, r.x, field_bytes);
-  return (field_bytes + scalar_bytes);
+  if (is_odd(r.y)) {
+    field_negate(r.y, tmp.k_prime);                                 // if ry is odd, k = - k'
+  } else {
+    os_memcpy(r.y, tmp.k_prime, scalar_bytes);                      // if ry is even, k = k'
+  }
+
+  poseidon_4in(sig->s, sig->rx, public_key->x, public_key->y, msg); // e = hash(xr || pk || m)
+  scalar_mul(tmp.s, sig->s, private_key);                           // e*sk
+  scalar_add(sig->s, r.y, tmp.s);                                   // k + e*sk
+  return;
 }
