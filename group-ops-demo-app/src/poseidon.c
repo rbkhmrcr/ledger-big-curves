@@ -3,27 +3,19 @@
 #include "crypto.h"
 #include "poseidon.h"
 
+/* poseidon is used to hash to a field in the schnorr signature scheme
+ * we use, but due to it being implemented in order to be efficiently
+ * computed within the snark, it is actually computed using the base
+ * field of the elliptic curve, and then transformed to bits in order
+ * to be used to scale the elliptic curve point. We do all of the
+ * computation in this file in the base field, but output the result
+ * as a field.
+ */
+
+
 static const unsigned char alpha = 0x0B;
 
-/*
-static const scalar alpha = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0B};
-
-static const scalar alpha_inv = {
-    0x00, 0x01, 0x9b, 0x9c, 0xe3, 0x9c, 0xb2, 0x3e, 0x0e, 0xab, 0x0e, 0xab, 0x64, 0xce, 0x2f, 0x58,
-    0x1b, 0x9d, 0x15, 0x31, 0xc7, 0x99, 0xe5, 0xc0, 0x84, 0xa7, 0x30, 0xe2, 0xbf, 0xcf, 0xdc, 0x0b,
-    0x7b, 0xa0, 0xd6, 0xdc, 0xa4, 0xef, 0x63, 0x98, 0x00, 0x32, 0x7e, 0x97, 0x4c, 0xde, 0x55, 0x78,
-    0x16, 0x91, 0x0d, 0xf6, 0x87, 0x97, 0x54, 0x5e, 0x96, 0x4a, 0xb8, 0x29, 0x99, 0xc1, 0x0b, 0x77,
-    0x91, 0xb4, 0x57, 0x25, 0xa4, 0x2e, 0x35, 0x50, 0x09, 0x0e, 0xd3, 0x08, 0x39, 0x46, 0x21, 0x15,
-    0x30, 0x34, 0xe8, 0x43, 0x82, 0x92, 0x92, 0x1a, 0x0b, 0x1e, 0x0e, 0xfc, 0x3a, 0x2e, 0x8b, 0xa3};
-*/
-
-static const scalar round_keys[rounds][sponge_size] = {
+static const field round_keys[rounds][sponge_size] = {
     {
         {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1110,7 +1102,7 @@ static const scalar round_keys[rounds][sponge_size] = {
     */
 };
 
-static const scalar MDS[sponge_size][sponge_size] = {
+static const field MDS[sponge_size][sponge_size] = {
     {
         {0x00, 0x00, 0xc2, 0x9b, 0x4a, 0xf8, 0x2e, 0x80, 0xfd, 0xfb, 0xae, 0x68, 0x0d, 0x1e, 0xd1, 0x71,
          0xba, 0xa0, 0xd5, 0xc8, 0xa1, 0x4e, 0xda, 0xcf, 0x0c, 0xdd, 0xdd, 0xe2, 0xb3, 0xc7, 0xab, 0x08,
@@ -1172,30 +1164,30 @@ static const scalar MDS[sponge_size][sponge_size] = {
          0x30, 0xbe, 0x94, 0xdd, 0x56, 0xd1, 0x86, 0x6d, 0xf6, 0xe3, 0x5f, 0x17, 0x7e, 0xb2, 0x1a, 0xb5},
     }};
 
-// needs len_e = scalar_bytes
-// void alphath_root(scalar xa, const scalar x) { scalar_pow(xa, x, alpha_inv); }
+// needs len_e = field_bytes
+// void alphath_root(field xa, const field x) { field_pow(xa, x, alpha_inv); }
 
 // only needs len_e = 1
-void to_the_alpha(scalar xa, const scalar x) { scalar_pow(xa, x, &alpha); }
+void to_the_alpha(field xa, const field x) { field_pow(xa, x, &alpha); }
 
 void matrix_mul(state out, const state m[sponge_size], const state s) {
   /* a b c     s0     as0 + bs1 + cs2
    * d e f  x  s1  =  ds0 + es1 + fs2
    * g h i     s2     gs0 + hs1 + is2  */
-  scalar t0, t1, t2, t3;
+  field t0, t1, t2, t3;
   for (int i = 0; i < sponge_size; i++) {
-    scalar_mul(t0, m[i][0], s[0]);
-    scalar_mul(t1, m[i][1], s[1]);
-    scalar_mul(t2, m[i][2], s[2]);
-    scalar_add(t3, t0, t1);
-    scalar_add(out[i], t2, t3);
+    field_mul(t0, m[i][0], s[0]);
+    field_mul(t1, m[i][1], s[1]);
+    field_mul(t2, m[i][2], s[2]);
+    field_add(t3, t0, t1);
+    field_add(out[i], t2, t3);
   }
   return;
 }
 
 void statecpy(state temp, state s) {
   for (int i = 0; i < sponge_size; i++) {
-    os_memcpy(temp[i], s[i], scalar_bytes);
+    os_memcpy(temp[i], s[i], field_bytes);
   }
 }
 
@@ -1205,14 +1197,14 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
   int partial_rounds = 33;
   state temp;
 
-  scalar_add(temp[0], s[0], input[0]);
-  scalar_add(temp[1], s[1], input[1]);
-  os_memcpy(temp[2], s[2], scalar_bytes);
+  field_add(temp[0], s[0], input[0]);
+  field_add(temp[1], s[1], input[1]);
+  os_memcpy(temp[2], s[2], field_bytes);
 
   // half of the full rounds
   for (int r = 0; r < half_rounds; r++) {
     for (int i = 0; i < sponge_size; i++) {
-      scalar_add(s[i], temp[i], round_keys[r][i]);
+      field_add(s[i], temp[i], round_keys[r][i]);
       to_the_alpha(temp[i], s[i]);
     }
     matrix_mul(s, MDS, temp);
@@ -1223,12 +1215,12 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
   int k = half_rounds;
   for (int r = k; r < k + partial_rounds; r++) {
     for (int i = 0; i < sponge_size; i++) {
-      os_memcpy(temp[i], s[i], scalar_bytes);
-      scalar_add(s[i], temp[i], round_keys[r][i]);
+      os_memcpy(temp[i], s[i], field_bytes);
+      field_add(s[i], temp[i], round_keys[r][i]);
     }
     to_the_alpha(temp[0], s[0]);
-    os_memcpy(temp[1], s[1], scalar_bytes);
-    os_memcpy(temp[2], s[2], scalar_bytes);
+    os_memcpy(temp[1], s[1], field_bytes);
+    os_memcpy(temp[2], s[2], field_bytes);
     matrix_mul(s, MDS, temp);
     statecpy(temp, s);
   }
@@ -1237,7 +1229,7 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
   k = half_rounds + partial_rounds;
   for (int r = k; r < k + half_rounds; r++) {
     for (int i = 0; i < sponge_size; i++) {
-      scalar_add(s[i], temp[i], round_keys[r][i]);
+      field_add(s[i], temp[i], round_keys[r][i]);
       to_the_alpha(temp[i], s[i]);
     }
     matrix_mul(s, MDS, temp);
@@ -1246,5 +1238,5 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
 }
 
 void poseidon_digest(state s, scalar out) {
-  os_memcpy(out, s[0], scalar_bytes);
+  os_memcpy(out, s[0], field_bytes);
 }

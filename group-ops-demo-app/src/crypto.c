@@ -174,6 +174,12 @@ void field_negate(field c, const field a) {
   cx_math_subm(c, field_modulus, a, field_modulus, field_bytes);
 }
 
+// c = a^e mod m
+// cx_math_powm(result_pointer, a, e, len_e, m, len(result)  (which is also len(a) and len(m)) )
+void field_pow(field c, const field a, const field e) {
+  cx_math_powm(c, a, e, 1, field_modulus, field_bytes);
+}
+
 unsigned int field_eq(const field a, const field b) {
   return (os_memcmp(a, b, field_bytes) == 0);
 }
@@ -364,15 +370,6 @@ inline unsigned int is_odd(const field y) {
   return (y[field_bytes - 1] & 1);
 }
 
-void poseidon_2in(scalar out, const scalar in1, const scalar in2) {
-    state pos = {{0}, {0}, {0}};
-    scalar tmp[sponge_size - 1];
-    os_memcpy(tmp[0], in1, scalar_bytes);
-    os_memcpy(tmp[1], in2, scalar_bytes);
-    poseidon(pos, tmp);
-    poseidon_digest(pos, out);
-}
-
 void poseidon_4in(scalar out, const scalar in1, const scalar in2, const scalar in3, const scalar in4) {
     state pos = {{0}, {0}, {0}};
     scalar tmp[sponge_size - 1];
@@ -393,17 +390,17 @@ void sign(signature *sig, const group *public_key, const scalar private_key, con
       scalar k_prime;
   } tmp;
 
-  poseidon_2in(tmp.k_prime, private_key, msg);                      // k = hash(sk || m)
-  group_scalar_mul(&r, tmp.k_prime, &group_one);                    // r = k*g
+  poseidon_4in(tmp.k_prime, msg, public_key->x, public_key->y, private_key);  // k = hash(m || pk || sk)
+  group_scalar_mul(&r, tmp.k_prime, &group_one);                              // r = k*g
   os_memcpy(sig->rx, r.x, field_bytes);
   if (is_odd(r.y)) {
-    field_negate(r.y, tmp.k_prime);                                 // if ry is odd, k = - k'
+    field_negate(r.y, tmp.k_prime);                                           // if ry is odd, k = - k'
   } else {
-    os_memcpy(r.y, tmp.k_prime, scalar_bytes);                      // if ry is even, k = k'
+    os_memcpy(r.y, tmp.k_prime, scalar_bytes);                                // if ry is even, k = k'
   }
 
-  poseidon_4in(sig->s, sig->rx, public_key->x, public_key->y, msg); // e = hash(xr || pk || m)
-  scalar_mul(tmp.s, sig->s, private_key);                           // e*sk
-  scalar_add(sig->s, r.y, tmp.s);                                   // k + e*sk
+  poseidon_4in(sig->s, msg, sig->rx, public_key->x, public_key->y);           // e = hash(xr || pk || m)
+  scalar_mul(tmp.s, sig->s, private_key);                                     // e*sk
+  scalar_add(sig->s, r.y, tmp.s);                                             // k + e*sk
   return;
 }

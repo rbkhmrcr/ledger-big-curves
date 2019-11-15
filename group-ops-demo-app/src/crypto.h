@@ -20,9 +20,9 @@ typedef struct signature {
   scalar s;
 } signature;
 
-void scalar_add(scalar c, const scalar a, const scalar b);
-void scalar_mul(scalar c, const scalar a, const scalar b);
-void scalar_pow(scalar c, const scalar a, const scalar e);
+void field_add(field c, const field a, const field b);
+void field_mul(field c, const field a, const field b);
+void field_pow(field c, const field a, const field e);
 
 void group_scalar_mul(group *r, const scalar k, const group *p);
 void generate_pubkey(group *pub_key, const scalar priv_key);
