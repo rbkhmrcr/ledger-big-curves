@@ -20,13 +20,6 @@ def packtxn(indict, output):
 
 dongle = getDongle(True)
 
-try:
-    pk = dongle.exchange(bytes.fromhex("8003000000"))
-except CommException as comm:
-    if comm.sw == 0x6804:
-        raise RuntimeError('Invalid status from Ledger: ', comm.sw, 'Is the device unlocked?')
-print('Public key from Ledger device:', pk.hex())
-
 if len(sys.argv) != 4:
     raise RuntimeError('Format command : %s request input output, request = {transaction, publickey}' % sys.argv[0])
 
@@ -35,7 +28,7 @@ if request != 'publickey' and request != 'transaction':
     raise RuntimeError('Format command : %s request input output, request = {transaction, publickey}' % sys.argv[0])
 
 try:
-    apdu = b'\x80'
+    apdu = b'\xE0'
 
     if request == 'publickey':
         x = decode.handle_input(request, infile)
