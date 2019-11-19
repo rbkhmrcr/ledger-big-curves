@@ -135,12 +135,11 @@ static void seek(txn_state *txn, uint64_t n) {
 
 static void advance(txn_state *txn) {
   // if elem is covered, add it to the hash
-  if (txn->slice_index == txn->sig_index && txn->pos >= 96) {
-    poseidon(txn->hash_state, txn->buf);
-  } else {
-    field temp;
-    pad_to_scalar(temp, txn->buf, txn->pos);
-    poseidon(txn->hash_state, temp);
+  // && txn->pos >= 96 below?
+  if (txn->slice_index == txn->sig_index) {
+    scalar tmp[sponge_size - 1];
+    os_memmove(tmp, txn->buf, scalar_bytes * (sponge_size - 1));
+    poseidon(txn->hash_state, tmp);
   }
 
   txn->buf_len -= txn->pos;

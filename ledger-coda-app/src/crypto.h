@@ -20,16 +20,15 @@ typedef struct signature {
   scalar s;
 } signature;
 
-void scalar_add(scalar c, const scalar a, const scalar b);
-void scalar_mul(scalar c, const scalar a, const scalar b);
-void scalar_pow(scalar c, const scalar a, const scalar e);
-void pad_to_scalar(scalar r, unsigned char *s, unsigned char len);
+void field_add(field c, const field a, const field b);
+void field_mul(field c, const field a, const field b);
+void field_pow(field c, const field a, const field e);
 
 void group_scalar_mul(group *r, const scalar k, const group *p);
+void generate_pubkey(group *pub_key, const scalar priv_key);
 void generate_keypair(unsigned int index, group *pub_key, scalar priv_key);
-void generate_public_key(group *pub_key);
 
-unsigned int sign(signature *sig, const group *public_key, const scalar private_key,
-    const scalar hash, unsigned int sig_len);
+void sign(signature *sig, const group *public_key, const scalar private_key,
+    const scalar msg);
 
 #endif // CODA_CRYPTO

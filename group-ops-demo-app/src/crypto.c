@@ -393,6 +393,7 @@ void sign(signature *sig, const group *public_key, const scalar private_key, con
   poseidon_4in(tmp.k_prime, msg, public_key->x, public_key->y, private_key);  // k = hash(m || pk || sk)
   group_scalar_mul(&r, tmp.k_prime, &group_one);                              // r = k*g
   os_memcpy(sig->rx, r.x, field_bytes);
+  //os_memcpy(sig->rx, tmp.k_prime, field_bytes);
   if (is_odd(r.y)) {
     field_negate(r.y, tmp.k_prime);                                           // if ry is odd, k = - k'
   } else {

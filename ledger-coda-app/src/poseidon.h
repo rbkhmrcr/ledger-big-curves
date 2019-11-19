@@ -12,10 +12,12 @@
 // we split the full rounds into two and put half before the parital ro
 // and half after. we have full rounds = 8 and partial = 33, totalling 41
 
-#define ROUNDS 41
-#define SPONGE_SIZE 3
+#define rounds 41
+#define sponge_size 3
 
-void poseidon(scalar state[3], const scalar input);
-void poseidon_digest(scalar state[3], scalar out);
+typedef scalar state[sponge_size];
+
+void poseidon(state s, scalar input[sponge_size - 1]);
+void poseidon_digest(state s, scalar out);
 
 #endif /* POSEIDON */

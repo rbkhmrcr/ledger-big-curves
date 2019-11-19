@@ -60,7 +60,7 @@ static unsigned int ui_sign_approve_button(unsigned int button_mask, unsigned in
     scalar private_key;
     signature s;
     generate_keypair(ctx->key_index, &public_key, private_key);
-    sign(&s, &public_key, private_key, ctx->hash, field_bytes + scalar_bytes);
+    sign(&s, &public_key, private_key, ctx->hash);
     os_memmove(G_io_apdu_buffer, s.rx, field_bytes);
     os_memmove(G_io_apdu_buffer, s.s, scalar_bytes);
     // Send the data in the APDU buffer, along with a special code that
