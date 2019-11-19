@@ -27,13 +27,19 @@ if len(sys.argv) != 4:
 if request != 'publickey' and request != 'transaction':
     raise RuntimeError('Format command : %s request input output, request = {transaction, publickey}' % sys.argv[0])
 
+#define INS_VERSION       0x01
+#define INS_PUBLIC_KEY    0x02
+#define INS_SIGN          0x04
+#define INS_HASH          0x08
+
 try:
     apdu = b'\xE0'
 
     if request == 'publickey':
         x = decode.handle_input(request, infile)
-        apdu += b'\x02' # FIXME need to change main.c - this is just for tests
-        apdu += struct.pack('96s', x)
+        apdu += b'\x02'
+        apdu += b'\x80\x00\x00\x00\x80'
+        # apdu += struct.pack('I', int(x))
 
         signature = dongle.exchange(apdu)
         print("signature " + str(signature).encode('hex'))

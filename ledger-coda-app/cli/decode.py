@@ -45,50 +45,56 @@ version_byte_to_value = {
 # checksum_len = 4
 
 def b58_encode(payload):
-    return base58.base58encode_check(version_string + payload + checksum)
+    return base58.b58encode_check(version_string + payload + checksum)
 
 # on input one of our public keys, returns version_string || payload (|| = concat)
-def b58_decode(b58_bytes):
-    return base58.b58decode_check(b58_bytes)
+def b58_decode(str58):
+    return base58.b58decode_check(str58)
 
 def is_curvepoint(x):
     z = (pow(x, 3, schnorr.p) + schnorr.a_coeff * x + schnorr.b_coeff) % schnorr.p
     return schnorr.is_square(z)
 
-def handle_input(request, infile):
-    
-    if request == 'transaction':
-        with open(infile) as json_file:
-            data = json.load(json_file)
-            # splits into msg_type 'sendPayment': payment_dict
-            for _, payment_dict in data.items():
-                # splits entries of 'payment' : txn_info
-                for _, txn_info in payment_dict.items():
-                    return(txn_info)
-                    # FIXME verify that to and from are valid curve points before returning dict
-                    # splits into eg id:, from:, to:, amt:
-                    # for k, v in txn_info.items():
-                    #    raise RuntimeError('Transaction handling hasn\'t been implemented')
-    
-    elif request == 'publickey':
-        with open(infile) as json_file:
-            data = json.load(json_file)
-            # key = 'pubkey',
-            for key, value in data.items():
-                bytes_val = b58_decode(value)
-                # print(bytes_val)
-                lead_byte = bytes([bytes_val[0]])
-                if lead_byte == value_to_version_byte['non_zero_curve_point_compressed']:
-                    bytes_x = bytes_val[1:]
-                    x = int.from_bytes(bytes_x, 'little')
-                    # print('x = ', x)
-                    if is_curvepoint(x):
-                        # print("Valid curve point!")
-                        return bytes_x
-                    else:
-                        raise RuntimeError('Failure: the public key you supplied is not on the curve.')
+def str58_to_bytes(str58):
+    return b58_decode(str58)
+
+assert base58.b58encode(b'hello') == b'Cn8eVZg'
+assert base58.b58decode(b'Cn8eVZg') == b'hello'
+assert base58.b58decode_check(b'2L5B5yqsVG8Vt') == b'hello'
+
+def handle_transaction(infile):
+    with open(infile) as json_file:
+        data = json.load(json_file)
+        # splits into msg_type 'sendPayment': payment_dict
+        for _, payment_dict in data.items():
+            # splits entries of 'payment' : txn_info
+            for _, txn_info in payment_dict.items():
+                print(txn_info)
+                txn_info['to'] = bytes(txn_info['to'], 'utf8')
+                txn_info['from'] = bytes(txn_info['from'], 'utf8')
+                txn_info['memo'] = bytes(txn_info['memo'], 'utf8')
+                return(txn_info)
+
+def handle_pubkey(infile):
+    with open(infile) as json_file:
+        data = json.load(json_file)
+        for key, value in data.items():
+            bytes_val = b58_decode(value)
+            lead_byte = bytes([bytes_val[0]])
+            if lead_byte == value_to_version_byte['non_zero_curve_point_compressed']:
+                bytes_x = bytes_val[1:]
+                x = int.from_bytes(bytes_x, 'little')
+                if is_curvepoint(x):
+                    return bytes_x
                 else:
-                    raise RuntimeError('Failure: the file you supplied doesn\'t start with the compressed public key value byte.')
-    
+                    raise RuntimeError('Failure: the public key you supplied is not on the curve.')
+            else:
+                raise RuntimeError('Failure: the file you supplied doesn\'t start with the compressed public key value byte.')
+
+def handle_input(request, infile):
+    if request == 'transaction':
+        return handle_transaction(infile)
+    elif request == 'publickey':
+        return infile
     else:
       raise RuntimeError('Usage: %s request infile outfile, request = {transaction, publickey}' % sys.argv[0])
