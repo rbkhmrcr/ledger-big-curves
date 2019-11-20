@@ -10,43 +10,83 @@ import schnorr
 def packtxn(indict, output):
     # output += struct.pack("", indict['id'])
     output += struct.pack('?', indict['isDelegation'])
-    output += struct.pack("I", indict['nonce'])
-    output += struct.pack("96s", indict['from'])
-    output += struct.pack("96s", indict['to'])
-    output += struct.pack("I", indict['amount'])
-    output += struct.pack("I", indict['fee'])
-    output += struct.pack("32s", indict['memo'])
+    output += struct.pack("<I", indict['nonce'])
+    output += struct.pack("<96s", indict['from'])
+    output += struct.pack("<96s", indict['to'])
+    output += struct.pack("<I", indict['amount'])
+    output += struct.pack("<I", indict['fee'])
+    output += struct.pack("<32s", indict['memo'])
     return output
 
 dongle = getDongle(True)
 
 if len(sys.argv) != 4:
-    raise RuntimeError('Format command : %s request input output, request = {transaction, publickey}' % sys.argv[0])
+   raise RuntimeError('Format command : %s request input output, request = {version, publickey, transaction, streamedtransaction}' % sys.argv[0])
 
 (_, request, infile, outfile) = sys.argv
-if request != 'publickey' and request != 'transaction':
-    raise RuntimeError('Format command : %s request input output, request = {transaction, publickey}' % sys.argv[0])
+if request != 'version' and request != 'publickey' and request != 'transaction' and request != 'streamedtransaction':
+    raise RuntimeError('Format command : %s request input output, request = {version, publickey, transaction, streamedtransaction}' % sys.argv[0])
 
 #define INS_VERSION       0x01
 #define INS_PUBLIC_KEY    0x02
 #define INS_SIGN          0x04
 #define INS_HASH          0x08
+print(request)
 
 try:
-    apdu = b'\xE0'
 
-    if request == 'publickey':
+    if request == 'version':
+        apdu = b'\xE0'  # CLA byte
+        apdu += b'\x01' # INS byte
+        apdu += b'\x00' # P1 byte
+        apdu += b'\x00' # P2 byte
+        apdu += b'\x00' # LC byte
+        apdu += b'\x00' # DATA byte
+        v = dongle.exchange(apdu)
+        print("v" + str(v[0]) + '.' + str(v[1]) + '.' + str(v[2]) )
+
+    elif request == 'publickey':
         x = decode.handle_input(request, infile)
-        apdu += b'\x02'
-        apdu += b'\x80\x00\x00\x00\x80'
-        # apdu += struct.pack('I', int(x))
+        apdu = b'\xE0'  # CLA byte
+        apdu += b'\x02' # INS byte
+        apdu += b'\x00' # P1 byte
+        apdu += b'\x00' # P2 byte
+        apdu += b'\x00' # LC byte
+        apdu += struct.pack('<I', int(x)) # DATA bytes
+
+        pubkey = dongle.exchange(apdu)
+        print("public key " + str(pubkey).encode('hex'))
+
+    elif request == 'transaction':
+        indict = decode.handle_input(request, infile)
+        apdu = b'\xE0'  # CLA byte
+        apdu += b'\x04' # INS byte
+        apdu += b'\x00' # P1 byte
+        apdu += b'\x00' # P2 byte
+        apdu += b'\x00' # LC byte
+        apdu = packtxn(indict, apdu)
 
         signature = dongle.exchange(apdu)
         print("signature " + str(signature).encode('hex'))
 
-    elif request == 'transaction':
+        txbytes = b''
+        txbytes = packtxn(indict, txbytes)
+        schnorr.schnorr_verify(signature, txbytes, pk)
+        print("Verified signature")
+        # FIXME are signatures encoded with base58 before broadcast to the network?
+        indict['signature'] = decode.b58_encode(signature)
+
+        with open(outfile, 'w') as f:
+            json.dump(indict)
+        print('Signed transaction written to ',  outfile)
+
+    elif request == 'streamedtransaction':
         indict = decode.handle_input(request, infile)
-        apdu += b'\x04'
+        apdu = b'\xE0'  # CLA byte
+        apdu += b'\x08' # INS byte
+        apdu += b'\x00' # P1 byte
+        apdu += b'\x00' # P2 byte
+        apdu += b'\x00' # LC byte
         apdu = packtxn(indict, apdu)
 
         signature = dongle.exchange(apdu)

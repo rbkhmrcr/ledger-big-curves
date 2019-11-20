@@ -59,23 +59,23 @@ void bin2hex(uint8_t *dst, uint8_t *data, uint64_t inlen) {
 
 
 int bin2dec(uint8_t *dst, uint64_t n) {
-	if (n == 0) {
-		dst[0] = '0';
-		dst[1] = '\0';
-		return 1;
-	}
-	// determine final length
-	int len = 0;
-	for (uint64_t nn = n; nn != 0; nn /= 10) {
-		len++;
-	}
-	// write digits in big-endian order
-	for (int i = len-1; i >= 0; i--) {
-		dst[i] = (n % 10) + '0';
-		n /= 10;
-	}
-	dst[len] = '\0';
-	return len;
+  if (n == 0) {
+    dst[0] = '0';
+    dst[1] = '\0';
+    return 1;
+  }
+  // determine final length
+  int len = 0;
+  for (uint64_t nn = n; nn != 0; nn /= 10) {
+    len++;
+  }
+  // write digits in big-endian order
+  for (int i = len-1; i >= 0; i--) {
+    dst[i] = (n % 10) + '0';
+    n /= 10;
+  }
+  dst[len] = '\0';
+  return len;
 }
 
 
@@ -115,10 +115,10 @@ static unsigned int ui_pubkey_approve_button(unsigned int button_mask, unsigned 
 void handle_pubkey(uint8_t p1, uint8_t p2, uint8_t *data_buffer, uint16_t data_length, volatile unsigned int *flags, volatile unsigned int *tx) {
 
   ctx->key_index = U4LE(data_buffer, 0);
-  os_memmove(ctx->type_str, "Public Key", 11);
+  os_memmove(ctx->type_str, "Generate Public", 16);
   os_memmove(ctx->key_str, "Key #", 5);
-  int n = bin2dec(ctx->key_str+5, ctx->key_index);
-  os_memmove(ctx->key_str+5+n, "?", 2);
+  int n = bin2dec(ctx->key_str + 5, ctx->key_index);
+  os_memmove(ctx->key_str + 5 + n, "?", 2);
   UX_DISPLAY(ui_pubkey_approve, NULL);
 
   *flags |= IO_ASYNCH_REPLY;
