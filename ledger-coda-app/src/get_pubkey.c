@@ -1,5 +1,6 @@
 #include <os.h>
 #include <os_io_seproxyhal.h>
+#include <cx.h>
 #include "crypto.h"
 #include "ux.h"
 
@@ -78,7 +79,6 @@ int bin2dec(uint8_t *dst, uint64_t n) {
   return len;
 }
 
-
 static const bagl_element_t ui_pubkey_approve[] = {
   UI_BACKGROUND(),
   UI_ICON_LEFT(0x00, BAGL_GLYPH_ICON_CROSS),
@@ -102,7 +102,10 @@ static unsigned int ui_pubkey_approve_button(unsigned int button_mask, unsigned 
     tx += group_bytes;
     io_exchange_with_code(SW_OK, tx);
     os_memmove(ctx->type_str, "Compare:", 9);
-    bin2hex(ctx->full_str, G_io_apdu_buffer, 32);
+    // hash pk to display (192B is too much to meaningfully compare)
+    unsigned char hash[32];
+    cx_hash_sha256(public_key.x, 96, hash);
+    bin2hex(ctx->full_str, hash, 32);
     os_memmove(ctx->partial_str, ctx->full_str, 12);
     ctx->partial_str[12] = '\0';
     ctx->display_index = 0;

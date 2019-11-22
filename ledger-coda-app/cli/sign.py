@@ -6,6 +6,7 @@ import os
 import struct # struct converts between python values and C structs (represented as python bytes objects)
 import decode # contains base58 decoding/encoding, and our specific json handling
 import schnorr
+import hashlib
 
 def packtxn(indict, output):
     # output += struct.pack("", indict['id'])
@@ -55,7 +56,9 @@ try:
         apdu += struct.pack('<I', int(x)) # DATA bytes
 
         pubkey = dongle.exchange(apdu)
-        print("public key " + str(pubkey).encode('hex'))
+        print("public key " + pubkey.hex())
+        pkx = pubkey[:96]
+        print("hash digest " + hashlib.sha256(pkx).hexdigest())
 
     elif request == 'transaction':
         indict = decode.handle_input(request, infile)
@@ -67,7 +70,7 @@ try:
         apdu = packtxn(indict, apdu)
 
         signature = dongle.exchange(apdu)
-        print("signature " + str(signature).encode('hex'))
+        print("signature " + signature.hex())
 
         txbytes = b''
         txbytes = packtxn(indict, txbytes)
@@ -90,7 +93,7 @@ try:
         apdu = packtxn(indict, apdu)
 
         signature = dongle.exchange(apdu)
-        print("signature " + str(signature).encode('hex'))
+        print("signature " + signature.hex())
 
         txbytes = b''
         txbytes = packtxn(indict, txbytes)

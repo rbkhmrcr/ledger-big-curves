@@ -104,7 +104,7 @@ typedef struct {
   // NUL-terminated strings for display
   uint8_t type_str[40];
   uint8_t key_str[40];
-  uint8_t full_str[77];
+  uint8_t full_str[65];
   uint8_t partial_str[13];
 } pubkey_context;
 
