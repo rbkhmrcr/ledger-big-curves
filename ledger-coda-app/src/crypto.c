@@ -221,12 +221,12 @@ unsigned int is_on_curve(const group *p) {
     return 1;
   }
 
-  field x2, x2a, x3ax, x3axb, y2;
-  field_mul(y2, p->y, p->y);                // y^2
-  field_mul(x2, p->x, p->x);                // x^2
-  field_add(x2a, x2, group_coeff_a);        // x^2 + a
-  field_mul(x3ax, x2a, p->x);               // x^3 + ax
-  field_add(x3axb, x3ax, group_coeff_b);    // x^3 + ax + b
+  field t0, t1, t2;
+  field_mul(t0, p->y, p->y);                // y^2
+  field_mul(t1, p->x, p->x);                // x^2
+  field_add(t2, t1, group_coeff_a);         // x^2 + a
+  field_mul(t1, t2, p->x);                  // x^3 + ax
+  field_add(t2, t1, group_coeff_b);         // x^3 + ax + b
 
   return (os_memcmp(y2, x3axb, field_bytes) == 0);
 }
@@ -238,25 +238,22 @@ void group_double(group *r, const group *p) {
     return;
   }
 
-  field lambda, xp2, xp22, xp23, xp23a;
-  field yp2, iyp2;
-  field_mul(xp2, p->x, p->x);               // xp^2
-  field_add(xp22, xp2, xp2);                // 2xp^2
-  field_add(xp23, xp22, xp2);               // 3xp^2
-  field_add(xp23a, xp23, group_coeff_a);    // 3xp^2 + a
-  field_add(yp2, p->y, p->y);               // 2yp
-  field_inv(iyp2, yp2);                     // 1/2yp
-  field_mul(lambda, xp23a, iyp2);           // (3xp^2 + a)/2yp
+  field t0, t1, t2;
+  field_mul(t0, p->x, p->x);                // xp^2
+  field_add(t1, t0, t0);                    // 2xp^2
+  field_add(t2, t0, t1);                    // 3xp^2
+  field_add(t0, t2, group_coeff_a);         // 3xp^2 + a
+  field_add(t1, p->y, p->y);                // 2yp
+  field_inv(t2, t1);                        // 1/2yp
+  field_mul(t1, t0, t2);                    // (3xp^2 + a)/2yp
 
-  field l2, lxp;
-  field_mul(l2, lambda, lambda);            // lambda^2
-  field_sub(lxp, l2, p->x);                 // lambda^2 - xp
-  field_sub(r->x, lxp, p->x);               // lambda^2 - xp - xp
+  field_mul(t0, t1, t1);                    // lambda^2
+  field_sub(t2, t0, p->x);                  // lambda^2 - xp
+  field_sub(r->x, t2, p->x);                // lambda^2 - xp - xp
 
-  field xpxr, lxpxr;
-  field_sub(xpxr, p->x, r->x);              // xp - xr
-  field_mul(lxpxr, lambda, xpxr);           // lambda(xp - xr)
-  field_sub(r->y, lxpxr, p->y);             // lambda(xp - xr) - yp
+  field_sub(t0, p->x, r->x);                // xp - xr
+  field_mul(t2, t1, t0);                    // lambda(xp - xr)
+  field_sub(r->y, t2, p->y);                // lambda(xp - xr) - yp
 }
 
 void group_add(group *r, const group *p, const group *q) {
@@ -284,21 +281,19 @@ void group_add(group *r, const group *p, const group *q) {
     }
   }
 
-  field lambda, xqxp, yqyp, ixqxp;
-  field_sub(xqxp, q->x, p->x);              // xq - xp
-  field_sub(yqyp, q->y, p->y);              // yq - yp
-  field_inv(ixqxp, xqxp);                   // 1 / (xq - xp)
-  field_mul(lambda, yqyp, ixqxp);           // (yq - yp)/(xq - xp)
+  field t0, t1, t2;
+  field_sub(t0, q->x, p->x);                // xq - xp
+  field_sub(t1, q->y, p->y);                // yq - yp
+  field_inv(t2, t0);                        // 1 / (xq - xp)
+  field_mul(t0, t1, t2);                    // (yq - yp)/(xq - xp)
 
-  field l2, lxp;
-  field_mul(l2, lambda, lambda);            // lambda^2
-  field_sub(lxp, l2, p->x);                 // lambda^2 - xp
-  field_sub(r->x, lxp, q->x);               // lambda^2 - xp - xq
+  field_mul(t1, t0, t0);                    // lambda^2
+  field_sub(t2, t1, p->x);                  // lambda^2 - xp
+  field_sub(r->x, t2, q->x);                // lambda^2 - xp - xq
 
-  field xpxr, lxpxr;
-  field_sub(xpxr, p->x, r->x);              // xp - xr
-  field_mul(lxpxr, lambda, xpxr);           // lambda(xp - xr)
-  field_sub(r->y, lxpxr, p->y);             // lambda(xp - xr) - yp
+  field_sub(t1, p->x, r->x);                // xp - xr
+  field_mul(t2, t0, t1);                    // lambda(xp - xr)
+  field_sub(r->y, t2, p->y);                // lambda(xp - xr) - yp
 }
 
 
