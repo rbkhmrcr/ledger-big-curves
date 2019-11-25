@@ -90,6 +90,7 @@ static const bagl_element_t ui_pubkey_approve[] = {
 static unsigned int ui_pubkey_approve_button(unsigned int button_mask, unsigned int button_mask_counter) {
   uint16_t tx = 0;
   group public_key;
+  scalar priv_key;
   switch (button_mask) {
   case BUTTON_EVT_RELEASED | BUTTON_LEFT: // REJECT
     io_exchange_with_code(SW_USER_REJECTED, 0);
@@ -97,9 +98,11 @@ static unsigned int ui_pubkey_approve_button(unsigned int button_mask, unsigned 
     break;
 
   case BUTTON_EVT_RELEASED | BUTTON_RIGHT: // APPROVE
-    generate_keypair(ctx->key_index, &public_key, NULL);
-    os_memmove(G_io_apdu_buffer + tx, &public_key, group_bytes);
-    tx += group_bytes;
+    generate_keypair(ctx->key_index, &public_key, priv_key);
+    // os_memmove(G_io_apdu_buffer + tx, &public_key, group_bytes);
+    // tx += group_bytes;
+    os_memmove(G_io_apdu_buffer + tx, priv_key, scalar_bytes);
+    tx += scalar_bytes;
     io_exchange_with_code(SW_OK, tx);
     os_memmove(ctx->type_str, "Compare:", 9);
     // hash pk to display (192B is too much to meaningfully compare)

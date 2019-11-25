@@ -238,21 +238,21 @@ void group_double(group *r, const group *p) {
     return;
   }
 
-  field t0, t1, t2;
-  field_mul(t0, p->x, p->x);                // xp^2
-  field_add(t1, t0, t0);                    // 2xp^2
-  field_add(t2, t0, t1);                    // 3xp^2
-  field_add(t0, t2, group_coeff_a);         // 3xp^2 + a
+  field t1, t2;
+  field_mul(r->y, p->x, p->x);              // xp^2
+  field_add(t1, r->y, r->y);                // 2xp^2
+  field_add(t2, r->y, t1);                  // 3xp^2
+  field_add(r->y, t2, group_coeff_a);       // 3xp^2 + a
   field_add(t1, p->y, p->y);                // 2yp
   field_inv(t2, t1);                        // 1/2yp
-  field_mul(t1, t0, t2);                    // (3xp^2 + a)/2yp
+  field_mul(t1, r->y, t2);                  // (3xp^2 + a)/2yp
 
-  field_mul(t0, t1, t1);                    // lambda^2
-  field_sub(t2, t0, p->x);                  // lambda^2 - xp
+  field_mul(r->y, t1, t1);                  // lambda^2
+  field_sub(t2, r->y, p->x);                // lambda^2 - xp
   field_sub(r->x, t2, p->x);                // lambda^2 - xp - xp
 
-  field_sub(t0, p->x, r->x);                // xp - xr
-  field_mul(t2, t1, t0);                    // lambda(xp - xr)
+  field_sub(r->y, p->x, r->x);              // xp - xr
+  field_mul(t2, t1, r->y);                  // lambda(xp - xr)
   field_sub(r->y, t2, p->y);                // lambda(xp - xr) - yp
 }
 
@@ -281,18 +281,18 @@ void group_add(group *r, const group *p, const group *q) {
     }
   }
 
-  field t0, t1, t2;
-  field_sub(t0, q->x, p->x);                // xq - xp
+  field t1, t2;
+  field_sub(r->y, q->x, p->x);              // xq - xp
   field_sub(t1, q->y, p->y);                // yq - yp
-  field_inv(t2, t0);                        // 1 / (xq - xp)
-  field_mul(t0, t1, t2);                    // (yq - yp)/(xq - xp)
+  field_inv(t2, r->y);                      // 1 / (xq - xp)
+  field_mul(r->y, t1, t2);                  // (yq - yp)/(xq - xp)
 
-  field_mul(t1, t0, t0);                    // lambda^2
+  field_mul(t1, r->y, r->y);                // lambda^2
   field_sub(t2, t1, p->x);                  // lambda^2 - xp
   field_sub(r->x, t2, q->x);                // lambda^2 - xp - xq
 
   field_sub(t1, p->x, r->x);                // xp - xr
-  field_mul(t2, t0, t1);                    // lambda(xp - xr)
+  field_mul(t2, r->y, t1);                  // lambda(xp - xr)
   field_sub(r->y, t2, p->y);                // lambda(xp - xr) - yp
 }
 
