@@ -99,10 +99,8 @@ static unsigned int ui_pubkey_approve_button(unsigned int button_mask, unsigned 
 
   case BUTTON_EVT_RELEASED | BUTTON_RIGHT: // APPROVE
     generate_keypair(ctx->key_index, &public_key, priv_key);
-    // os_memmove(G_io_apdu_buffer + tx, &public_key, group_bytes);
-    // tx += group_bytes;
-    os_memmove(G_io_apdu_buffer + tx, priv_key, scalar_bytes);
-    tx += scalar_bytes;
+    os_memmove(G_io_apdu_buffer + tx, &public_key, group_bytes);
+    tx += group_bytes;
     io_exchange_with_code(SW_OK, tx);
     os_memmove(ctx->type_str, "Compare:", 9);
     // hash pk to display (192B is too much to meaningfully compare)

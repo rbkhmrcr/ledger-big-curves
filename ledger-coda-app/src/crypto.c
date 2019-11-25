@@ -267,9 +267,9 @@ void group_add(group *r, const group *p, const group *q) {
     return;
   }
 
-  field temp;
-  field_mul(temp, p->x, q->x);
-  if (field_eq(temp, field_zero)) {
+  field t1, t2;
+  field_mul(t1, p->x, q->x);
+  if (field_eq(t1, field_zero)) {
     // if pxqx == 0, either p = q -> p + q = 2p
     if (field_eq(p->y, q->y)) {
       group_double(r, p);
@@ -281,7 +281,6 @@ void group_add(group *r, const group *p, const group *q) {
     }
   }
 
-  field t1, t2;
   field_sub(r->y, q->x, p->x);              // xq - xp
   field_sub(t1, q->y, p->y);                // yq - yp
   field_inv(t2, r->y);                      // 1 / (xq - xp)
@@ -299,30 +298,26 @@ void group_add(group *r, const group *p, const group *q) {
 
 void group_scalar_mul(group *r, const scalar k, const group *p) {
 
+  *r = group_zero;
   if (is_zero(p)) {
-    *r = group_zero;
     return;
   }
   if (scalar_eq(k, scalar_zero)) {
-    *r = group_zero;
     return;
   }
 
-  group q = group_zero;
   // 96 bytes = 8 * 96 = 768. we want 753, 768 - 753 = 15 bits
   // which means we have an offset of 15 bits
    for (unsigned int i = scalar_offset; i < scalar_bits; i++) {
     unsigned int di = k[i/8] & (1 << (7 - (i % 8)));
     group q0;
-    group_double(&q0, &q);
-    q = q0;
+    group_double(&q0, r);
+    *r = q0;
     if (di != 0) {
-      group q1;
-      group_add(&q1, &q, p);
-      q = q1;
+      group_add(&q0, r, p);
+      *r = q0;
     }
   }
-  *r = q;
   return;
 }
 

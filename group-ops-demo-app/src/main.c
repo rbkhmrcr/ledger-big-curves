@@ -466,7 +466,7 @@ static const scalar scalar_one = {
 
   group public_key;
   generate_pubkey(&public_key, private_key);
-  os_memcpy(G_io_apdu_buffer, &(public_key.y), field_bytes);
+  os_memcpy(G_io_apdu_buffer, &(public_key.x), field_bytes);
   tx = field_bytes;
 /*
   // test poseidon (uses MNT4)
