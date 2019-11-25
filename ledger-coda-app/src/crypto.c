@@ -228,7 +228,7 @@ unsigned int is_on_curve(const group *p) {
   field_mul(t1, t2, p->x);                  // x^3 + ax
   field_add(t2, t1, group_coeff_b);         // x^3 + ax + b
 
-  return (os_memcmp(y2, x3axb, field_bytes) == 0);
+  return (os_memcmp(t0, t2, field_bytes) == 0);
 }
 
 void group_double(group *r, const group *p) {
