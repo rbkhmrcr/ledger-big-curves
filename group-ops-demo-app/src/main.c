@@ -464,10 +464,12 @@ static const scalar scalar_one = {
 
   unsigned int tx = 0;
 
+/*
   group public_key;
   generate_pubkey(&public_key, private_key);
   os_memcpy(G_io_apdu_buffer, &(public_key.x), field_bytes);
   tx = field_bytes;
+*/
 /*
   // test poseidon (uses MNT4)
   state s = {{0}, {0}, {0}};
@@ -530,7 +532,6 @@ static const scalar scalar_one = {
   tx = field_bytes + scalar_bytes;
 */
 
-/*
   const group public_key = {
     {
       0x00, 0x00, 0xae, 0x3e, 0x82, 0xb2, 0xe1, 0x80, 0xa8, 0x16, 0xf4, 0xa1,
@@ -550,12 +551,8 @@ static const scalar scalar_one = {
       0x62, 0x0c, 0xd5, 0x27, 0xa6, 0xfe, 0xc8, 0x9a, 0x25, 0x6f, 0xdd, 0xd9,
       0x0f, 0x9f, 0x1a, 0x3c, 0x5b, 0xff, 0xb0, 0xf7, 0x12, 0xa4, 0x78, 0xd6,
       0x95, 0xfe, 0x24, 0x6c, 0xa2, 0x07, 0xcc, 0xd9, 0x8b, 0x9a, 0xeb, 0xbd}};
-  signature sig;
-  sign(&sig, &public_key, private_key, msg);
-  os_memcpy(G_io_apdu_buffer, sig.rx, field_bytes);
-  os_memcpy(G_io_apdu_buffer + field_bytes, sig.s, scalar_bytes);
+  sign(G_io_apdu_buffer, G_io_apdu_buffer + field_bytes, &public_key, private_key, msg);
   tx = field_bytes + scalar_bytes;
-*/
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;
   // Send back the response, do not restart the event loop

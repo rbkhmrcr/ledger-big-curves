@@ -75,26 +75,32 @@ def handle_transaction(infile):
                 txn_info['memo'] = bytes(txn_info['memo'], 'utf8')
                 return(txn_info)
 
-def handle_pubkey(infile):
+
+def handle_streamed_transaction(infile):
     with open(infile) as json_file:
         data = json.load(json_file)
-        for key, value in data.items():
-            bytes_val = b58_decode(value)
-            lead_byte = bytes([bytes_val[0]])
-            if lead_byte == value_to_version_byte['non_zero_curve_point_compressed']:
-                bytes_x = bytes_val[1:]
-                x = int.from_bytes(bytes_x, 'little')
-                if is_curvepoint(x):
-                    return bytes_x
-                else:
-                    raise RuntimeError('Failure: the public key you supplied is not on the curve.')
-            else:
-                raise RuntimeError('Failure: the file you supplied doesn\'t start with the compressed public key value byte.')
+        # splits into msg_type 'sendPayment': payment_dict
+        for _, payment_dict in data.items():
+            # splits entries of 'payment' : txn_info
+            for _, txn_info in payment_dict.items():
+                print(txn_info)
+                txn_info['to'] = bytes(txn_info['to'], 'utf8')
+                txn_info['from'] = bytes(txn_info['from'], 'utf8')
+                txn_info['memo'] = bytes(txn_info['memo'], 'utf8')
+                return(txn_info)
 
-def handle_input(request, infile):
-    if request == 'transaction':
-        return handle_transaction(infile)
-    elif request == 'publickey':
-        return infile
-    else:
-      raise RuntimeError('Usage: %s request infile outfile, request = {transaction, publickey}' % sys.argv[0])
+# def handle_pubkey(infile):
+#     with open(infile) as json_file:
+#         data = json.load(json_file)
+#         for key, value in data.items():
+#             bytes_val = b58_decode(value)
+#             lead_byte = bytes([bytes_val[0]])
+#             if lead_byte == value_to_version_byte['non_zero_curve_point_compressed']:
+#                 bytes_x = bytes_val[1:]
+#                 x = int.from_bytes(bytes_x, 'little')
+#                 if is_curvepoint(x):
+#                     return bytes_x
+#                 else:
+#                     raise RuntimeError('Failure: the public key you supplied is not on the curve.')
+#             else:
+#                 raise RuntimeError('Failure: the file you supplied doesn\'t start with the compressed public key value byte.')

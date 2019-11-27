@@ -47,27 +47,28 @@ try:
         print("v" + str(v[0]) + '.' + str(v[1]) + '.' + str(v[2]) )
 
     elif request == 'publickey':
-        x = decode.handle_input(request, infile)
+        x = infile
         apdu = b'\xE0'  # CLA byte
         apdu += b'\x02' # INS byte
         apdu += b'\x00' # P1 byte
         apdu += b'\x00' # P2 byte
         apdu += b'\x00' # LC byte
         apdu += struct.pack('<I', int(x)) # DATA bytes
-
         pubkey = dongle.exchange(apdu)
         print("public key " + pubkey.hex())
         pkx = pubkey[:96]
         print("hash digest " + hashlib.sha256(pkx).hexdigest())
 
     elif request == 'transaction':
-        indict = decode.handle_input(request, infile)
+        pk = infile
+        hsh = bytes.fromhex(outfile)
         apdu = b'\xE0'  # CLA byte
         apdu += b'\x04' # INS byte
         apdu += b'\x00' # P1 byte
         apdu += b'\x00' # P2 byte
         apdu += b'\x00' # LC byte
-        apdu = packtxn(indict, apdu)
+        apdu += struct.pack('<I', int(pk)) # DATA bytes
+        apdu += struct.pack("<96s", hsh)
 
         signature = dongle.exchange(apdu)
         print("signature " + signature.hex())
@@ -84,7 +85,7 @@ try:
         print('Signed transaction written to ',  outfile)
 
     elif request == 'streamedtransaction':
-        indict = decode.handle_input(request, infile)
+        indict = decode.handle_streamed_transaction(infile)
         apdu = b'\xE0'  # CLA byte
         apdu += b'\x08' # INS byte
         apdu += b'\x00' # P1 byte

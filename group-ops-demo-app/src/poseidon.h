@@ -18,6 +18,6 @@
 typedef scalar state[sponge_size];
 
 void poseidon(state s, const scalar input[sponge_size - 1]);
-void poseidon_digest(state s, scalar out);
+void poseidon_digest(const state s, scalar out);
 
 #endif /* POSEIDON */

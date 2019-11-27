@@ -1174,18 +1174,18 @@ void matrix_mul(state out, const state m[sponge_size], const state s) {
   /* a b c     s0     as0 + bs1 + cs2
    * d e f  x  s1  =  ds0 + es1 + fs2
    * g h i     s2     gs0 + hs1 + is2  */
-  field t0, t1, t2, t3;
+  field t1;
   for (int i = 0; i < sponge_size; i++) {
-    field_mul(t0, m[i][0], s[0]);
+    field_mul(out[i], m[i][0], s[0]);
     field_mul(t1, m[i][1], s[1]);
-    field_mul(t2, m[i][2], s[2]);
-    field_add(t3, t0, t1);
-    field_add(out[i], t2, t3);
+    field_add(out[i], out[i], t1);
+    field_mul(t1, m[i][2], s[2]);
+    field_add(out[i], out[i], t1);
   }
   return;
 }
 
-void statecpy(state temp, state s) {
+void statecpy(state temp, const state s) {
   for (int i = 0; i < sponge_size; i++) {
     os_memcpy(temp[i], s[i], field_bytes);
   }
@@ -1237,6 +1237,6 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
   }
 }
 
-void poseidon_digest(state s, scalar out) {
+void poseidon_digest(const state s, scalar out) {
   os_memcpy(out, s[0], field_bytes);
 }

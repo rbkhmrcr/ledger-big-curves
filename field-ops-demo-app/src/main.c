@@ -359,6 +359,7 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
        0x85, 0x56, 0x87, 0x13, 0x9f, 0x0c, 0x51, 0x75, 0x4c, 0x0c, 0xcc, 0x49}};
 
   unsigned int tx = 0;
+  /*
   unsigned char x2[fmnt6753_BYTES];
   unsigned char x2a[fmnt6753_BYTES];
   unsigned char x3ax[fmnt6753_BYTES];
@@ -380,6 +381,14 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
 
   os_memmove(G_io_apdu_buffer, xy, 2 * fmnt6753_BYTES);
   tx = 2 * fmnt6753_BYTES;
+  */
+
+  unsigned char a[fmnt6753_BYTES];
+  cx_math_addm(a, gmnt6753_coeff_a, gmnt6753_coeff_b, fmnt6753_modulus, fmnt6753_BYTES);
+  cx_math_addm(a, a, a, fmnt6753_modulus, fmnt6753_BYTES);
+  cx_math_multm(a, a, a, fmnt6753_modulus, fmnt6753_BYTES);
+  os_memmove(G_io_apdu_buffer, a, fmnt6753_BYTES);
+  tx = fmnt6753_BYTES;
   G_io_apdu_buffer[tx++] = 0x90;
   G_io_apdu_buffer[tx++] = 0x00;
   // Send back the response, do not restart the event loop

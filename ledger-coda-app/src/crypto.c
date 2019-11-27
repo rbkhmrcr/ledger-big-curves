@@ -254,6 +254,7 @@ void group_double(group *r, const group *p) {
   field_sub(r->y, p->x, r->x);              // xp - xr
   field_mul(t2, t1, r->y);                  // lambda(xp - xr)
   field_sub(r->y, t2, p->y);                // lambda(xp - xr) - yp
+  return;
 }
 
 void group_add(group *r, const group *p, const group *q) {
@@ -267,7 +268,7 @@ void group_add(group *r, const group *p, const group *q) {
     return;
   }
 
-  field t1, t2;
+  field t1;
   field_mul(t1, p->x, q->x);
   if (field_eq(t1, field_zero)) {
     // if pxqx == 0, either p = q -> p + q = 2p
@@ -283,16 +284,17 @@ void group_add(group *r, const group *p, const group *q) {
 
   field_sub(r->y, q->x, p->x);              // xq - xp
   field_sub(t1, q->y, p->y);                // yq - yp
-  field_inv(t2, r->y);                      // 1 / (xq - xp)
-  field_mul(r->y, t1, t2);                  // (yq - yp)/(xq - xp)
+  field_inv(r->x, r->y);                    // 1 / (xq - xp)
+  field_mul(r->y, t1, r->x);                // (yq - yp)/(xq - xp)
 
   field_mul(t1, r->y, r->y);                // lambda^2
-  field_sub(t2, t1, p->x);                  // lambda^2 - xp
-  field_sub(r->x, t2, q->x);                // lambda^2 - xp - xq
+  field_sub(r->x, t1, p->x);                // lambda^2 - xp
+  field_sub(r->x, r->x, q->x);              // lambda^2 - xp - xq
 
   field_sub(t1, p->x, r->x);                // xp - xr
-  field_mul(t2, r->y, t1);                  // lambda(xp - xr)
-  field_sub(r->y, t2, p->y);                // lambda(xp - xr) - yp
+  field_mul(r->y, r->y, t1);                // lambda(xp - xr)
+  field_sub(r->y, r->y, p->y);              // lambda(xp - xr) - yp
+  return;
 }
 
 
@@ -348,10 +350,12 @@ void generate_keypair(unsigned int index, group *pub_key, scalar priv_key) {
 
   group_scalar_mul(pub_key, priv_key, &group_one);
   // os_memset(priv_key, 0, sizeof(priv_key));
+  return;
 }
 
 void generate_pubkey(group *pub_key, const scalar priv_key) {
   group_scalar_mul(pub_key, priv_key, &group_one);
+  return;
 }
 
 inline unsigned int is_odd(const field y) {
@@ -359,37 +363,36 @@ inline unsigned int is_odd(const field y) {
 }
 
 void poseidon_4in(scalar out, const scalar in1, const scalar in2, const scalar in3, const scalar in4) {
-    state pos = {{0}, {0}, {0}};
-    scalar tmp[sponge_size - 1];
+  state pos = {{0}, {0}, {0}};
+  scalar tmp[sponge_size - 1];
 
-    os_memcpy(tmp[0], in1, scalar_bytes);
-    os_memcpy(tmp[1], in2, scalar_bytes);
-    poseidon(pos, tmp);
-    os_memcpy(tmp[0], in3, scalar_bytes);
-    os_memcpy(tmp[1], in4, scalar_bytes);
-    poseidon(pos, tmp);
-    poseidon_digest(pos, out);
+  os_memcpy(tmp[0], in1, scalar_bytes);
+  os_memcpy(tmp[1], in2, scalar_bytes);
+  poseidon(pos, tmp);
+  os_memcpy(tmp[0], in3, scalar_bytes);
+  os_memcpy(tmp[1], in4, scalar_bytes);
+  poseidon(pos, tmp);
+  poseidon_digest(pos, out);
+  return;
 }
 
-void sign(signature *sig, const group *public_key, const scalar private_key, const scalar msg) {
-  group r;
-  union tmp {
-      scalar s;
-      scalar k_prime;
-  } tmp;
+void sign(field rx, scalar s, const group *public_key, const scalar private_key, const scalar msg) {
+  scalar k_prime;
+  /* rx is G_io_apdu_buffer so we can take 192 bytes from it */
+  {
+    group *r;
+    r = (group *) rx;
+    poseidon_4in(k_prime, msg, public_key->x, public_key->y, private_key);  // k = hash(m || pk || sk)
+    group_scalar_mul(r, k_prime, &group_one);                               // r = k*g
 
-  poseidon_4in(tmp.k_prime, msg, public_key->x, public_key->y, private_key);  // k = hash(m || pk || sk)
-  group_scalar_mul(&r, tmp.k_prime, &group_one);                              // r = k*g
-  os_memcpy(sig->rx, r.x, field_bytes);
-  //os_memcpy(sig->rx, tmp.k_prime, field_bytes);
-  if (is_odd(r.y)) {
-    field_negate(r.y, tmp.k_prime);                                           // if ry is odd, k = - k'
-  } else {
-    os_memcpy(r.y, tmp.k_prime, scalar_bytes);                                // if ry is even, k = k'
+    /* store so we don't need group *r anymore */
+    os_memcpy(rx, r->x, field_bytes);
+    if (is_odd(r->y)) {
+      field_negate(k_prime, k_prime);                                       // if ry is odd, k = - k'
+    }
   }
-
-  poseidon_4in(sig->s, msg, sig->rx, public_key->x, public_key->y);           // e = hash(xr || pk || m)
-  scalar_mul(tmp.s, sig->s, private_key);                                     // e*sk
-  scalar_add(sig->s, r.y, tmp.s);                                             // k + e*sk
+  poseidon_4in(s, msg, rx, public_key->x, public_key->y);                   // e = hash(xr || pk || m)
+  scalar_mul(s, s, private_key);                                            // e*sk
+  scalar_add(s, k_prime, s);                                                // k + e*sk
   return;
 }
