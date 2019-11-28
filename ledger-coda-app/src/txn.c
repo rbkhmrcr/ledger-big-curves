@@ -137,9 +137,7 @@ static void advance(txn_state *txn) {
   // if elem is covered, add it to the hash
   // && txn->pos >= 96 below?
   if (txn->slice_index == txn->sig_index) {
-    scalar tmp[sponge_size - 1];
-    os_memmove(tmp, txn->buf, scalar_bytes * (sponge_size - 1));
-    poseidon(txn->hash_state, tmp);
+    poseidon(txn->hash_state, txn->buf, txn->buf + scalar_bytes);
   }
 
   txn->buf_len -= txn->pos;

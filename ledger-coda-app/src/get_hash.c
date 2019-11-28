@@ -114,10 +114,12 @@ static unsigned int ui_hash_sign_button(unsigned int button_mask, unsigned int b
 
   // APPROVE
   case BUTTON_EVT_RELEASED | BUTTON_RIGHT: {
-    field sk;
+    scalar sk;
     group pk;
     generate_keypair(ctx->key_index, &pk, sk);
-    sign(G_io_apdu_buffer, G_io_apdu_buffer + field_bytes, &pk, sk, ctx->txn.hash);
+    scalar hash = {0};
+    os_memmove(hash + 64, ctx->txn.hash, 32);
+    sign(G_io_apdu_buffer, G_io_apdu_buffer + field_bytes, &pk, sk, hash);
     io_exchange_with_code(SW_OK, field_bytes + scalar_bytes);
     ui_idle();
     }

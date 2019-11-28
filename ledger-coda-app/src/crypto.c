@@ -217,6 +217,7 @@ unsigned int is_zero(const group *p) {
 }
 
 unsigned int is_on_curve(const group *p) {
+
   if (is_zero(p)) {
     return 1;
   }
@@ -227,7 +228,6 @@ unsigned int is_on_curve(const group *p) {
   field_add(t2, t1, group_coeff_a);         // x^2 + a
   field_mul(t1, t2, p->x);                  // x^3 + ax
   field_add(t2, t1, group_coeff_b);         // x^3 + ax + b
-
   return (os_memcmp(t0, t2, field_bytes) == 0);
 }
 
@@ -238,22 +238,22 @@ void group_double(group *r, const group *p) {
     return;
   }
 
-  field t1, t2;
+  field t1;
   field_mul(r->y, p->x, p->x);              // xp^2
   field_add(t1, r->y, r->y);                // 2xp^2
-  field_add(t2, r->y, t1);                  // 3xp^2
-  field_add(r->y, t2, group_coeff_a);       // 3xp^2 + a
+  field_add(r->x, r->y, t1);                // 3xp^2
+  field_add(r->y, r->x, group_coeff_a);     // 3xp^2 + a
   field_add(t1, p->y, p->y);                // 2yp
-  field_inv(t2, t1);                        // 1/2yp
-  field_mul(t1, r->y, t2);                  // (3xp^2 + a)/2yp
+  field_inv(r->x, t1);                      // 1/2yp
+  field_mul(t1, r->y, r->x);                // (3xp^2 + a)/2yp
 
   field_mul(r->y, t1, t1);                  // lambda^2
-  field_sub(t2, r->y, p->x);                // lambda^2 - xp
-  field_sub(r->x, t2, p->x);                // lambda^2 - xp - xp
+  field_sub(r->x, r->y, p->x);              // lambda^2 - xp
+  field_sub(r->x, r->x, p->x);              // lambda^2 - xp - xp
 
   field_sub(r->y, p->x, r->x);              // xp - xr
-  field_mul(t2, t1, r->y);                  // lambda(xp - xr)
-  field_sub(r->y, t2, p->y);                // lambda(xp - xr) - yp
+  field_mul(t1, t1, r->y);                  // lambda(xp - xr)
+  field_sub(r->y, t1, p->y);                // lambda(xp - xr) - yp
   return;
 }
 
@@ -362,16 +362,10 @@ inline unsigned int is_odd(const field y) {
   return (y[field_bytes - 1] & 1);
 }
 
-void poseidon_4in(scalar out, const scalar in1, const scalar in2, const scalar in3, const scalar in4) {
+void poseidon_4in(scalar out, const scalar in0, const scalar in1, const scalar in2, const scalar in3) {
   state pos = {{0}, {0}, {0}};
-  scalar tmp[sponge_size - 1];
-
-  os_memcpy(tmp[0], in1, scalar_bytes);
-  os_memcpy(tmp[1], in2, scalar_bytes);
-  poseidon(pos, tmp);
-  os_memcpy(tmp[0], in3, scalar_bytes);
-  os_memcpy(tmp[1], in4, scalar_bytes);
-  poseidon(pos, tmp);
+  poseidon(pos, in0, in1);
+  poseidon(pos, in2, in3);
   poseidon_digest(pos, out);
   return;
 }

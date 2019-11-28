@@ -61,7 +61,7 @@ try:
 
     elif request == 'transaction':
         pk = infile
-        hsh = bytes.fromhex(outfile)
+        hsh = bytes.fromhex(outfile) # TODO change this to be called not outfile (this should take 5 args)
         apdu = b'\xE0'  # CLA byte
         apdu += b'\x04' # INS byte
         apdu += b'\x00' # P1 byte
@@ -73,16 +73,17 @@ try:
         signature = dongle.exchange(apdu)
         print("signature " + signature.hex())
 
-        txbytes = b''
-        txbytes = packtxn(indict, txbytes)
-        schnorr.schnorr_verify(signature, txbytes, pk)
-        print("Verified signature")
+        # TODO change this to write to file
+        # txbytes = b''
+        # txbytes = packtxn(indict, txbytes)
+        # schnorr.schnorr_verify(signature, txbytes, pk)
+        # print("Verified signature")
         # FIXME are signatures encoded with base58 before broadcast to the network?
-        indict['signature'] = decode.b58_encode(signature)
+        # indict['signature'] = decode.b58_encode(signature)
 
-        with open(outfile, 'w') as f:
-            json.dump(indict)
-        print('Signed transaction written to ',  outfile)
+        # with open(outoutfile, 'w') as f:
+        #     json.dump(signature.hex())
+        # print('Signed transaction written to ',  outfile)
 
     elif request == 'streamedtransaction':
         indict = decode.handle_streamed_transaction(infile)
