@@ -1,11 +1,11 @@
+import json
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
-import json
 import hashlib
+import struct
 import sys
 import base58
 import schnorr
-
 
 # whole version byte tables for extensibility
 value_to_version_byte = {
@@ -40,7 +40,7 @@ version_byte_to_value = {
         b'\x63': 'ledger_hash'
 }
 
-# lengths in bytes (for reference?)
+# lengths in bytes (for reference)
 # version_len = 1
 # checksum_len = 4
 
@@ -62,7 +62,64 @@ assert base58.b58encode(b'hello') == b'Cn8eVZg'
 assert base58.b58decode(b'Cn8eVZg') == b'hello'
 assert base58.b58decode_check(b'2L5B5yqsVG8Vt') == b'hello'
 
-def handle_transaction(infile):
+def packtxn(indict, output):
+    # output += struct.pack("", indict['id'])
+    output += struct.pack('?', indict['isDelegation'])
+    output += struct.pack("<I", indict['nonce'])
+    output += struct.pack("<96s", indict['from'])
+    output += struct.pack("<96s", indict['to'])
+    output += struct.pack("<I", indict['amount'])
+    output += struct.pack("<I", indict['fee'])
+    output += struct.pack("<32s", indict['memo'])
+    return output
+
+#define INS_VERSION       0x01
+#define INS_PUBLIC_KEY    0x02
+#define INS_SIGN          0x04
+#define INS_HASH          0x08
+
+def handle_txn_input(pkno, h):
+    apdu = b'\xE0'  # CLA byte
+    apdu += b'\x04' # INS byte
+    apdu += b'\x00' # P1 byte
+    apdu += b'\x00' # P2 byte
+    apdu += b'\x00' # LC byte
+    apdu += struct.pack('<I', int(pkno)) # DATA bytes
+    hsh = bytes.fromhex(h)
+    apdu += struct.pack("<96s", hsh)
+    return apdu
+
+def handle_txn_reply(reply, outfile):
+    (msg, pk, s) = reply
+    schnorr.schnorr_verify(msg, pk, s)
+    print("Verified signature")
+    # FIXME encode with base58
+    with open(outfile, 'w') as f:
+        json.dump(signature.hex())
+    print('Signed transaction written to ', outfile)
+    return
+
+def handle_stream_input(pkno, infile):
+    apdu = b'\xE0'  # CLA byte
+    apdu += b'\x08' # INS byte
+    apdu += b'\x00' # P1 byte
+    apdu += b'\x00' # P2 byte
+    apdu += b'\x00' # LC byte
+    indict = handle_transaction(pkno, infile)
+    apdu = packtxn(indict, apdu)
+    return apdu
+
+def handle_stream_reply(reply, outfile):
+    (pk, s) = reply
+    schnorr.schnorr_verify(msg, pk, s)
+    print("Verified signature")
+    # FIXME encode with base58 : decode.b58_encode(signature)
+    with open(outfile, 'w') as f:
+        json.dump(signature.hex())
+    print('Signed transaction written to ', outfile)
+    return
+
+def handle_transaction(pkno, infile):
     with open(infile) as json_file:
         data = json.load(json_file)
         # splits into msg_type 'sendPayment': payment_dict
@@ -74,33 +131,3 @@ def handle_transaction(infile):
                 txn_info['from'] = bytes(txn_info['from'], 'utf8')
                 txn_info['memo'] = bytes(txn_info['memo'], 'utf8')
                 return(txn_info)
-
-
-def handle_streamed_transaction(infile):
-    with open(infile) as json_file:
-        data = json.load(json_file)
-        # splits into msg_type 'sendPayment': payment_dict
-        for _, payment_dict in data.items():
-            # splits entries of 'payment' : txn_info
-            for _, txn_info in payment_dict.items():
-                print(txn_info)
-                txn_info['to'] = bytes(txn_info['to'], 'utf8')
-                txn_info['from'] = bytes(txn_info['from'], 'utf8')
-                txn_info['memo'] = bytes(txn_info['memo'], 'utf8')
-                return(txn_info)
-
-# def handle_pubkey(infile):
-#     with open(infile) as json_file:
-#         data = json.load(json_file)
-#         for key, value in data.items():
-#             bytes_val = b58_decode(value)
-#             lead_byte = bytes([bytes_val[0]])
-#             if lead_byte == value_to_version_byte['non_zero_curve_point_compressed']:
-#                 bytes_x = bytes_val[1:]
-#                 x = int.from_bytes(bytes_x, 'little')
-#                 if is_curvepoint(x):
-#                     return bytes_x
-#                 else:
-#                     raise RuntimeError('Failure: the public key you supplied is not on the curve.')
-#             else:
-#                 raise RuntimeError('Failure: the file you supplied doesn\'t start with the compressed public key value byte.')
