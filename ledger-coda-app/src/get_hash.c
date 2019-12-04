@@ -152,37 +152,54 @@ static void format_txn_elem(hash_context *ctx) {
   txn_state *txn = &ctx->txn;
 
   switch (txn->elem_type) {
-  case TXN_ELEM_TO:
-    os_memmove(ctx->label_str, "Output #", 16);
-    bin2dec(ctx->label_str+16, txn->slice_index);
-    if (ctx->elem_part == 0) {
+
+    case TXN_ELEM_IS_DELEGATION:
+      os_memmove(ctx->label_str, "Delegation?", 12);
+      os_memmove(ctx->full_str, txn->del, sizeof(txn->del));
+      break;
+
+    case TXN_ELEM_NONCE:
+      os_memmove(ctx->label_str, "Nonce", 6);
+      os_memmove(ctx->full_str, txn->nonce, sizeof(txn->nonce));
+      break;
+
+    case TXN_ELEM_FROM:
+      // ctx->key_index = U4LE(data_buffer, 0);
+      os_memmove(ctx->label_str, "Send from", 10);
+      os_memmove(ctx->full_str, "key #", 5);
+      int n = bin2dec(ctx->full_str + 5, ctx->key_index);
+      os_memmove(ctx->full_str + 5 + n, "?", 2);
+      ctx->elem_len = 76;
+      // UX_DISPLAY(ui_pubkey_approve, NULL);
+      break;
+
+    case TXN_ELEM_TO:
+      os_memmove(ctx->label_str, "Send to", 8);
       os_memmove(ctx->full_str, txn->out_key, sizeof(txn->out_key));
       os_memmove(ctx->partial_str, ctx->full_str, 12);
       ctx->elem_len = 76;
-      ctx->elem_part++;
-    } else {
-      os_memmove(ctx->full_str, txn->out_val, sizeof(txn->out_val));
+      break;
+
+    case TXN_ELEM_AMOUNT:
+      os_memmove(ctx->label_str, "Amount", 7);
       ctx->elem_len = format(ctx->full_str, txn->val_len);
-      os_memmove(ctx->partial_str, ctx->full_str, 12);
-      ctx->elem_part = 0;
-    }
-    break;
+      os_memmove(ctx->full_str, txn->out_val, txn->val_len);
+      break;
 
-  case TXN_ELEM_FEE:
-    // Miner fees only have one part.
-    os_memmove(ctx->label_str, "Miner Fee #", 11);
-    bin2dec(ctx->label_str+11, txn->slice_index);
-    os_memmove(ctx->full_str, txn->out_val, sizeof(txn->out_val));
-    ctx->elem_len = format(ctx->full_str, txn->val_len);
-    os_memmove(ctx->partial_str, ctx->full_str, 12);
-    ctx->elem_part = 0;
-    break;
+    case TXN_ELEM_FEE:
+      os_memmove(ctx->label_str, "Fee", 4);
+      os_memmove(ctx->full_str, txn->fee_val, sizeof(txn->fee));
+      break;
 
-  default:
-    // This should never happen.
-    io_exchange_with_code(SW_DEVELOPER_ERR, 0);
-    ui_idle();
-    break;
+    // memo should not be present
+    case TXN_ELEM_MEMO:
+      break;
+
+    default:
+      // This should never happen.
+      io_exchange_with_code(SW_DEVELOPER_ERR, 0);
+      ui_idle();
+      break;
   }
 
   // Regardless of what we're displaying, the display_index should always be
@@ -192,76 +209,76 @@ static void format_txn_elem(hash_context *ctx) {
 
 static unsigned int ui_hash_elem_button(unsigned int button_mask, unsigned int button_mask_counter) {
   switch (button_mask) {
-  case BUTTON_LEFT:
-  case BUTTON_EVT_FAST | BUTTON_LEFT: // SEEK LEFT
-    if (ctx->display_index > 0) {
-      ctx->display_index--;
-    }
-    os_memmove(ctx->partial_str, ctx->full_str+ctx->display_index, 12);
-    UX_REDISPLAY();
-    break;
-
-  case BUTTON_RIGHT:
-  case BUTTON_EVT_FAST | BUTTON_RIGHT: // SEEK RIGHT
-    if (ctx->display_index < ctx->elem_len-12) {
-      ctx->display_index++;
-    }
-    os_memmove(ctx->partial_str, ctx->full_str+ctx->display_index, 12);
-    UX_REDISPLAY();
-    break;
-
-  case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT: // PROCEED
-    if (ctx->elem_part > 0) {
-      // We're in the middle of displaying a multi-part element; display
-      // the next part.
-      format_txn_elem(ctx);
+    case BUTTON_LEFT:
+    case BUTTON_EVT_FAST | BUTTON_LEFT: // SEEK LEFT
+      if (ctx->display_index > 0) {
+        ctx->display_index--;
+      }
+      os_memmove(ctx->partial_str, ctx->full_str+ctx->display_index, 12);
       UX_REDISPLAY();
       break;
+
+    case BUTTON_RIGHT:
+    case BUTTON_EVT_FAST | BUTTON_RIGHT: // SEEK RIGHT
+      if (ctx->display_index < ctx->elem_len-12) {
+        ctx->display_index++;
+      }
+      os_memmove(ctx->partial_str, ctx->full_str+ctx->display_index, 12);
+      UX_REDISPLAY();
+      break;
+
+    case BUTTON_EVT_RELEASED | BUTTON_LEFT | BUTTON_RIGHT: // PROCEED
+      if (ctx->elem_part > 0) {
+        // We're in the middle of displaying a multi-part element; display
+        // the next part.
+        format_txn_elem(ctx);
+        UX_REDISPLAY();
+        break;
     }
     // Attempt to decode the next element in the transaction.
     switch (txn_next_elem(&ctx->txn)) {
-    case TXN_STATE_ERR:
-      // The transaction is invalid.
-      io_exchange_with_code(SW_INVALID_PARAM, 0);
-      ui_idle();
-      break;
-    case TXN_STATE_PARTIAL:
-      // We don't have enough data to decode the next element; send an
-      // OK code to request more.
-      io_exchange_with_code(SW_OK, 0);
-      break;
-    case TXN_STATE_READY:
-      // We successively decoded one or more elements; display the first
-      // part of the first element.
-      ctx->elem_part = 0;
-      format_txn_elem(ctx);
-      UX_REDISPLAY();
-      break;
-    case TXN_STATE_FINISHED:
-      // We've finished decoding the transaction, and all elements have
-      // been displayed.
-      if (ctx->sign) {
-        // If we're signing the transaction, prepare and display the
-        // approval screen.
-        os_memmove(ctx->full_str, "with Key #", 10);
-        os_memmove(ctx->full_str+10+(bin2dec(ctx->full_str+10, ctx->key_index)), "?", 2);
-        UX_DISPLAY(ui_hash_sign, NULL);
-      } else {
-        // If we're just computing the hash, send it immediately and
-        // display the comparison screen
-        os_memmove(G_io_apdu_buffer, ctx->txn.hash, 32);
-        io_exchange_with_code(SW_OK, 32);
-        bin2hex(ctx->full_str, ctx->txn.hash, sizeof(ctx->txn.hash));
-        os_memmove(ctx->partial_str, ctx->full_str, 12);
-        ctx->elem_len = 64;
-        ctx->display_index = 0;
-        UX_DISPLAY(ui_hash_compare, ui_prepro_hash_compare);
+      case TXN_STATE_ERR:
+        // The transaction is invalid.
+        io_exchange_with_code(SW_INVALID_PARAM, 0);
+        ui_idle();
+        break;
+      case TXN_STATE_PARTIAL:
+        // We don't have enough data to decode the next element; send an
+        // OK code to request more.
+        io_exchange_with_code(SW_OK, 0);
+        break;
+      case TXN_STATE_READY:
+        // We successively decoded one or more elements; display the first
+        // part of the first element.
+        ctx->elem_part = 0;
+        format_txn_elem(ctx);
+        UX_REDISPLAY();
+        break;
+      case TXN_STATE_FINISHED:
+        // We've finished decoding the transaction, and all elements have
+        // been displayed.
+        if (ctx->sign) {
+          // If we're signing the transaction, prepare and display the
+          // approval screen.
+          os_memmove(ctx->full_str, "with Key #", 10);
+          os_memmove(ctx->full_str+10+(bin2dec(ctx->full_str+10, ctx->key_index)), "?", 2);
+          UX_DISPLAY(ui_hash_sign, NULL);
+        } else {
+          // If we're just computing the hash, send it immediately and
+          // display the comparison screen
+          os_memmove(G_io_apdu_buffer, ctx->txn.hash, 32);
+          io_exchange_with_code(SW_OK, 32);
+          bin2hex(ctx->full_str, ctx->txn.hash, sizeof(ctx->txn.hash));
+          os_memmove(ctx->partial_str, ctx->full_str, 12);
+          ctx->elem_len = 64;
+          ctx->display_index = 0;
+          UX_DISPLAY(ui_hash_compare, ui_prepro_hash_compare);
+        }
+        // Reset the initialization state.
+        ctx->initialized = 0;
+        break;
       }
-      // Reset the initialization state.
-      ctx->initialized = 0;
       break;
-    }
-    break;
   }
   return 0;
 }
@@ -277,6 +294,8 @@ static unsigned int ui_hash_elem_button(unsigned int button_mask, unsigned int b
 // key. The transaction is processed in a streaming fashion and displayed
 // piece-wise to the user.
 void handle_hash(uint8_t p1, uint8_t p2, uint8_t *data_buffer, uint16_t data_length, volatile unsigned int *flags, volatile unsigned int *tx) {
+  ctx->initialized = 0;
+
   if ((p1 != P1_FIRST && p1 != P1_MORE) || (p2 != P2_DISPLAY_HASH && p2 != P2_SIGN_HASH)) {
     THROW(SW_INVALID_PARAM);
   }

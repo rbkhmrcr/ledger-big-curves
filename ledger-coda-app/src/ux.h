@@ -80,7 +80,7 @@ typedef struct {
   uint8_t out_val[128];       // currency value, in decimal
   uint8_t val_len;            // length of out_val
   uint8_t fee_val[128];       // currency value, in decimal
-  scalar in_key;              // 'from' public key
+  uint32_t key_index;         // 'from' public key
   scalar out_key;             // 'to' public key
 } txn_state;
 
