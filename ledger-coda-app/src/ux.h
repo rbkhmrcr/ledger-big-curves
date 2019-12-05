@@ -77,6 +77,7 @@ typedef struct {
   scalar hash;                // buffer to hold final hash
 
   uint8_t del;                // is delegation : 1 = true, 0 = false
+  uint32_t nonce;             // transaction nonce
   uint8_t out_val[128];       // currency value, in decimal
   uint8_t val_len;            // length of out_val
   uint8_t fee_val[128];       // currency value, in decimal

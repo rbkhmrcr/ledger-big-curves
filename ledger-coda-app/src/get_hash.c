@@ -156,19 +156,23 @@ static void format_txn_elem(hash_context *ctx) {
 
     case TXN_ELEM_IS_DELEGATION:
       os_memmove(ctx->label_str, "Delegation?", 12);
-      os_memmove(ctx->full_str, txn->del, sizeof(txn->del));
+      if (txn->del == 0) {
+        os_memmove(ctx->full_str, "False", 6);
+      } else {
+        os_memmove(ctx->full_str, "True", 5);
+      }
       break;
 
     case TXN_ELEM_NONCE:
       os_memmove(ctx->label_str, "Nonce", 6);
-      os_memmove(ctx->full_str, txn->nonce, sizeof(txn->nonce));
+      int n = bin2dec(ctx->full_str, txn->nonce);
       break;
 
     case TXN_ELEM_FROM:
       // ctx->key_index = U4LE(data_buffer, 0);
       os_memmove(ctx->label_str, "Send from", 10);
       os_memmove(ctx->full_str, "key #", 5);
-      int n = bin2dec(ctx->full_str + 5, ctx->key_index);
+      n = bin2dec(ctx->full_str + 5, ctx->key_index);
       os_memmove(ctx->full_str + 5 + n, "?", 2);
       ctx->elem_len = 76;
       // UX_DISPLAY(ui_pubkey_approve, NULL);
@@ -189,7 +193,7 @@ static void format_txn_elem(hash_context *ctx) {
 
     case TXN_ELEM_FEE:
       os_memmove(ctx->label_str, "Fee", 4);
-      os_memmove(ctx->full_str, txn->fee_val, sizeof(txn->fee));
+      os_memmove(ctx->full_str, txn->fee_val, sizeof(txn->fee_val));
       break;
 
     // memo should not be present
