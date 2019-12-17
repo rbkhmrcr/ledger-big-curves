@@ -2,6 +2,7 @@ from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
 import json
 import sys
+import struct
 import os
 import decode
 import schnorr
@@ -38,7 +39,7 @@ def get_transaction(pkno, h, outfile):
     decode.handle_txn_reply(reply, outfile)
     return
 
-def stream_sign(dongle, pkno, infile, outfile):
+def stream_sign(pkno, infile, outfile):
     apdu = decode.handle_stream_input(pkno, infile)
     reply = dongle.exchange(apdu)
     print("signature " + signature.hex())
@@ -53,24 +54,24 @@ try:
     if len(sys.argv) == 2:
         (_, request) = sys.argv
         if request == 'version':
-            get_version(dongle)
+            get_version()
         else:
             print(errstring % sys.argv[0])
 
     elif len(sys.argv) == 3:
         (_, request, pkno) = sys.argv
         if request == 'publickey':
-            get_publickey(dongle, pkno)
+            get_publickey(pkno)
         else:
             print(errstring % sys.argv[0])
 
     elif len(sys.argv) == 5:
         (_, request, pkno, h, outfile) = sys.argv
         if request == 'transaction':
-            get_transaction(dongle, pkno, h, outfile)
+            get_transaction(pkno, h, outfile)
         elif request == 'streamedtransaction':
             # in this case h will be a file
-            stream_sign(dongle, pkno, h, outfile)
+            stream_sign(pkno, h, outfile)
         else:
             print(errstring % sys.argv[0])
 

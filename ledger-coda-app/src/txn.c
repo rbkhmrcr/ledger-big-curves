@@ -171,8 +171,16 @@ static void read_key(txn_state *txn) {
 static void __txn_next_elem(txn_state *txn) {
   // if we're on a slice boundary, read the next length prefix and bump the
   // element type
+  PRINTF("%s:%d\n", __FILE__, __LINE__);
+  PRINTF("slice len = %d\n", txn->slice_len);
+  PRINTF("slice len = %d\n", txn->slice_len >> 32);
+  PRINTF("txn read int = %16x\n", read_int(txn));
+  PRINTF("txn read int = %16x\n", read_int(txn) >> 32);
+
   while (txn->slice_index == txn->slice_len) {
+  PRINTF("%s:%d\n", __FILE__, __LINE__);
     if (txn->elem_type == TXN_ELEM_MEMO) {
+      PRINTF("%s:%d\n", __FILE__, __LINE__);
       // store final hash
       poseidon_digest(txn->hash_state, txn->hash);
       THROW(TXN_STATE_FINISHED);
@@ -202,12 +210,14 @@ static void __txn_next_elem(txn_state *txn) {
   // these elements should be displayed
 
   case TXN_ELEM_IS_DELEGATION:
+    PRINTF("%s:%d\n", __FILE__, __LINE__);
     read_int(txn);                // read the first element of txn, txn.del
     advance(txn);
     txn->slice_index++;
     THROW(TXN_STATE_READY);
 
   case TXN_ELEM_NONCE:
+    PRINTF("%s:%d\n", __FILE__, __LINE__);
     read_int(txn);                // read the second element of txn, txn.nonce
     advance(txn);
     txn->slice_index++;

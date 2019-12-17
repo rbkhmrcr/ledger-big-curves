@@ -212,6 +212,7 @@ static void format_txn_elem(hash_context *ctx) {
   ctx->display_index = 0;
 }
 
+// called in UX_DISPLAY
 static unsigned int ui_hash_elem_button(unsigned int button_mask, unsigned int button_mask_counter) {
   switch (button_mask) {
     case BUTTON_LEFT:
@@ -236,6 +237,7 @@ static unsigned int ui_hash_elem_button(unsigned int button_mask, unsigned int b
       if (ctx->elem_part > 0) {
         // We're in the middle of displaying a multi-part element; display
         // the next part.
+        PRINTF("%s:%d\n", __FILE__, __LINE__);
         format_txn_elem(ctx);
         UX_REDISPLAY();
         break;
@@ -256,6 +258,7 @@ static unsigned int ui_hash_elem_button(unsigned int button_mask, unsigned int b
         // We successively decoded one or more elements; display the first
         // part of the first element.
         ctx->elem_part = 0;
+        PRINTF("%s:%d\n", __FILE__, __LINE__);
         format_txn_elem(ctx);
         UX_REDISPLAY();
         break;
@@ -352,6 +355,7 @@ void handle_hash(uint8_t p1, uint8_t p2, uint8_t *data_buffer, uint16_t data_len
       THROW(SW_OK);
     case TXN_STATE_READY:
       ctx->elem_part = 0;
+      PRINTF("%s:%d\n", __FILE__, __LINE__);
       format_txn_elem(ctx);
       UX_DISPLAY(ui_hash_elem, ui_prepro_hash_elem);
       *flags |= IO_ASYNCH_REPLY;

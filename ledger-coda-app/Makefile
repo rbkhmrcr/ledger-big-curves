@@ -45,17 +45,8 @@ DEFINES += HAVE_BAGL HAVE_SPRINTF
 DEFINES += HAVE_BOLOS_APP_STACK_CANARY
 
 # Enabling debug PRINTF
-DEBUG = 0
-ifneq ($(DEBUG),0)
-
-        ifeq ($(TARGET_NAME),TARGET_NANOX)
-                DEFINES   += HAVE_PRINTF PRINTF=mcu_usb_printf
-        else
-                DEFINES   += HAVE_PRINTF PRINTF=screen_printf
-        endif
-else
-        DEFINES   += PRINTF\(...\)=
-endif
+DEFINES += HAVE_SPRINTF HAVE_PRINTF PRINTF=screen_printf
+# DEFINES   += PRINTF\(...\)=
 
 DEFINES += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=7 IO_HID_EP_LENGTH=64 HAVE_USB_APDU
 
