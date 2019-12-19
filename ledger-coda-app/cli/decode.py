@@ -78,15 +78,15 @@ def packtxn(indict, output):
 #define INS_SIGN          0x04
 #define INS_HASH          0x08
 
-def handle_txn_input(pkno, h):
+def handle_txn_input(pkno, to, h):
     apdu = b'\xE0'  # CLA byte
     apdu += b'\x04' # INS byte
     apdu += b'\x00' # P1 byte
     apdu += b'\x00' # P2 byte
     apdu += b'\x00' # LC byte
     apdu += struct.pack('<I', int(pkno)) # DATA bytes
-    hsh = bytes.fromhex(h)
-    apdu += struct.pack("<96s", hsh)
+    apdu += struct.pack("<96s", to)
+    apdu += struct.pack("<96s", h)
     return apdu
 
 def handle_txn_reply(reply, outfile):
@@ -119,6 +119,48 @@ def handle_stream_reply(reply, outfile):
     print('Signed transaction written to ', outfile)
     return
 
+"""
+field elts:
+  [ x_coord of receiver/delegate pubkey
+  ]
+
+bitstrings:
+  [ sign_bit of receiver/delegate pubkey
+  , tag bits
+  , amount (8 bytes)
+  , fee (8 bytes)
+  , nonce (4 bytes)
+  , valid-until (4 bytes)
+  , memo (32 bytes)
+  ]
+"""
+
+def json_to_transaction(infile):
+    with open(infile) as json_file:
+        data = json.load(json_file)
+        # splits into msg_type 'sendPayment': payment_dict
+        for _, payment_dict in data.items():
+            # splits entries of 'payment' : txn_info
+            for _, txn_info in payment_dict.items():
+                print(txn_info)
+                b58_to = txn_info['to']
+                # to is version byte, sign bit, x coord
+                bto = b58_decode(b58_to)
+                sign_bit = bytes([bto[1]])
+                to = bto[2:]
+                print(to)
+                # sign = bytes(txn_info['sign_bit'], 'utf8')
+                if txn_info['is_delegation'] == 'True':
+                    tag = bytes([1])
+                else:
+                    tag = bytes([0])
+                amount  = txn_info['amount'].to_bytes(8, 'big')
+                fee     = txn_info['fee'].to_bytes(8, 'big')
+                nonce   = txn_info['nonce'].to_bytes(4, 'big')
+                vu      = txn_info['valid_until'].to_bytes(4, 'big')
+                memo    = bytes(txn_info['memo'], 'utf8')
+        return to, sign_bit + tag + amount + fee + nonce + vu + memo
+
 def handle_transaction(pkno, infile):
     with open(infile) as json_file:
         data = json.load(json_file)
@@ -130,4 +172,4 @@ def handle_transaction(pkno, infile):
                 txn_info['to'] = bytes(txn_info['to'], 'utf8')
                 txn_info['from'] = bytes(txn_info['from'], 'utf8')
                 txn_info['memo'] = bytes(txn_info['memo'], 'utf8')
-                return(txn_info)
+                return txn_info

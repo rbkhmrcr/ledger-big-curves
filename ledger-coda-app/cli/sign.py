@@ -1,6 +1,5 @@
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
-import json
 import sys
 import struct
 import os
@@ -32,17 +31,20 @@ def get_publickey(pkno):
     print("hash digest " + hashlib.sha256(pkx).hexdigest())
     return
 
-def get_transaction(pkno, h, outfile):
-    apdu = decode.handle_txn_input(pkno, h)
+def get_transaction(pkno, infile, outfile):
+    to, msg = decode.json_to_transaction(infile)
+    apdu = decode.handle_txn_input(pkno, to, msg)
     reply = dongle.exchange(apdu)
-    print("signature " + signature.hex())
+    print("signature " + reply.hex())
     decode.handle_txn_reply(reply, outfile)
     return
 
+# these are almost identical now -- the only difference should
+# be how they are handled on the ledger (so the INS byte)
 def stream_sign(pkno, infile, outfile):
     apdu = decode.handle_stream_input(pkno, infile)
     reply = dongle.exchange(apdu)
-    print("signature " + signature.hex())
+    print("signature " + reply.hex())
     decode.handle_stream_reply(reply, outfile)
     return
 
@@ -68,6 +70,7 @@ try:
     elif len(sys.argv) == 5:
         (_, request, pkno, h, outfile) = sys.argv
         if request == 'transaction':
+            # in this case h will be a file
             get_transaction(pkno, h, outfile)
         elif request == 'streamedtransaction':
             # in this case h will be a file
