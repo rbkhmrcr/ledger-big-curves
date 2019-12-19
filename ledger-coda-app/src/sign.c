@@ -39,7 +39,7 @@ static const bagl_element_t ui_sign_approve[] = {
   UI_BACKGROUND(),
   UI_ICON_LEFT(0x00, BAGL_GLYPH_ICON_CROSS),
   UI_ICON_RIGHT(0x00, BAGL_GLYPH_ICON_CHECK),
-  UI_TEXT(0x00, 0, 12, 128, "Sign this hash"),
+  UI_TEXT(0x00, 0, 12, 128, "Sign this message"),
   UI_TEXT(0x00, 0, 26, 128, global.s.index_str),
 };
 
@@ -59,9 +59,9 @@ static unsigned int ui_sign_approve_button(unsigned int button_mask, unsigned in
     group public_key;
     scalar private_key;
     generate_keypair(ctx->key_index, &public_key, private_key);
-    scalar hash = {0};
-    os_memmove(hash + 64, ctx->hash, 32);
-    sign(G_io_apdu_buffer, G_io_apdu_buffer + field_bytes, &public_key, private_key, ctx->hash);
+    scalar msg = {0};
+    os_memmove(msg + 64, ctx->msg, 32);
+    sign(G_io_apdu_buffer, G_io_apdu_buffer + field_bytes, &public_key, private_key, ctx->msg);
     // Send the data in the APDU buffer, along with a special code that
     // indicates approval. 192 is the number of bytes in the response APDU,
     // sans response code. The Ledger can only handle sending less than 260
@@ -88,8 +88,8 @@ static const bagl_element_t ui_sign_compare[] = {
   // most apps use to indicate that the element should always be displayed.
   // UI_BACKGROUND() also has userid == 0. And if you revisit the approval
   // screen, you'll see that all of those elements have userid == 0 as well.
-  UI_TEXT(0x00, 0, 12, 128, "Compare hash:"),
-  UI_TEXT(0x00, 0, 26, 128, global.s.partial_hash_str),
+  UI_TEXT(0x00, 0, 12, 128, "Compare msg:"),
+  UI_TEXT(0x00, 0, 26, 128, global.s.partial_msg_str),
 };
 
 static const bagl_element_t* ui_prepro_sign_compare(const bagl_element_t *element) {
@@ -100,7 +100,7 @@ static const bagl_element_t* ui_prepro_sign_compare(const bagl_element_t *elemen
     return (ctx->display_index == 0) ? NULL : element;
   case 2:
     // 0x02 is the right, so return NULL if we're displaying the end of the text.
-    return (ctx->display_index == sizeof(ctx->hex_hash)-12) ? NULL : element;
+    return (ctx->display_index == sizeof(ctx->hex_msg)-12) ? NULL : element;
   default:
     // Always display all other elements.
     return element;
@@ -120,16 +120,16 @@ static unsigned int ui_sign_compare_button(unsigned int button_mask, unsigned in
     if (ctx->display_index > 0) {
       ctx->display_index--;
     }
-    os_memmove(ctx->partial_hash_str, ctx->hex_hash+ctx->display_index, 12);
+    os_memmove(ctx->partial_msg_str, ctx->hex_msg+ctx->display_index, 12);
     UX_REDISPLAY();
     break;
 
   case BUTTON_RIGHT:
   case BUTTON_EVT_FAST | BUTTON_RIGHT: // SEEK RIGHT
-    if (ctx->display_index < sizeof(ctx->hex_hash)-12) {
+    if (ctx->display_index < sizeof(ctx->hex_msg)-12) {
       ctx->display_index++;
     }
-    os_memmove(ctx->partial_hash_str, ctx->hex_hash+ctx->display_index, 12);
+    os_memmove(ctx->partial_msg_str, ctx->hex_msg+ctx->display_index, 12);
     UX_REDISPLAY();
     break;
 
@@ -154,13 +154,13 @@ void handle_sign(uint8_t p1, uint8_t p2, uint8_t *data_buffer, uint16_t data_len
   // Read the index of the signing key. U4LE is a helper macro for
   // converting a 4-byte buffer to a uint32_t.
   ctx->key_index = U4LE(data_buffer, 0);
-  os_memmove(ctx->hash, data_buffer+4, sizeof(ctx->hash));
+  os_memmove(ctx->msg, data_buffer+4, sizeof(ctx->msg));
 
-  // Prepare to display the comparison screen by converting the hash to hex
-  // and moving the first 12 characters into the partial_hash_str buffer.
-  bin2hex(ctx->hex_hash, ctx->hash, sizeof(ctx->hash));
-  os_memmove(ctx->partial_hash_str, ctx->hex_hash, 12);
-  ctx->partial_hash_str[12] = '\0';
+  // Prepare to display the comparison screen by converting the msg to hex
+  // and moving the first 12 characters into the partial_msg_str buffer.
+  bin2hex(ctx->hex_msg, ctx->msg, sizeof(ctx->msg));
+  os_memmove(ctx->partial_msg_str, ctx->hex_msg, 12);
+  ctx->partial_msg_str[12] = '\0';
   ctx->display_index = 0;
 
   // Call UX_DISPLAY to display the comparison screen, passing the

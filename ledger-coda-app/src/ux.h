@@ -102,7 +102,7 @@ txn_decoder_state_e txn_next_elem(txn_state *txn);
 typedef struct {
   uint32_t key_index;
   uint8_t display_index;
-  // NUL-terminated strings for display
+  // NULL-terminated strings for display
   uint8_t type_str[40];
   uint8_t key_str[40];
   uint8_t full_str[65];
@@ -111,12 +111,12 @@ typedef struct {
 
 typedef struct {
   uint32_t key_index;
-  uint8_t hash[32];
-  uint8_t hex_hash[64];
-  uint8_t display_index;
-  // NUL-terminated strings for display
-  uint8_t index_str[40];
-  uint8_t partial_hash_str[13];
+  uint8_t msg[364];
+  uint8_t hex_msg[728];
+  uint32_t display_index;
+  // NULL-terminated strings for display
+  uint8_t index_str[40]; // 40??
+  uint8_t partial_msg_str[13];
 } signature_context;
 
 typedef struct {
