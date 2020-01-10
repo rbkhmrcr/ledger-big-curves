@@ -11,7 +11,15 @@ it seems it is possible!
 Run `make` to check the build, and `make load` to build and load the application 
 onto the device. Errors try to be helpful and the most common reason for failure 
 is the device autolocking, so if something isn't working that might just be the 
-reason. After installing and running the application, you can run 
-`python3 cli/sign.py` to test a signature over USB. `make delete` deletes the app.
+reason. `make delete` deletes the app.
 
 See [Ledger's documentation](http://ledger.readthedocs.io) for further information.
+
+to generate key with nonce 11 (pk prints to stdout):
+```
+python3 cli/sign.py publickey 11
+```
+to sign a transaction (signature is written to `cli/signed-txn`):
+```
+python3 cli/sign.py transaction 1234 cli/sample-input-txn cli/signed-txn
+```
