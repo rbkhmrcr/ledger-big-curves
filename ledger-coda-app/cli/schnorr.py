@@ -95,6 +95,10 @@ def both_sqrt(y2):
 def is_square(x):
     return legendre_symbol(x) == 1
 
+def is_curve_point(x):
+    z = (pow(x, 3, p) + a_coeff * x + b_coeff) % p
+    return is_square(z)
+
 def random_curve_point():
     x = random_field_elt()
     y2 = (x*x*x + a * x + b) % p

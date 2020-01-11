@@ -1,11 +1,9 @@
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
-import sys
-import struct
-import os
-import decode
-import schnorr
-import hashlib
+import argparse, sys, struct, os, hashlib
+import decode, schnorr
+
+# ledger functions
 
 def get_version():
     apdu = b'\xE0'  # CLA byte
@@ -31,58 +29,36 @@ def get_publickey(pkno):
     print("hash digest " + hashlib.sha256(pkx).hexdigest())
     return
 
-def get_transaction(pkno, infile, outfile):
-    to, msg = decode.json_to_transaction(infile)
-    apdu = decode.handle_txn_input(pkno, to, msg)
+# we should have the message stored so we can verify the signature?
+def get_transaction(pkno, txn):
+    apdu = decode.handle_txn_input(pkno, txn)
     reply = dongle.exchange(apdu)
-    print("signature " + reply.hex())
-    decode.handle_txn_reply(reply, outfile)
+    decode.handle_txn_reply(reply)
     return
 
-# these are almost identical now -- the only difference should
-# be how they are handled on the ledger (so the INS byte)
-def stream_sign(pkno, infile, outfile):
-    apdu = decode.handle_stream_input(pkno, infile)
-    reply = dongle.exchange(apdu)
-    print("signature " + reply.hex())
-    decode.handle_stream_reply(reply, outfile)
-    return
+## parsing
 
-errstring = 'Format command as \n %s request pk input output \n with request = {version, publickey, transaction, streamedtransaction}'
+parser = argparse.ArgumentParser(description='Get public keys and signatures from Ledger device.')
+parser.add_argument('--request',
+        help='publickey or sign (for signing a transaction)')
+parser.add_argument('--nonce',
+        help='the nonce with which to derive the keys')
+parser.add_argument('--transaction',
+        help='the transaction to sign (in JSON)')
+
+args = parser.parse_args()
+
 dongle = getDongle(True)
 
 try:
-
-    if len(sys.argv) == 2:
-        (_, request) = sys.argv
-        if request == 'version':
-            get_version()
-        else:
-            print(errstring % sys.argv[0])
-
-    elif len(sys.argv) == 3:
-        (_, request, pkno) = sys.argv
-        if request == 'publickey':
-            get_publickey(pkno)
-        else:
-            print(errstring % sys.argv[0])
-
-    elif len(sys.argv) == 5:
-        (_, request, pkno, h, outfile) = sys.argv
-        if request == 'transaction':
-            # in this case h will be a file
-            get_transaction(pkno, h, outfile)
-        elif request == 'streamedtransaction':
-            # in this case h will be a file
-            stream_sign(pkno, h, outfile)
-        else:
-            print(errstring % sys.argv[0])
-
-    else:
-        print(errstring % sys.argv[0])
+    if args.request == 'version':
+        get_version()
+    elif args.request == 'publickey':
+        get_publickey(args.nonce)
+    elif args.request == 'transaction':
+        get_transaction(args.nonce, args.transaction)
 
 except CommException as comm:
-
     if comm.sw == 0x6985:
         print('Aborted by user')
     elif comm.sw == 0x6B00:
