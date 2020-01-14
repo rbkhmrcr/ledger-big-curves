@@ -24,9 +24,7 @@ def get_publickey(pkno):
     apdu += b'\x00' # LC byte
     apdu += struct.pack('<I', int(pkno)) # DATA bytes
     pubkey = dongle.exchange(apdu)
-    print("public key " + pubkey.hex())
-    pkx = pubkey[:96]
-    print("hash digest " + hashlib.sha256(pkx).hexdigest())
+    decode.handle_pk_reply(pubkey)
     return
 
 # we should have the message stored so we can verify the signature?
