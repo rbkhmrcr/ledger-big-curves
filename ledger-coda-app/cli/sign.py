@@ -34,6 +34,15 @@ def get_transaction(pkno, txn):
     decode.handle_txn_reply(reply)
     return
 
+msg_tuple = (25615870705115042543646988269442600291065870610810566568351522267883229178288637645455574607750193516168494708212492106060991223252842215604841819346335592341288722448465861172621202305332949789691389509124500513443739624704490,
+        165263992375525314283137939099243432440837431930670926230162855107585165655283990966064758496729853898257922318576908240849)
+
+def get_transaction_from_ints(pkno, txn):
+    apdu = decode.handle_ints_input(pkno, txn)
+    reply = dongle.exchange(apdu)
+    decode.handle_txn_reply(reply)
+    return
+
 ## parsing
 
 parser = argparse.ArgumentParser(description='Get public keys and signatures from Ledger device.')
@@ -55,6 +64,8 @@ try:
         get_publickey(args.nonce)
     elif args.request == 'transaction':
         get_transaction(args.nonce, args.transaction)
+    elif args.request == 'sign-ints':
+        get_transaction_from_ints(args.nonce, msg_tuple)
 
 except CommException as comm:
     if comm.sw == 0x6985:

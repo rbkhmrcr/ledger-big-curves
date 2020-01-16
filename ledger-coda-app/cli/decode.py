@@ -7,13 +7,13 @@ value_to_version_byte = {
         'web_pipe':                         b'\x41',
         'data_hash':                        b'\x37',
         'proof':                            b'\x70',
-        'signature':                        b'\x9A',
-        'non_zero_curve_point':             b'\xCD',
-        'non_zero_curve_point_compressed':  b'\xCA',
+        'signature':                        b'\x9a',
+        'non_zero_curve_point':             b'\xce',
+        'non_zero_curve_point_compressed':  b'\xcb',
         'random_oracle_base':               b'\x03',
-        'private_key':                      b'\x5A',
-        'user_command_memo':                b'\xA2',
-        'receipt_chain_hash':               b'\x9D',
+        'private_key':                      b'\x5a',
+        'user_command_memo':                b'\xa2',
+        'receipt_chain_hash':               b'\x9d',
         'secret_box_byteswr':               b'\x02',
         'ledger_hash':                      b'\x63'
 }
@@ -24,8 +24,8 @@ version_byte_to_value = {
         b'\x37': 'data_hash',
         b'\x70': 'proof',
         b'\x9a': 'signature',
-        b'\xcd': 'non_zero_curve_point',
-        b'\xca': 'non_zero_curve_point_compressed' ,
+        b'\xce': 'non_zero_curve_point',
+        b'\xcb': 'non_zero_curve_point_compressed' ,
         b'\x03': 'random_oracle_base',
         b'\x5a': 'private_key',
         b'\xa2': 'user_command_memo',
@@ -34,44 +34,30 @@ version_byte_to_value = {
         b'\x63': 'ledger_hash'
 }
 
-"""
-{
-  "sendPayment": {
-    "is_delegation": "False",
-    "nonce": 37,
-    "from": 123 (this should be the nonce in hardware wallet),
-    "to": "tNci9iZe1p3KK4MCcqDa52mpxBTveEm3kqZMm7vwJF9uKzGGt1pCHVNa2oMevDb1HDAs4bNdMQLNbD8N3tkCtKNGM53obE9qFkkhmqMnKRLNLiSfPJuLGsSwqnL3HxSqciJoqJJJmq5Cfb",
-    "amount": 1000,
-    "fee": 8,
-    "valid_until": 1600,
-    "memo": "2pmu64f2x97tNiDXMycnLwBSECDKbX77MTXVWVsG8hcRFsedhXDWWq"
-    }
-}
-"""
-
 # versionbyte length = 1 byte
-# checksum len = 4 bytes
-
 def pk_encode(hex_pk):
+    print(hex_pk)
     l = len(hex_pk)
     assert l//2 * 2 == l
+    print(l//2)
     pkx = hex_pk[:l//2]
     pky = hex_pk[l//2:]
-    v = value_to_version_byte['non_zero_curve_point_compressed'] + bytes(hex_pk, encoding='utf8')
-    return base58.b58encode_check(v).decode("utf8")
+    b58x = base58.b58encode(pkx).decode("utf8")
+    is_odd = pky[-1] & 1 == 1
+    # print(json.dumps({'is_odd': str(is_odd), 'x': b58x}))
+    return
 
 # b58_pk is version byte || sign bit || x coord
 def pk_decode(b58_pk):
     bpk = base58.b58decode_check(b58_pk)
     vb = bytes([bpk[0]])
-    # assert vb == value_to_version_byte['non_zero_curve_point_compressed']
-    head_bit = bytes([bpk[1]])
-    tail_bit = bytes([bpk[-1]])
+    assert vb == value_to_version_byte['non_zero_curve_point_compressed']
+    sign_bit = bytes([bpk[-1]])
     pkx = bpk[3:-1]
     x = int.from_bytes(pkx, byteorder='little')
     pkx = x.to_bytes(96, byteorder='little')
     assert schnorr.is_curve_point(x) == True
-    return tail_bit, pkx
+    return sign_bit, pkx
 
 
 """
@@ -91,28 +77,21 @@ bitstrings:
 """
 
 def txn_dict_to_bytes(txn_info):
-    sign_bit, to = b58_decode_to(txn_info['to'])
-    tag = bytes([1]) if txn_info['is_delegation'] == 'True' else bytes([0])
+    sign_bit, to = pk_decode(txn_info['to'])
+    # change this to just two bits?
+    tag_bits = bytes([1]) if txn_info['is_delegation'] == 'True' else bytes([0])
     amount  = txn_info['amount'].to_bytes(8, 'big')
     fee     = txn_info['fee'].to_bytes(8, 'big')
     nonce   = txn_info['nonce'].to_bytes(4, 'big')
     vu      = txn_info['valid_until'].to_bytes(4, 'big')
     memo    = bytes(txn_info['memo'], 'utf8')
-    return to, sign_bit + tag + amount + fee + nonce + vu + memo
+    return to, sign_bit + tag_bits + amount + fee + nonce + vu + memo
 
 def json_to_transaction(txn):
     data = json.loads(txn)
     for _, txn_info in data.items():
         return txn_dict_to_bytes(txn_info)
 
-def jsonfile_to_transaction(infile):
-    with open(infile) as json_file:
-        data = json.load(json_file)
-        for _, payment_dict in data.items():
-            for _, txn_info in payment_dict.items():
-                return txn_dict_to_bytes(txn_info)
-
-# flip endianness
 def sig_decode(r):
     b58_r = base58.b58encode(bytes(r)).decode("utf-8")
     return b58_r
@@ -134,44 +113,69 @@ def handle_txn_input(pkno, txn):
     apdu += struct.pack("<96s", msg)
     return apdu
 
+
+def handle_ints_input(pkno, txn):
+    (intto, intmsg) = txn
+    to = intto.to_bytes(96, byteorder='big')
+    msg = intmsg.to_bytes(96, byteorder='big')
+    apdu = b'\xE0'  # CLA byte
+    apdu += b'\x04' # INS byte
+    apdu += b'\x00' # P1 byte
+    apdu += b'\x00' # P2 byte
+    apdu += b'\x00' # LC byte
+    apdu += struct.pack('<I', int(pkno)) # DATA bytes
+    apdu += struct.pack("<96s", to)
+    apdu += struct.pack("<96s", msg)
+    return apdu
+
 def handle_txn_reply(reply):
     assert len(reply)//2 * 2 == len(reply)
     r = sig_decode(reply[:len(reply)//2])
     s = sig_decode(reply[len(reply)//2:])
-    # print(schnorr.schnorr_verify(msg, pk, s))
     print(json.dumps({'field': r, 'scalar': s}))
     return
 
 def handle_pk_reply(pk):
-    b58_pk = base58.b58encode(value_to_version_byte['non_zero_curve_point_compressed'] + bytes(pk)).decode("utf-8")
-    print(json.dumps({'public_key': b58_pk}))
-    return
-
-def test_decode(pk):
-    b, x = pk_decode(pk)
-    # print(binascii.hexlify(x))
-    return
-
-def test_encode(pk):
-    print(pk_encode(pk))
-    return
-
-hex_keys = ['00002e01950636082a7c75441fd029aaa09b6b6e079efe13f59f09d08c67263d9d2f2d66809836f1bbd0eff8536ea3876778d5cc3fa5497a99cd28653a526b379cfe0ba33e35ef2df75b8de30ae1750aa6340eccab679683497f827bef5a677f0001650e5a527bfcac623deee15a5984e0a4d5fde26629b85379b233cfb5e5738959148d45c0b0577708b1da1a792d2012338d905311f3a9334fa4608388d8d52c1e63cbf7cdc5ac6d26b446ecf1eb0d5f2a9434d415b447c2188f317699f979',
-    '0000ce2db5b6a9ad988892a62ae3123886ec37a2b90e563ece53eeab8acc2a9fbfac87d76fdf4a7c760045f9967b5541e96dddaa53631234d82e31751f53e34ed998253f393e9c6414e27614cb65eafe02cdae5db99f1a363820fd6307830592000029448b2a6089c9222d6642335d904f2eab357ea9b98919cbecea34de62b70ba744c30be97163c7d2a2e2dd3921eec7a93a3fd89bc368eab637c354c895354d8e7ee46f3abddbebb7481cf03485b794adf0d6d944b96e31a1bbe4cbc953cc']
+    return pk_encode(pk)
 
 
-b58_keys = [b'tNci9iZe1p3KK4MCcqDa52mpxBTveEm3kqZMm7vwJF9uKzGGt1pCHVNa2oMevDb1HDAs4bNdMQLNbD8N3tkCtKNGM53obE9qFkkhmqMnKRLNLiSfPJuLGsSwqnL3HxSqciJoqJJJmq5Cfb',
-    b'tNciczxpMfZ4eW1ZPP9NVK2vxcm9cCHvTBWMe8Nskn2A25P1YqcdvFCD5LvgngraiCmAsnC8zWAiv5pwMYjrUwpMNYDePMQYiXX7HVMjrnB1JkEckyayvsAm2Bo4EQBWbHXD5Cxp65PZy5',
-    b'tNciGSnmKWkTLsEx49jgKEXtWMddaT72YxarPhEcSGcHTJJm3C6QTY2bic2KnRfvDT4LPRYMkdYno93JEZeH5SfTzNmMpFuERuLcvWrEU2wjr5xyvaqpmReuGsgSHsKjopPASz6K3WNrS1',
-    b'tNci9P6wfuz1eahE1ZmXMYFRkAr4dP6Bk4NpioS5DhrnLcmmRuWQpFjAHAcPMggsqR4NbxuGqGtmaMDexo59WqYi6QDLMtPJkpN8FCYacQTgnJKDA581xRFDUvZKFdmq7qvz7ekg4c6mYE',
-    b'tNcihEh77DbibdWrdGgTsrhSb3ccUm2cGGVDRitpxRKXjTP9f8KuxBoes9MBTxRH7rzoGA3Kzs27L2gmrBEppPTubX2AgN9GkBJ6fHGWBKyB39zhaemjWQFjdG4YZkGrESp7ZxNd9r2n3S',
-    b'tdNDx8htq6yao9NC7SnwGh8KGGs9iwtDy9HfYHk512hH2FVj8EPxczE5dTp4yZ6Dee9S5BP2XbSFcKUeDKFeQNMjraEV4iQQz8xGdsgJHAFgrvU4kPSw34KoJchZQYma3EZKbghwbT2CeU',
-    b'tdNEJC1j1xYpY7SdUEurBEyDQpPbCnAYefsqmCcRbNx42VWaGq5GsvsxRQuxVuvH3GmLVbhSPuST9GWBeLEB8LGP7QHQjAUTpLkHfdW1GUV2S4aQQH86ut3BRx1q7ZaKijrYpoQJN7mn5p']
+def check_key(x, y):
+    print(x)
+    print(y)
+    assert ((y*y) % schnorr.p == (x*x*x + x*schnorr.a + schnorr.b) % schnorr.p)
+
+hex_keys = [b'0000f4fd0743422f322b44c02e217203b5ddf63d09d5fd5852f7115aeb513904a35dc4e8a41de21fc52440074f710d17624ba6862b4294d7e7ae95a861c93aa5c776d158fc29ad51c2b4d0e9c032be5d3077a04fe286b1190f194b5e9776a72f0000756d810cba0389484ebf6862334db6888cfa69a9bcb19168b89dc5b367bb7e12d0aa29eb5fae2fb09ebb49b636fd95ab0a583bcb4a8a3d6c5a398d5842abc28ae3e521e0fbe64dca7c716b4703c923f4a248935e57e49065c0869e888bfe',
+        b'00013888cd3ea12884d68218bb261df48ac46b8f582d3b95f2cdec71cc9fc4becb1e0f246bf0b7a92d4efd6b7533ddb18ccc4f054878c7cc89d283eb3e7aca070164f58865da75e3d0ca12ff8205df240f3885b7bc54881194c3c09dd38dd9d900003989933b60503506d09749415539b8bb89277ab8d314f774e573a3cd9eda384c5677c00a0e19a7bde254ad2a1a279d3c8d72457f6dc28b9327299f5ea85d69d100f65b97cbd4442defa1c89b8be5e84766175d99bbc7f4cca0358d78385b',
+        b'0000a03b50185e6c05f3bb96f40699906d63d176350ac6d34bde7703cf150c7a93faffbea82e75100c4a53de4bb225a411bd4a9b0d8a80c9efe24b373a984efc7a25b6ebede8d5365124b044f04ab74ab431c85a1b5055e0de2a9320a88b13270000afb05b585921ef045bb8bd2b0b4050e13c6216b0cf2d044154793fcdd9986afc8f7c99bffeabb35cd7797b5513fc1bdfee72d9349ea96a3145f88a3e33b665e4a6f1e3eee8d06cd4b7f5e65768c48ffc08d11e5fd510b738a91145f3adb8']
+
+x = 0x0000f4fd0743422f322b44c02e217203b5ddf63d09d5fd5852f7115aeb513904a35dc4e8a41de21fc52440074f710d17624ba6862b4294d7e7ae95a861c93aa5c776d158fc29ad51c2b4d0e9c032be5d3077a04fe286b1190f194b5e9776a72f
+y = 0x0000756d810cba0389484ebf6862334db6888cfa69a9bcb19168b89dc5b367bb7e12d0aa29eb5fae2fb09ebb49b636fd95ab0a583bcb4a8a3d6c5a398d5842abc28ae3e521e0fbe64dca7c716b4703c923f4a248935e57e49065c0869e888bfe
+check_key(x,y)
+
+x = 0x00013888cd3ea12884d68218bb261df48ac46b8f582d3b95f2cdec71cc9fc4becb1e0f246bf0b7a92d4efd6b7533ddb18ccc4f054878c7cc89d283eb3e7aca070164f58865da75e3d0ca12ff8205df240f3885b7bc54881194c3c09dd38dd9d9
+y = 0x00003989933b60503506d09749415539b8bb89277ab8d314f774e573a3cd9eda384c5677c00a0e19a7bde254ad2a1a279d3c8d72457f6dc28b9327299f5ea85d69d100f65b97cbd4442defa1c89b8be5e84766175d99bbc7f4cca0358d78385b
+check_key(x,y)
+
+x = 0x0000a03b50185e6c05f3bb96f40699906d63d176350ac6d34bde7703cf150c7a93faffbea82e75100c4a53de4bb225a411bd4a9b0d8a80c9efe24b373a984efc7a25b6ebede8d5365124b044f04ab74ab431c85a1b5055e0de2a9320a88b1327
+y = 0x0000afb05b585921ef045bb8bd2b0b4050e13c6216b0cf2d044154793fcdd9986afc8f7c99bffeabb35cd7797b5513fc1bdfee72d9349ea96a3145f88a3e33b665e4a6f1e3eee8d06cd4b7f5e65768c48ffc08d11e5fd510b738a91145f3adb8
+check_key(x,y)
+
+# nonce 11
+x = 0x000072076b1ced72c972633bcb6d7789de299887c8cdb4834fca1f71379277fd506f997fc96665ae7cdb78f60a355bf79b0972eddbbb54d1f11779672e70ff9270123a9c6c1d781a6754bd6b3a91c5682a0288e360a044044cba50a785462160
+y = 0x0001bf58931265d2a56d1024ee282a27f440353d08e1eb59b5ec2aac07df62382518d9f5af7fcbb366437fa07a49e69d270258b6e181cf75835b8e496c20913ea8f4d1846eb42e4dfc0aebbfb32567a6ce5907aba09e7b0338756a73d9369463
+print("nonce 11")
+check_key(x,y)
+
+hex_signatures = [b'0001905ef9b5eb81762996821bbe1716f3d5c6e0ae2ca948a154880005bb721996a9f6e31a009f8d66dea8818398a3ad6424a23b2d9a9b3abd6731a98c43869458a15621adf6723bf88ae6999c101fc3d1dfd813f5b0c4abafe50f06e111f590000e7afa76dcad5896374bb371109f1cd0bdec4df4f2d36ede705ea8a0313e0520c89f1383b9ae9f8d42a4d1bbeb3411873c82a8f6c0633c3ea1801e7125eed0494c0426130b60b7308fec74568c3b0d0a5cdf4b59caaf0a1eeb26f440b3ccc']
+
+def b58_to_int(b58_bytes):
+    return int.from_bytes(base58.b58decode(b58_bytes), byteorder='big') % schnorr.p
 
 if __name__ == "__main__":
     assert base58.b58encode(b'hello') == b'Cn8eVZg'
     assert base58.b58encode_check(b'hello') == b'2L5B5yqsVG8Vt'
     assert base58.b58decode(b'Cn8eVZg') == b'hello'
+    assert base58.b58decode(b'EUYUqQf') == b'world'
     assert base58.b58decode_check(b'2L5B5yqsVG8Vt') == b'hello'
-    [test_encode(pk) for pk in hex_keys]
-    [test_decode(pk) for pk in b58_keys]
+    [pk_encode(pk) for pk in hex_keys]
+    # print(int.from_bytes(r_bytes, byteorder='big'))
