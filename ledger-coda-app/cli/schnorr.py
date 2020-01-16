@@ -2,7 +2,6 @@ import hashlib
 import binascii
 import sys
 
-# FIXME double check these
 a = 11
 b = 0x7DA285E70863C79D56446237CE2E1468D14AE9BB64B2BB01B10E60A5D5DFE0A25714B7985993F62F03B22A9A3C737A1A1E0FCF2C43D7BF847957C34CCA1E3585F9A80A95F401867C4E80F4747FDE5ABA7505BA6FCF2485540B13DFC8468A
 a_coeff = a
@@ -197,7 +196,21 @@ def schnorr_verify(msg, pubkey, sig):
     s = int_from_bytes(sig[95:190])
     if (r >= p or s >= n):
         return False
-    e = int_from_bytes(hash_blake2s(r + P + msg))
+
+    # salt is passed as the initial value to the hash function
+    salt = "CodaSignature"
+    ss = salt + (20 - len(salt)) * "*")
+
+    # field elts = [x, px, py, r], bitstrings = m
+    (x, m) = msg
+    (px, py) = P
+    state = p.poseidon(state, salt, 0)
+    state = p.poseidon(state, x, px)
+    state = p.poseidon(state, py, r)
+    state = p.poseidon(state, m, 0)
+
+    # challenge length = 128
+    e = int_from_bytes(state[:128])
     R = point_add(point_mul(G, s), point_mul(P, n - e))
     if R is None or (R[1] % 2 != 0) or R[0] != r:
         return False

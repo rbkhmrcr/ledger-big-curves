@@ -11,46 +11,14 @@ Other implementations:
  - https://github.com/dusk-network/poseidon252
 """
 
-from math import log2
 from collections import namedtuple
-from pyblake2 import blake2b
+from poseidon_params import mds, round_constants
 
-"""
-SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617
- _PoseidonParams = namedtuple('_PoseidonParams', ('p', 't', 'nRoundsF', 'nRoundsP', 'seed', 'e', 'constants_C', 'constants_M'))
-DefaultParams = poseidon_params(SNARK_SCALAR_FIELD, 6, 8, 57, b'poseidon', 5)
-if __name__ == "__main__":
-    assert DefaultParams.constants_C[0] == 14397397413755236225575615486459253198602422701513067526754101844196324375522
-    assert DefaultParams.constants_C[-1] == 10635360132728137321700090133109897687122647659471659996419791842933639708516
-    assert DefaultParams.constants_M[0][0] == 19167410339349846567561662441069598364702008768579734801591448511131028229281
-    assert DefaultParams.constants_M[-1][-1] == 20261355950827657195644012399234591122288573679402601053407151083849785332516
-    assert poseidon([1,2], DefaultParams) == 12242166908188651009877250812424843524687801523336557272219921456462821518061
-"""
+p = 0x1C4C62D92C41110229022EEE2CDADB7F997505B8FAFED5EB7E8F96C97D87307FDB925E8A0ED8D99D124D9A15AF79DB26C5C28C859A99B3EEBCA9429212636B9DFF97634993AA4D6C381BC3F0057974EA099170FA13A4FD90776E240000001
 
-def H(arg):
-    if isinstance(arg, int):
-        arg = arg.to_bytes(32, 'little')
-    # XXX: ensure that (digest_size*8) >= log2(p)
-    hashed = blake2b(data=arg, digest_size=32).digest()
-    return int.from_bytes(hashed, 'little')
+ _PoseidonParams = namedtuple('_PoseidonParams', ('p', 't', 'nRoundsF', 'nRoundsP', 'e', 'constants_C', 'constants_M'))
+DefaultParams = _PoseidonParams(p, 3, 8, 33,  11, round_constants, mds)
 
-
-def poseidon_constants(p, seed, n):
-    assert isinstance(n, int)
-    for _ in range(n):
-        seed = H(seed)
-        yield seed % p
-
-
-def poseidon_matrix(p, seed, t):
-    """
-    iacr.org/2019/458 § 2.3 About the MDS Matrix (pg 8)
-    Also:
-     - https://en.wikipedia.org/wiki/Cauchy_matrix     
-    """
-    c = list(poseidon_constants(p, seed, t * 2))
-    return [[pow((c[i] - c[t+j]) % p, p - 2, p) for j in range(t)]
-            for i in range(t)]
 
 def poseidon_sbox(state, i, params):
     """
@@ -74,7 +42,7 @@ def poseidon_mix(state, M, p):
     The mixing layer is a matrix vector product of the state with the mixing matrix
      - https://mathinsight.org/matrix_vector_multiplication
     """
-    return [ sum([M[i][j] * _ for j, _ in enumerate(state)]) % p 
+    return [ sum([M[i][j] * _ for j, _ in enumerate(state)]) % p
              for i in range(len(M)) ]
 
 def poseidon(inputs, params=None):
@@ -89,4 +57,3 @@ def poseidon(inputs, params=None):
         poseidon_sbox(state, i, params)
         state = poseidon_mix(state, params.constants_M, params.p)
     return state[0]
-
