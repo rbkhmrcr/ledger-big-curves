@@ -21,9 +21,9 @@ python3 cli/sign.py --request='version'
 ```
 To generate and return the public key generated with nonce 11:
 ```
-python3 sign.py --request=publickey --nonce=11
+python3 cli/sign.py --request=publickey --nonce=11
 ```
 To sign a transaction, with pk 1234 (`"nonce":37` in the JSON gives the signature/account nonce, `--nonce=1234` gives the nonce with which the Ledger device will generate the sender private/public keypair):
 ```
-python3 sign.py --request=transaction --nonce=1234 --transaction='{"sendPayment": {"is_delegation": "False","nonce": 37,"from": 123,"to": "tNci9iZe1p3KK4MCcqDa52mpxBTveEm3kqZMm7vwJF9uKzGGt1pCHVNa2oMevDb1HDAs4bNdMQLNbD8N3tkCtKNGM53obE9qFkkhmqMnKRLNLiSfPJuLGsSwqnL3HxSqciJoqJJJmq5Cfb","amount": 1000,"fee": 8,"valid_until": 1600,"memo": "2pmu64f2x97tNiDXMycnLwBSECDKbX77MTXVWVsG8hcRFsedhXDWWq"}}'
+python3 cli/sign.py --request=transaction --nonce=1234 --transaction='{"sendPayment": {"is_delegation": "False","nonce": 37,"from": 123,"to": "tNci9iZe1p3KK4MCcqDa52mpxBTveEm3kqZMm7vwJF9uKzGGt1pCHVNa2oMevDb1HDAs4bNdMQLNbD8N3tkCtKNGM53obE9qFkkhmqMnKRLNLiSfPJuLGsSwqnL3HxSqciJoqJJJmq5Cfb","amount": 1000,"fee": 8,"valid_until": 1600,"memo": "2pmu64f2x97tNiDXMycnLwBSECDKbX77MTXVWVsG8hcRFsedhXDWWq"}}'
 ```
