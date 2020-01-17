@@ -32,8 +32,9 @@ def poseidon(inputs, params=None, state=None):
         state = [0] * params.t
     else:
         assert len(state) == params.t
-        for i in range(len(inputs)):
-            state[i] = inputs[i] + state[i]
+
+    for i in range(len(inputs)):
+        state[i] = inputs[i] + state[i]
 
     # half full rounds
     half = params.nRoundsF//2
@@ -58,7 +59,6 @@ def poseidon(inputs, params=None, state=None):
             state[j] = state[j] + params.constants_C[i + offset][j] # ARK
         state = [pow(x, params.e, params.p) for x in state]         # x**a
         state = poseidon_mix(state, params.constants_M, params.p)   # MDS
-    print(state)
     return state[0]
 
 if __name__ == "__main__":
@@ -80,5 +80,4 @@ if __name__ == "__main__":
     38222598208661293154358098467913225947501468879718283947325552423417581445633039988767989340378891826663231756617039996089956309806010436055674976914944611798818889926367328052912099929296285277861067843021509088943796472188515]]
     for i in range(len(msgs)):
         print(msgs[i])
-        print(state[i])
-        assert poseidon(msgs[i]) == state[i]
+        assert poseidon(msgs[i]) == state[i][0]
