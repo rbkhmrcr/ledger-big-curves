@@ -30,30 +30,32 @@ def poseidon(inputs, params=None, state=None):
     assert len(inputs) > 0 and len(inputs) < params.t
     if state is None:
         state = [0] * params.t
-    # add inputs to state
     else:
         assert len(state) == params.t
         for i in range(len(inputs)):
             state[i] = inputs[i] + state[i]
 
     # half full rounds
-    for i in range(params.nRoundsF//2):
+    half = params.nRoundsF//2
+    for i in range(half):
         for j in range(params.t):
-            state = [x + params.constants_C[i][j] for x in state]   # ARK
+            state[j] = state[j] + params.constants_C[i][j]          # ARK
         state = [pow(x, params.e, params.p) for x in state]         # x**a
         state = poseidon_mix(state, params.constants_M, params.p)   # MDS
 
     # partial rounds
+    offset = params.nRoundsF//2
     for i in range(params.nRoundsP):
         for j in range(params.t):
-            state = [x + params.constants_C[i][j] for x in state]   # ARK
+            state[j] = state[j] + params.constants_C[i + offset][j] # ARK
         state[0] = pow(state[0], params.e, params.p)                # x[0]**a
         state = poseidon_mix(state, params.constants_M, params.p)   # MDS
 
     # half full rounds
+    offset = params.nRoundsP + params.nRoundsF//2
     for i in range(params.nRoundsF//2):
         for j in range(params.t):
-            state = [x + params.constants_C[i][j] for x in state]   # ARK
+            state[j] = state[j] + params.constants_C[i + offset][j] # ARK
         state = [pow(x, params.e, params.p) for x in state]         # x**a
         state = poseidon_mix(state, params.constants_M, params.p)   # MDS
     print(state)
