@@ -1306,12 +1306,12 @@ void matrix_mul_low(state s, const state m[sponge_size]) {
 // only needs len_e = 1
 void to_the_alpha(field xa, const field x) { field_pow(xa, x, &alpha); }
 
-void poseidon(state s, const scalar input[sponge_size - 1]) {
+void poseidon(state s, const scalar in0, const scalar in1) {
   int half_rounds = 4;
   int partial_rounds = 33;
 
-  field_add(s[0], s[0], input[0]);
-  field_add(s[1], s[1], input[1]);
+  field_add(s[0], s[0], in0);
+  field_add(s[1], s[1], in1);
 
   // half of the full rounds
   for (int r = 0; r < half_rounds; r++) {
