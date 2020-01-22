@@ -59,6 +59,9 @@ def poseidon(inputs, params=None, state=None):
             state[j] = state[j] + params.constants_C[i + offset][j] # ARK
         state = [pow(x, params.e, params.p) for x in state]         # x**a
         state = poseidon_mix(state, params.constants_M, params.p)   # MDS
+    return state
+
+def poseidon_digest(state):
     return state[0]
 
 if __name__ == "__main__":
