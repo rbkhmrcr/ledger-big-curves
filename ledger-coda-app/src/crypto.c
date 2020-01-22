@@ -414,7 +414,7 @@ void sign(field rx, scalar s, const group *public_key, const scalar private_key,
       field_negate(k_prime, k_prime);                                       // if ry is odd, k = - k'
     }
   }
-  poseidon_4in(s, msg, rx, public_key->x, public_key->y);                   // e = hash(xr || pk || m)
+  poseidon_4in(s, public_key->x, public_key->y, rx, msg);                   // e = hash(pk || xr || m) XXX msg is (x, m)
   scalar_mul(s, s, private_key);                                            // e*sk
   scalar_add(s, k_prime, s);                                                // k + e*sk
   return;
