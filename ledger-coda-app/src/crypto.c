@@ -200,6 +200,10 @@ void scalar_sq(scalar c, const scalar a) {
   cx_math_multm(c, a, a, group_order, scalar_bytes);
 }
 
+void scalar_negate(scalar c, const scalar a) {
+  cx_math_subm(c, group_order, a, group_order, group_bytes);
+}
+
 // c = a^e mod m
 // cx_math_powm(result_pointer, a, e, len_e, m, len(result)  (which is also len(a) and len(m)) )
 void scalar_pow(scalar c, const scalar a, const scalar e) {
@@ -411,7 +415,7 @@ void sign(field rx, scalar s, const group *public_key, const scalar private_key,
     /* store so we don't need group *r anymore */
     os_memcpy(rx, r->x, field_bytes);
     if (is_odd(r->y)) {
-      field_negate(k_prime, k_prime);                                       // if ry is odd, k = - k'
+      scalar_negate(k_prime, k_prime);                                       // if ry is odd, k = - k'
     }
   }
   poseidon_4in(s, msg, public_key->x, public_key->y, rx);                   // e = hash(x || pk || xr) XXX msg is (x, m), but the ledger doesnt know that (and just processes the first 96 bytes of the msg)
