@@ -200,10 +200,6 @@ void scalar_sq(scalar c, const scalar a) {
   cx_math_multm(c, a, a, group_order, scalar_bytes);
 }
 
-void scalar_negate(scalar c, const scalar a) {
-  cx_math_subm(c, group_order, a, group_order, group_bytes);
-}
-
 // c = a^e mod m
 // cx_math_powm(result_pointer, a, e, len_e, m, len(result)  (which is also len(a) and len(m)) )
 void scalar_pow(scalar c, const scalar a, const scalar e) {
@@ -351,6 +347,11 @@ void generate_keypair(unsigned int index, group *pub_key, scalar priv_key) {
                              chain);
   os_memcpy(priv_key + 32, chain, 32);
   os_memcpy(priv_key + 64, chain, 32);
+  priv_key[0] = 0;
+  priv_key[1] = 0;
+
+  // os_memcpy(priv_key, scalar_zero, scalar_bytes);
+  // priv_key[95] = 1;
 
   group_scalar_mul(pub_key, priv_key, &group_one);
   // os_memset(priv_key, 0, sizeof(priv_key));
@@ -412,11 +413,11 @@ void sign(field rx, scalar s, const group *public_key, const scalar private_key,
     poseidon_4in(k_prime, msg, public_key->x, public_key->y, private_key);  // k = hash(m || pk || sk)
     group_scalar_mul(r, k_prime, &group_one);                               // r = k*g
 
+    if (is_odd(r->y)) {
+      scalar_sub(k_prime, group_order, k_prime);                            // if ry is odd, k = - k'
+    }
     /* store so we don't need group *r anymore */
     os_memcpy(rx, r->x, field_bytes);
-    if (is_odd(r->y)) {
-      scalar_negate(k_prime, k_prime);                                       // if ry is odd, k = - k'
-    }
   }
   poseidon_4in(s, msg, public_key->x, public_key->y, rx);                   // e = hash(x || pk || xr) XXX msg is (x, m), but the ledger doesnt know that (and just processes the first 96 bytes of the msg)
   scalar_mul(s, s, private_key);                                            // e*sk
