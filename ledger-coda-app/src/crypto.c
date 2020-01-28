@@ -210,6 +210,9 @@ unsigned int scalar_eq(const scalar a, const scalar b) {
   return (os_memcmp(a, b, scalar_bytes) == 0);
 }
 
+void scalar_negate(scalar c, const scalar a) {
+  cx_math_subm(c, group_order, a, group_order, group_bytes);
+}
 
 unsigned int is_zero(const group *p) {
   return (os_memcmp(p->x, field_zero, field_bytes) == 0 &&
@@ -332,6 +335,10 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
 
 void generate_keypair(unsigned int index, group *pub_key, scalar priv_key) {
 
+  /*
+  os_memcpy(priv_key, scalar_zero, scalar_bytes);
+  priv_key[95] = 1;
+  */
   unsigned int bip32_path[5];
   unsigned char chain[32];
 
@@ -349,12 +356,14 @@ void generate_keypair(unsigned int index, group *pub_key, scalar priv_key) {
   os_memcpy(priv_key + 64, chain, 32);
   priv_key[0] = 0;
   priv_key[1] = 0;
+<<<<<<< Updated upstream
 
   // os_memcpy(priv_key, scalar_zero, scalar_bytes);
   // priv_key[95] = 1;
 
+=======
+>>>>>>> Stashed changes
   group_scalar_mul(pub_key, priv_key, &group_one);
-  // os_memset(priv_key, 0, sizeof(priv_key));
   return;
 }
 
@@ -411,6 +420,8 @@ void sign(field rx, scalar s, const group *public_key, const scalar private_key,
     group *r;
     r = (group *) rx;
     poseidon_4in(k_prime, msg, public_key->x, public_key->y, private_key);  // k = hash(m || pk || sk)
+    // os_memcpy(k_prime, scalar_zero, scalar_bytes);
+    // k_prime[95] = 1;
     group_scalar_mul(r, k_prime, &group_one);                               // r = k*g
 
     if (is_odd(r->y)) {
@@ -419,8 +430,9 @@ void sign(field rx, scalar s, const group *public_key, const scalar private_key,
     /* store so we don't need group *r anymore */
     os_memcpy(rx, r->x, field_bytes);
   }
-  poseidon_4in(s, msg, public_key->x, public_key->y, rx);                   // e = hash(x || pk || xr) XXX msg is (x, m), but the ledger doesnt know that (and just processes the first 96 bytes of the msg)
-  scalar_mul(s, s, private_key);                                            // e*sk
-  scalar_add(s, k_prime, s);                                                // k + e*sk
+  // poseidon_4in(s, msg, public_key->x, public_key->y, rx);                   // e = hash(x || pk || xr) XXX msg is (x, m), but the ledger doesnt know that (and just processes the first 96 bytes of the msg)
+  // scalar_mul(s, s, private_key);                                            // e*sk
+  // scalar_add(s, k_prime, s);                                                // k + e*sk
+  os_memcpy(s, private_key, scalar_bytes);
   return;
 }
