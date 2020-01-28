@@ -222,19 +222,11 @@ def schnorr_verify(msg, pubkey, sig):
     # field elts = [x, px, py, r], bitstrings = m
     (x, m) = msg
     (px, py) = P
-    assert is_on_curve(px, py)
     e = schnorr_hash((x, px, py, r))
-    if r == 0x000158edcd4c48a4045830e7e4228a0d824a3732ba6fb5424dfe313ddbf1cd4c53a4c527c7cc9767f5dcba62a1152ff677b7e5b0d93c408e8b39c66d368cd94682d168683f1492537b93fba8d137d007d812b52f92e456ebcb91177bba4b60a6:
-        assert e == 0x00003934f5dae71985b53669059e67e9e9894f1aebb11b4cc896e3c8545674b26f6dfcdf6643b7cc782e3a3c56c1c632f0fe8e537ac7f56bbfc41aa85d616b0425d7a8889c9070732eb0557122e6653d38ab61128c41b362992ca8f13d564a2f
     (ex, ey) = point_mul(P, e)
-    assert is_on_curve(ex, ey)
-    assert is_on_curve(ex, p-ey)
     R = point_add(point_mul(G, s), (ex, p-ey))
     (rx, ry) = R
-    assert is_on_curve(rx, ry)
     if R is None or (R[1] % 2 != 0) or R[0] != r:
-        print(R[0])
-        print(r)
         return False
     return True
 
