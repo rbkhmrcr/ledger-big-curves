@@ -29,6 +29,6 @@ void generate_pubkey(group *pub_key, const scalar priv_key);
 void generate_keypair(unsigned int index, group *pub_key, scalar priv_key);
 
 void sign(field rx, scalar s, const group *public_key, const scalar private_key,
-    const scalar msg);
+    const scalar msgx, const scalar msgm);
 
 #endif // CODA_CRYPTO

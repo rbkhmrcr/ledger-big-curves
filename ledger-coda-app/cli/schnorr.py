@@ -185,13 +185,13 @@ def schnorr_hash(msg):
         27515311459815300529244367822740863112445008780714100624704075938494921938258491804705259071021760016622352448625351667277308772230882264292787686108079884001293592223592113739068864847707009580257641842924278675467231562803771,
         2396632434414439310737449031743778257385962871664374090342438175577792963806884089307026050137579268946498687720760431246070701978535951122430182545476853420233411791434797499475546364343179083506203526451182750041179531584522]
 
-    (x, px, py, r) = msg
+    (x, px, py, r, m) = msg
     state = poseidon.poseidon([int_from_bytes(x), int(px)], state=sign_state)
     state = poseidon.poseidon([int(py), int(r)], state=state)
-    # state = poseidon.poseidon([m], state=state) XXX
+    state = poseidon.poseidon([int_from_bytes(m)], state=state)
     res = poseidon.poseidon_digest(state)
-    # challenge length = 128
-    return int_from_bytes(bytes_from_int(res)[:128])
+    # challenge length = 128 bits
+    return int_from_bytes(bytes_from_int(res)[:16])
 
 def schnorr_sign(msg, seckey):
     (x, m) = msg
@@ -204,7 +204,7 @@ def schnorr_sign(msg, seckey):
     R = point_mul(G, k0)
     k = n - k0 if (R[1] % 2 != 0) else k0
     (px, py) = point_mul(G, seckey)
-    e = schnorr_hash((x, px, py, R[0]))
+    e = schnorr_hash((x, px, py, R[0], m))
     return bytes_from_int(R[0]) + bytes_from_int((k + e * seckey) % n)
 
 def schnorr_verify(msg, pubkey, sig):
@@ -222,7 +222,7 @@ def schnorr_verify(msg, pubkey, sig):
     # field elts = [x, px, py, r], bitstrings = m
     (x, m) = msg
     (px, py) = P
-    e = schnorr_hash((x, px, py, r))
+    e = schnorr_hash((x, px, py, r, m))
     (ex, ey) = point_mul(P, e)
     R = point_add(point_mul(G, s), (ex, p-ey))
     (rx, ry) = R

@@ -137,7 +137,7 @@ static void advance(txn_state *txn) {
   // if elem is covered, add it to the hash
   // && txn->pos >= 96 below?
   if (txn->slice_index == txn->sig_index) {
-    poseidon(txn->hash_state, txn->buf, txn->buf + scalar_bytes);
+    poseidon_2in(txn->hash_state, txn->buf, txn->buf + scalar_bytes);
   }
 
   txn->buf_len -= txn->pos;
@@ -181,7 +181,7 @@ static void __txn_next_elem(txn_state *txn) {
   PRINTF("%s:%d\n", __FILE__, __LINE__);
     if (txn->elem_type == TXN_ELEM_MEMO) {
       PRINTF("%s:%d\n", __FILE__, __LINE__);
-      // store final hash
+      // store final hash -- XXX msg isn't hashed before signing so this doesn't make sense anymore
       poseidon_digest(txn->hash_state, txn->hash);
       THROW(TXN_STATE_FINISHED);
     }

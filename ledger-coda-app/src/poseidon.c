@@ -1306,13 +1306,9 @@ void matrix_mul_low(state s, const state m[sponge_size]) {
 // only needs len_e = 1
 void to_the_alpha(field xa, const field x) { field_pow(xa, x, &alpha); }
 
-void poseidon(state s, const scalar input0, const scalar input1) {
+void poseidon(state s) {
   int half_rounds = 4;
   int partial_rounds = 33;
-
-  field_add(s[0], s[0], input0);
-  field_add(s[1], s[1], input1);
-
   // half of the full rounds
   for (int r = 0; r < half_rounds; r++) {
     for (int i = 0; i < sponge_size; i++) {
@@ -1344,6 +1340,17 @@ void poseidon(state s, const scalar input0, const scalar input1) {
     matrix_mul_up(s, MDS_U_MNT);
     matrix_mul_low(s, MDS_L_MNT);
   }
+}
+
+void poseidon_1in(state s, const scalar input) {
+  field_add(s[0], s[0], input);
+  poseidon(s);
+}
+
+void poseidon_2in(state s, const scalar input0, const scalar input1) {
+  field_add(s[0], s[0], input0);
+  field_add(s[1], s[1], input1);
+  poseidon(s);
 }
 
 void poseidon_digest(const state s, scalar out) {

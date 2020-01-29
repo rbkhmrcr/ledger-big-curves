@@ -118,9 +118,7 @@ static unsigned int ui_hash_sign_button(unsigned int button_mask, unsigned int b
       scalar sk;
       group pk;
       generate_keypair(ctx->key_index, &pk, sk);
-      scalar hash = {0};
-      os_memmove(hash + 64, ctx->txn.hash, 32);
-      sign(G_io_apdu_buffer, G_io_apdu_buffer + field_bytes, &pk, sk, hash);
+      sign(G_io_apdu_buffer, G_io_apdu_buffer + field_bytes, &pk, sk, ctx->txn.hash, ctx->txn.hash);
       io_exchange_with_code(SW_OK, field_bytes + scalar_bytes);
       ui_idle();
       }
