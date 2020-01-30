@@ -415,6 +415,8 @@ void sign(field rx, scalar s, const group *public_key, const scalar private_key,
     os_memcpy(rx, r->x, field_bytes);
   }
   schnorr_hash(s, msgx, public_key->x, public_key->y, rx, msgm);                    // e = hash(x || pkx || pky || xr || m)
+  // TODO : check 128 LSB are taken in protocol
+  os_memcpy(s, scalar_zero, (scalar_bytes - 16));                                   // use 128 bits of hash as challenge
   scalar_mul(s, s, private_key);                                                    // e*sk
   scalar_add(s, k_prime, s);                                                        // k + e*sk
   return;
