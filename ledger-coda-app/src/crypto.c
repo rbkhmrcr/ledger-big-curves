@@ -347,7 +347,7 @@ void generate_keypair(unsigned int index, group *pub_key, scalar priv_key) {
   os_memcpy(priv_key + 32, chain, 32);
   os_memcpy(priv_key + 64, chain, 32);
   priv_key[0] = 0;
-  priv_key[1] = 0;
+  priv_key[1] &= 0x01;
   group_scalar_mul(pub_key, priv_key, &group_one);
   return;
 }
@@ -415,8 +415,10 @@ void sign(field rx, scalar s, const group *public_key, const scalar private_key,
     os_memcpy(rx, r->x, field_bytes);
   }
   schnorr_hash(s, msgx, public_key->x, public_key->y, rx, msgm);                    // e = hash(x || pkx || pky || xr || m)
-  // TODO : check 128 LSB are taken in protocol
-  os_memcpy(s, scalar_zero, (scalar_bytes - 16));                                   // use 128 bits of hash as challenge
+  // use 128 MSB as challenge, with 15 bit offset from the start -- 128 + 15 = 143 bits
+  os_memcpy(s + 18, scalar_zero, (scalar_bytes - 18));                              // 18 * 8 = 144, we have one too many
+  s[17] &= ~(0x01);                                                                 // zero the LSB of the 18th byte
+  os_memcpy(s + (scalar_bytes - 18), s, 18);                                        // move to be LSB
   scalar_mul(s, s, private_key);                                                    // e*sk
   scalar_add(s, k_prime, s);                                                        // k + e*sk
   return;
