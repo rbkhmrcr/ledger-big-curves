@@ -399,13 +399,6 @@ void schnorr_hash(scalar out, const scalar in0, const scalar in1, const scalar i
   return;
 }
 
-void get_128_bits(scalar s) {
-  // use 128 MSB as challenge, with 15 bit offset from the start = 143 bits = 17.875 bytes
-  s[17] &= ~(0x01);                                                                 // zero the LSB of the 18th byte
-  os_memcpy(s + (scalar_bytes - 18), s, 18);                                        // move MSB to be LSB
-  os_memcpy(s, scalar_zero, (scalar_bytes - 18));
-}
-
 void sign(field rx, scalar s, const group *public_key, const scalar private_key, const scalar msgx, const scalar msgm) {
   scalar k_prime;
   /* rx is G_io_apdu_buffer so we can take 192 bytes from it */
@@ -422,7 +415,7 @@ void sign(field rx, scalar s, const group *public_key, const scalar private_key,
     os_memcpy(rx, r->x, field_bytes);
   }
   schnorr_hash(s, msgx, public_key->x, public_key->y, rx, msgm);                    // e = hash(x || pkx || pky || xr || m)
-  get_128_bits(s);
+  os_memcpy(s, scalar_zero, (scalar_bytes - 16));                                   // use 128 LSB as challenge
   scalar_mul(s, s, private_key);                                                    // e*sk
   scalar_add(s, k_prime, s);                                                        // k + e*sk
   return;
