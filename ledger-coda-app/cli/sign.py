@@ -69,7 +69,7 @@ try:
     elif args.request == 'transaction':
         get_transaction(args.nonce, args.transaction)
     elif args.request == 'sign':
-        get_transaction_from_ints(args.nonce, args.msgx, args.msgsm)
+        get_transaction_from_ints(args.nonce, args.msgx, args.msgm)
 
 except CommException as comm:
     if comm.sw == 0x6985:

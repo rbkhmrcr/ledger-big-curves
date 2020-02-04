@@ -34,22 +34,33 @@ version_byte_to_value = {
         b'\x63': 'ledger_hash'
 }
 
+def split(in_bytes, request):
+    l = len(in_bytes)
+    assert l//2 * 2 == l
+    b0 = bytes(in_bytes[:l//2])
+    b1 = bytes(in_bytes[l//2:])
+    # convert bytes to int to check correct size
+    int0 = int.from_bytes(b0, 'big')
+    int1 = int.from_bytes(b1, 'big')
+    if request == 'sig':
+        assert int0 < schnorr.p and int1 < schnorr.n
+    else:
+        assert int0 < schnorr.p and int1 < schnorr.p
+    # convert bytes to base58 encoded string
+    bb0 = base58.b58encode(b0).decode("utf8")
+    bb1 = base58.b58encode(b1).decode("utf8")
+    return bb0, bb1
+
+def sig_encode(bs):
+    r, s = split(bs, 'sig')
+    print(json.dumps({'field': r, 'scalar':s}))
+    return
+
 # versionbyte length = 1 byte
 def pk_encode(bpk):
-    l = len(bpk)
-    assert l//2 * 2 == l
-    bpkx = bytes(bpk[:l//2])
-    bpky = bytes(bpk[l//2:])
-    # convert bytes to int to check correct size
-    ipkx = int.from_bytes(bpkx, 'big')
-    ipky = int.from_bytes(bpky, 'big')
-    assert ipkx < schnorr.p and ipky < schnorr.p
-    # convert bytes to base58 encoded string
-    b58x = base58.b58encode(bpkx).decode("utf8")
-    b58y = base58.b58encode(bpky).decode("utf8")
-    out = json.dumps({'x': b58x, 'y':b58y})
-    print(out)
-    return out
+    x, y = split(bpk, 'pk')
+    print(json.dumps({'x': b58x, 'y':b58y}))
+    return
 
 # b58_pk is version byte || sign bit || x coord
 def pk_decode(b58_pk):
@@ -96,10 +107,6 @@ def json_to_transaction(txn):
     for _, txn_info in data.items():
         return txn_dict_to_bytes(txn_info)
 
-def sig_decode(r):
-    b58_r = base58.b58encode(bytes(r)).decode("utf-8")
-    return b58_r
-
 # INS_VERSION       0x01
 # INS_PUBLIC_KEY    0x02
 # INS_SIGN          0x04
@@ -131,19 +138,7 @@ def handle_ints_input(pkno, msgx, msgm):
     return apdu
 
 def handle_txn_reply(reply):
-    l = len(reply)
-    assert l//2 * 2 == l
-    r = int( reply[:l//2][0], 16 )
-    s = int( reply[l//2:][0], 16 )
-    assert r < schnorr.p
-    assert s < schnorr.n
-    rr = r.to_bytes(95, 'big')
-    ss = s.to_bytes(95, 'big')
-    rrr = base58.b58encode(rr).decode("utf8")
-    sss = base58.b58encode(ss).decode("utf8")
-    out = json.dumps({'field': rr, 'scalar': ss})
-    print(out)
-    return out
+    return sig_encode(reply)
 
 def handle_pk_reply(pk):
     return pk_encode(pk)
