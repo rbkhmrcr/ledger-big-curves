@@ -35,19 +35,20 @@ version_byte_to_value = {
 }
 
 # versionbyte length = 1 byte
-def pk_encode(hex_pk):
-    l = len(hex_pk)
+def pk_encode(bpk):
+    l = len(bpk)
     assert l//2 * 2 == l
-    pkx = int( hex_pk[:l//2][0], 16 )
-    pky = int( hex_pk[l//2:][0], 16 )
-    assert pkx < schnorr.p
-    assert pky < schnorr.p
-    bx = pkx.to_bytes(95, 'big')
-    by = pky.to_bytes(95, 'big')
-    b58x = base58.b58encode(bx).decode("utf8")
-    is_odd = (pky & 1 == 1)
-    out = json.dumps({'is_odd': str(is_odd), 'x': b58x})
-    # print(out)
+    bpkx = bytes(bpk[:l//2])
+    bpky = bytes(bpk[l//2:])
+    # convert bytes to int to check correct size
+    ipkx = int.from_bytes(bpkx, 'big')
+    ipky = int.from_bytes(bpky, 'big')
+    assert ipkx < schnorr.p and ipky < schnorr.p
+    # convert bytes to base58 encoded string
+    b58x = base58.b58encode(bpkx).decode("utf8")
+    b58y = base58.b58encode(bpky).decode("utf8")
+    out = json.dumps({'x': b58x, 'y':b58y})
+    print(out)
     return out
 
 # b58_pk is version byte || sign bit || x coord
@@ -155,20 +156,18 @@ hex_keys = [b'0000f4fd0743422f322b44c02e217203b5ddf63d09d5fd5852f7115aeb513904a3
         b'00013888cd3ea12884d68218bb261df48ac46b8f582d3b95f2cdec71cc9fc4becb1e0f246bf0b7a92d4efd6b7533ddb18ccc4f054878c7cc89d283eb3e7aca070164f58865da75e3d0ca12ff8205df240f3885b7bc54881194c3c09dd38dd9d900003989933b60503506d09749415539b8bb89277ab8d314f774e573a3cd9eda384c5677c00a0e19a7bde254ad2a1a279d3c8d72457f6dc28b9327299f5ea85d69d100f65b97cbd4442defa1c89b8be5e84766175d99bbc7f4cca0358d78385b',
         b'0000a03b50185e6c05f3bb96f40699906d63d176350ac6d34bde7703cf150c7a93faffbea82e75100c4a53de4bb225a411bd4a9b0d8a80c9efe24b373a984efc7a25b6ebede8d5365124b044f04ab74ab431c85a1b5055e0de2a9320a88b13270000afb05b585921ef045bb8bd2b0b4050e13c6216b0cf2d044154793fcdd9986afc8f7c99bffeabb35cd7797b5513fc1bdfee72d9349ea96a3145f88a3e33b665e4a6f1e3eee8d06cd4b7f5e65768c48ffc08d11e5fd510b738a91145f3adb8']
 
-keys_from_ledger = [[b'0000f4fd0743422f322b44c02e217203b5ddf63d09d5fd5852f7115aeb513904a35dc4e8a41de21fc52440074f710d17624ba6862b4294d7e7ae95a861c93aa5c776d158fc29ad51c2b4d0e9c032be5d3077a04fe286b1190f194b5e9776a72f', b'0000756d810cba0389484ebf6862334db6888cfa69a9bcb19168b89dc5b367bb7e12d0aa29eb5fae2fb09ebb49b636fd95ab0a583bcb4a8a3d6c5a398d5842abc28ae3e521e0fbe64dca7c716b4703c923f4a248935e57e49065c0869e888bfe'],
-        [b'00013888cd3ea12884d68218bb261df48ac46b8f582d3b95f2cdec71cc9fc4becb1e0f246bf0b7a92d4efd6b7533ddb18ccc4f054878c7cc89d283eb3e7aca070164f58865da75e3d0ca12ff8205df240f3885b7bc54881194c3c09dd38dd9d', b'00003989933b60503506d09749415539b8bb89277ab8d314f774e573a3cd9eda384c5677c00a0e19a7bde254ad2a1a279d3c8d72457f6dc28b9327299f5ea85d69d100f65b97cbd4442defa1c89b8be5e84766175d99bbc7f4cca0358d78385b'],
-        [b'0000a03b50185e6c05f3bb96f40699906d63d176350ac6d34bde7703cf150c7a93faffbea82e75100c4a53de4bb225a411bd4a9b0d8a80c9efe24b373a984efc7a25b6ebede8d5365124b044f04ab74ab431c85a1b5055e0de2a9320a88b1327', b'0000afb05b585921ef045bb8bd2b0b4050e13c6216b0cf2d044154793fcdd9986afc8f7c99bffeabb35cd7797b5513fc1bdfee72d9349ea96a3145f88a3e33b665e4a6f1e3eee8d06cd4b7f5e65768c48ffc08d11e5fd510b738a91145f3adb8'],
-        [b'000072076b1ced72c972633bcb6d7789de299887c8cdb4834fca1f71379277fd506f997fc96665ae7cdb78f60a355bf79b0972eddbbb54d1f11779672e70ff9270123a9c6c1d781a6754bd6b3a91c5682a0288e360a044044cba50a785462160', b'0001bf58931265d2a56d1024ee282a27f440353d08e1eb59b5ec2aac07df62382518d9f5af7fcbb366437fa07a49e69d270258b6e181cf75835b8e496c20913ea8f4d1846eb42e4dfc0aebbfb32567a6ce5907aba09e7b0338756a73d9369463']]
+keys_from_ledger = [b'0000f4fd0743422f322b44c02e217203b5ddf63d09d5fd5852f7115aeb513904a35dc4e8a41de21fc52440074f710d17624ba6862b4294d7e7ae95a861c93aa5c776d158fc29ad51c2b4d0e9c032be5d3077a04fe286b1190f194b5e9776a72f0000756d810cba0389484ebf6862334db6888cfa69a9bcb19168b89dc5b367bb7e12d0aa29eb5fae2fb09ebb49b636fd95ab0a583bcb4a8a3d6c5a398d5842abc28ae3e521e0fbe64dca7c716b4703c923f4a248935e57e49065c0869e888bfe',
+        b'0000a03b50185e6c05f3bb96f40699906d63d176350ac6d34bde7703cf150c7a93faffbea82e75100c4a53de4bb225a411bd4a9b0d8a80c9efe24b373a984efc7a25b6ebede8d5365124b044f04ab74ab431c85a1b5055e0de2a9320a88b13270000afb05b585921ef045bb8bd2b0b4050e13c6216b0cf2d044154793fcdd9986afc8f7c99bffeabb35cd7797b5513fc1bdfee72d9349ea96a3145f88a3e33b665e4a6f1e3eee8d06cd4b7f5e65768c48ffc08d11e5fd510b738a91145f3adb8',
+        b'000072076b1ced72c972633bcb6d7789de299887c8cdb4834fca1f71379277fd506f997fc96665ae7cdb78f60a355bf79b0972eddbbb54d1f11779672e70ff9270123a9c6c1d781a6754bd6b3a91c5682a0288e360a044044cba50a7854621600001bf58931265d2a56d1024ee282a27f440353d08e1eb59b5ec2aac07df62382518d9f5af7fcbb366437fa07a49e69d270258b6e181cf75835b8e496c20913ea8f4d1846eb42e4dfc0aebbfb32567a6ce5907aba09e7b0338756a73d9369463']
 
 int_keys_from_ledger = [[0x0000f4fd0743422f322b44c02e217203b5ddf63d09d5fd5852f7115aeb513904a35dc4e8a41de21fc52440074f710d17624ba6862b4294d7e7ae95a861c93aa5c776d158fc29ad51c2b4d0e9c032be5d3077a04fe286b1190f194b5e9776a72f, 0x0000756d810cba0389484ebf6862334db6888cfa69a9bcb19168b89dc5b367bb7e12d0aa29eb5fae2fb09ebb49b636fd95ab0a583bcb4a8a3d6c5a398d5842abc28ae3e521e0fbe64dca7c716b4703c923f4a248935e57e49065c0869e888bfe],
-        [0x00013888cd3ea12884d68218bb261df48ac46b8f582d3b95f2cdec71cc9fc4becb1e0f246bf0b7a92d4efd6b7533ddb18ccc4f054878c7cc89d283eb3e7aca070164f58865da75e3d0ca12ff8205df240f3885b7bc54881194c3c09dd38dd9d, 0x00003989933b60503506d09749415539b8bb89277ab8d314f774e573a3cd9eda384c5677c00a0e19a7bde254ad2a1a279d3c8d72457f6dc28b9327299f5ea85d69d100f65b97cbd4442defa1c89b8be5e84766175d99bbc7f4cca0358d78385b],
         [0x0000a03b50185e6c05f3bb96f40699906d63d176350ac6d34bde7703cf150c7a93faffbea82e75100c4a53de4bb225a411bd4a9b0d8a80c9efe24b373a984efc7a25b6ebede8d5365124b044f04ab74ab431c85a1b5055e0de2a9320a88b1327, 0x0000afb05b585921ef045bb8bd2b0b4050e13c6216b0cf2d044154793fcdd9986afc8f7c99bffeabb35cd7797b5513fc1bdfee72d9349ea96a3145f88a3e33b665e4a6f1e3eee8d06cd4b7f5e65768c48ffc08d11e5fd510b738a91145f3adb8],
         [0x000072076b1ced72c972633bcb6d7789de299887c8cdb4834fca1f71379277fd506f997fc96665ae7cdb78f60a355bf79b0972eddbbb54d1f11779672e70ff9270123a9c6c1d781a6754bd6b3a91c5682a0288e360a044044cba50a785462160, 0x0001bf58931265d2a56d1024ee282a27f440353d08e1eb59b5ec2aac07df62382518d9f5af7fcbb366437fa07a49e69d270258b6e181cf75835b8e496c20913ea8f4d1846eb42e4dfc0aebbfb32567a6ce5907aba09e7b0338756a73d9369463]]
 
-handled_keys = ['{"is_odd": "False", "x": "15LFY15j2xqcFJXLYvScasi93wyTdmeKPiVgsfzfiBRctYgps77to5Mq4GobohnqQyHxPC7TRMjNL6L4zY259o1SpJPXZYrNARJm7iN9M9rUya6UQJkuf46SosRdEQJwdx"}',
-'{"is_odd": "True", "x": "1M2tzTw27n2Lz6ryMDG1SmiWsCjX9RNZeM2fbgxE1WhK6ZbrMjSnJEDFngB2qG5YCLV26SCWmvcPfoxYQevFdw9V5fXkTsrC99er7Xp2YeMQGExquu8Tg78HQohnJNdK2"}',
-'{"is_odd": "False", "x": "13qKzQQ3gXzgFTgaaSPLoJMhJgiYdELLbDQPKXz5qdEjksbbFQLemv4yWCWwoJjUCzXkbE1qMcbE8pJyGDKeStZo9i7fPaa1ChnCGRGygyN2eNcDQCdUzKEUvATsqRVJZc"}',
-'{"is_odd": "True", "x": "131wjbrr6XG8nwF7sXDTi7NRXfxeqQCmPSNYUKv1wTMywoLkUDLJ4gJsSeM6YqXKmkcVhmLRyycLVUtnAqJjEicoyJoE46655NGkPav5cm3c2RBxKioTn13zzV7Z98erw9"}']
+
+handled_keys = ['{"x": "115LFY15j2xqcFJXLYvScasi93wyTdmeKPiVgsfzfiBRctYgps77to5Mq4GobohnqQyHxPC7TRMjNL6L4zY259o1SpJPXZYrNARJm7iN9M9rUya6UQJkuf46SosRdEQJwdx", "y": "1135RuKoqPCei8Dc45nmk5i5aAyGpW1iqAoqS34sewCnYMzdWX3ZEM3fcddBxAC26ksXpgEn6G3H4LqAYBiiYhEPFNv62CCu162naUjj1Je35U2FYhFD11EoGFxJAeEbkku"}',
+    '{"x": "113qKzQQ3gXzgFTgaaSPLoJMhJgiYdELLbDQPKXz5qdEjksbbFQLemv4yWCWwoJjUCzXkbE1qMcbE8pJyGDKeStZo9i7fPaa1ChnCGRGygyN2eNcDQCdUzKEUvATsqRVJZc", "y": "1147BRZuBzZKLqwRnd96uA7Gt1zd7ezZM9uFMZ1oSgVhydctV5fATtL5dEv54K8uL1rj2SYiGEhZA1UTjPwCnsvUZKiGp3ekHt1Q7yvF9mc4PiSUEdQ7FEJQksZsybNkyM9"}',
+    '{"x": "1131wjbrr6XG8nwF7sXDTi7NRXfxeqQCmPSNYUKv1wTMywoLkUDLJ4gJsSeM6YqXKmkcVhmLRyycLVUtnAqJjEicoyJoE46655NGkPav5cm3c2RBxKioTn13zzV7Z98erw9", "y": "18unHHsRQGiskhHV9KoJeRrQCRDdu4i2JArKadf2xnp217S2HBr1AeGt7FBoNfm9yHykW4YJG7bwuwGf1dKbVGuHyZAiVrECEpPgbq5dyHooeTssHTVvgwEuMD3BE8z4TU"}']
 
 # unsalted
 # hex_signatures = [b'0001905ef9b5eb81762996821bbe1716f3d5c6e0ae2ca948a154880005bb721996a9f6e31a009f8d66dea8818398a3ad6424a23b2d9a9b3abd6731a98c43869458a15621adf6723bf88ae6999c101fc3d1dfd813f5b0c4abafe50f06e111f590000e7afa76dcad5896374bb371109f1cd0bdec4df4f2d36ede705ea8a0313e0520c89f1383b9ae9f8d42a4d1bbeb3411873c82a8f6c0633c3ea1801e7125eed0494c0426130b60b7308fec74568c3b0d0a5cdf4b59caaf0a1eeb26f440b3ccc']
@@ -188,7 +187,7 @@ if __name__ == "__main__":
     assert base58.b58decode(b'EUYUqQf') == b'world'
     assert base58.b58decode_check(b'2L5B5yqsVG8Vt') == b'hello'
     assert base58.b58decode(b'a') == b'!'
-    for i, pk in enumerate(int_keys_from_ledger):
-        assert int(keys_from_ledger[i][0], 16) == pk[0]
+    # for i, pk in enumerate(int_keys_from_ledger):
+    #    assert int(keys_from_ledger[i], 16) == pk[0]
     for i, pk in enumerate(keys_from_ledger):
         assert pk_encode(pk) == handled_keys[i]
