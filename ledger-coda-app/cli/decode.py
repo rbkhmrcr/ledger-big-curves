@@ -53,13 +53,13 @@ def split(in_bytes, request):
 
 def sig_encode(bs):
     r, s = split(bs, 'sig')
-    print(json.dumps({'field': r, 'scalar':s}))
+    print(json.dumps({'field': r, 'scalar': s}))
     return
 
 # versionbyte length = 1 byte
 def pk_encode(bpk):
     x, y = split(bpk, 'pk')
-    print(json.dumps({'x': b58x, 'y':b58y}))
+    print(json.dumps({'x': x, 'y': y}))
     return
 
 # b58_pk is version byte || sign bit || x coord
@@ -168,7 +168,10 @@ handled_keys = ['{"x": "115LFY15j2xqcFJXLYvScasi93wyTdmeKPiVgsfzfiBRctYgps77to5M
 hex_sig = b'000158edcd4c48a4045830e7e4228a0d824a3732ba6fb5424dfe313ddbf1cd4c53a4c527c7cc9767f5dcba62a1152ff677b7e5b0d93c408e8b39c66d368cd94682d168683f1492537b93fba8d137d007d812b52f92e456ebcb91177bba4b60a600001508027ae10bc81444d002258ab4a02abeba8666f618ef4175c2b0c1b4720b674521eb0b3221afa6d7b0bfb5ad825a35e74b8e44e94c833be10ce144e098e1e821a965d4f4a79499c8161744d2f58b7cc93536063df61c787f78464bab03'
 
 def b58_to_int(b58_bytes):
-    return int.from_bytes(base58.b58decode(b58_bytes), byteorder='big') % schnorr.p
+    return int.from_bytes(base58.b58decode(b58_bytes), byteorder='little') % schnorr.p
+
+def int_to_b58(ii):
+    return base58.b58encode(schnorr.bytes_from_int(ii))
 
 if __name__ == "__main__":
     assert base58.b58encode(b'hello') == b'Cn8eVZg'

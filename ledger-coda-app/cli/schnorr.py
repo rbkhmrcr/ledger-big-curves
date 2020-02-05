@@ -232,6 +232,11 @@ def schnorr_verify(msg, pubkey, sig):
 
 if __name__ == '__main__':
     assert is_on_curve(G[0], G[1])
+
+    msg = [bytes_from_int(25615870705115042543646988269442600291065870610810566568351522267883229178288637645455574607750193516168494708212492106060991223252842215604841819346335592341288722448465861172621202305332949789691389509124500513443739624704490), bytes_from_int(165263992375525314283137939099243432440837431930670926230162855107585165655283990966064758496729853898257922318576908240849)]
+    xx = 0x000072076b1ced72c972633bcb6d7789de299887c8cdb4834fca1f71379277fd506f997fc96665ae7cdb78f60a355bf79b0972eddbbb54d1f11779672e70ff9270123a9c6c1d781a6754bd6b3a91c5682a0288e360a044044cba50a785462160
+    ss = bytes_from_int(0x000151ddb1ecda8596755da7a42b71a5a580a95ef451d460ae5f9ad4c5b983b544a5082be1fad09bcfee3b7af86646ba0997c6e218c10c2faa1917b99d44e7af6daea04e5fcf117cc2ab52aaa825a1fcae62262303154b613d3c89f8fb8b5d16) + bytes_from_int(0x000176a0ec71ed9a5bd86a4d4a864c018f2b3b81acbbbe8652c307d176be08379d89154c3afd3d3c3434b9cd738b5e953dc376e5e806fa7596f78f784b86799d74063e1e6f67f43bc24b9a247a420290fca81e988dcf5168382caa287c6ce93d)
+
     MSG = (b'this is a test', b'an excellent test')
     KEY = random_field_elt()
     SIG = schnorr_sign(MSG, KEY)
@@ -264,5 +269,8 @@ if __name__ == '__main__':
             print("Signature " + str(i+2) + " verified")
 
     pkpk = b'\x03' + bytes_from_int(xx)
-    if schnorr_verify(msg,pkpk,ss):
-        print("Signature " + str(i+2) + " verified")
+    if schnorr_verify(msg, pkpk, ss):
+        print("Signature 2 verified")
+    else:
+        print('Signature 2 failed to verify')
+        sys.exit(1)

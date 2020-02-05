@@ -59,7 +59,7 @@ parser.add_argument('--transaction',
 
 args = parser.parse_args()
 
-dongle = getDongle(True)
+dongle = getDongle(False)
 
 try:
     if args.request == 'version':
