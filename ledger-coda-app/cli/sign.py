@@ -43,7 +43,13 @@ def get_transaction_from_ints(pkno, msgx, msgm):
     decode.handle_txn_reply(reply)
     return
 
-## parsing
+def report_error(req, err):
+    if req == 'sign':
+        print(json.dumps({'status': err, 'field': 'null', 'scalar': 'null'}))
+    else:
+        print(json.dumps({'status': err, 'x': 'null', 'y': 'null'}))
+    return
+
 try:
     parser = argparse.ArgumentParser(description='Get public keys and signatures from Ledger device.')
     parser.add_argument('--request',
@@ -69,11 +75,13 @@ try:
         get_transaction(args.nonce, args.transaction)
     elif args.request == 'sign':
         get_transaction_from_ints(args.nonce, args.msgx, args.msgm)
-
-except CommException as comm:
-    comp_error_codes = [0x6985, 0x6B00, 0x6B01, 0x6B02]
-    conn_error_codes = ['No dongle found']
-    if comm.sw in comp_error_codes:
-        print(json.dumps({'status': 'Computation_aborted'}))
     else:
-        print(json.dumps({'status': 'Hardware_wallet_not_found'}))
+        report_error(args.request, 'Computation_aborted')
+
+except:
+    comp_error_codes = [0x6985, 0x6B00, 0x6B01, 0x6B02]
+    conn_error_codes = ['No dongle found', 'read error']
+    if CommException in comp_error_codes:
+        report_error(args.request, 'Computation_aborted')
+    else:
+        report_error(args.request, 'Hardware_wallet_not_found')
