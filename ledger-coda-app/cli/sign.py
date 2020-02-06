@@ -1,6 +1,6 @@
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
-import argparse, sys, struct, os, hashlib
+import argparse, sys, struct, os, hashlib, json
 import decode, schnorr
 
 # ledger functions
@@ -44,24 +44,23 @@ def get_transaction_from_ints(pkno, msgx, msgm):
     return
 
 ## parsing
-
-parser = argparse.ArgumentParser(description='Get public keys and signatures from Ledger device.')
-parser.add_argument('--request',
-        help='publickey or sign (for signing a transaction)')
-parser.add_argument('--nonce',
-        help='the nonce with which to derive the keys')
-parser.add_argument('--msgx',
-        help='the x coordinate of the reciever pk')
-parser.add_argument('--msgm',
-        help='the remaining transaction information to be signed')
-parser.add_argument('--transaction',
-        help='the transaction to sign (in JSON)')
-
-args = parser.parse_args()
-
-dongle = getDongle(False)
-
 try:
+    parser = argparse.ArgumentParser(description='Get public keys and signatures from Ledger device.')
+    parser.add_argument('--request',
+            help='publickey or sign (for signing a transaction)')
+    parser.add_argument('--nonce',
+            help='the nonce with which to derive the keys')
+    parser.add_argument('--msgx',
+            help='the x coordinate of the reciever pk')
+    parser.add_argument('--msgm',
+            help='the remaining transaction information to be signed')
+    parser.add_argument('--transaction',
+            help='the transaction to sign (in JSON)')
+
+    args = parser.parse_args()
+
+    dongle = getDongle(False)
+
     if args.request == 'version':
         get_version()
     elif args.request == 'publickey':
@@ -72,13 +71,9 @@ try:
         get_transaction_from_ints(args.nonce, args.msgx, args.msgm)
 
 except CommException as comm:
-    if comm.sw == 0x6985:
-        print('Aborted by user')
-    elif comm.sw == 0x6B00:
-        print('SW_DEVELOPER_ERR')
-    elif comm.sw == 0x6B01:
-        print('SW_INVALID_PARAM')
-    elif comm.sw == 0x6B02:
-        print('SW_IMPROPER_INIT')
+    comp_error_codes = [0x6985, 0x6B00, 0x6B01, 0x6B02]
+    conn_error_codes = ['No dongle found']
+    if comm.sw in comp_error_codes:
+        print(json.dumps({'status': 'Computation_aborted'}))
     else:
-        print('Invalid status from Ledger: ', comm.sw, 'Is the device unlocked?')
+        print(json.dumps({'status': 'Hardware_wallet_not_found'}))
