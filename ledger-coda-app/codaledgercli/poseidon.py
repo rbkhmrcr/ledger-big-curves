@@ -12,12 +12,12 @@ Other implementations:
 """
 
 from collections import namedtuple
-from poseidon_params import mds, round_constants
+from codaledgercli import poseidon_params
 
 p = 0x1C4C62D92C41110229022EEE2CDADB7F997505B8FAFED5EB7E8F96C97D87307FDB925E8A0ED8D99D124D9A15AF79DB26C5C28C859A99B3EEBCA9429212636B9DFF97634993AA4D6C381BC3F0057974EA099170FA13A4FD90776E240000001
 
 _PoseidonParams = namedtuple('_PoseidonParams', ('p', 't', 'nRoundsF', 'nRoundsP', 'e', 'constants_C', 'constants_M'))
-DefaultParams = _PoseidonParams(p, 3, 8, 33, 11, round_constants, mds)
+DefaultParams = _PoseidonParams(p, 3, 8, 33, 11, poseidon_params.round_constants, poseidon_params.mds)
 
 def poseidon_mix(state, M, p):
     return [ sum([M[i][j] * x for j, x in enumerate(state)]) % p

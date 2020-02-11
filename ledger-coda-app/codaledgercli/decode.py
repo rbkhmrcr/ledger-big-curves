@@ -1,5 +1,5 @@
 import hashlib, struct, sys, base58, json, binascii
-import schnorr
+from codaledgercli import schnorr
 
 # whole version byte tables for coda
 value_to_version_byte = {
@@ -53,13 +53,13 @@ def split(in_bytes, request):
 
 def sig_encode(bs):
     r, s = split(bs, 'sig')
-    print(json.dumps({'field': r, 'scalar': s}))
+    print(json.dumps({'status': 'Ok', 'field': r, 'scalar': s}))
     return
 
 # versionbyte length = 1 byte
 def pk_encode(bpk):
     x, y = split(bpk, 'pk')
-    print(json.dumps({'x': x, 'y': y}))
+    print(json.dumps({'status': 'Ok', 'x': x, 'y': y}))
     return
 
 # b58_pk is version byte || sign bit || x coord
@@ -180,3 +180,5 @@ if __name__ == "__main__":
     assert base58.b58decode(b'EUYUqQf') == b'world'
     assert base58.b58decode_check(b'2L5B5yqsVG8Vt') == b'hello'
     assert base58.b58decode(b'a') == b'!'
+    assert b58_to_int(b'113BbGK8KghQV7Agy8W9YDev1rnQWFncJNbX6FNk5xt3i85ArogCLyxcAFmtCQXdqW1N83mmzxPjTEbk2ZSJ2HBQXb296kVvCg5ntqkFQTj7W15dcccHbSc4YwFwhBiwQpx') == 11422395288969951266668318517247797610158769971697294414104000319354108053709789800993457876168384338057945990070182946671950057475934120004133141526633780465748593106560360725236740562531793133853926323126879462811998959299673
+    assert b58_to_int(b'113JiNkNmUXjoZFZkfB17UfkgU6qwXjseCJY7u8iTw8j9c5b3Gjh2YTkCU1XQVYS9r4xQEcUwz7AMtH247VgEBaweRQZRAqEYkYmMwzGPvPyfiiJ6DNFY93pv83T9zRCDvF') == 12065073978853608390151781695805078280181820006872152624266968017931029341197429495647513274590720850751139309265446457816736158553413796964167609808052788939737267906950034021628473817867647283771188497811472057195260597361304
