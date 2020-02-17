@@ -22,16 +22,9 @@ include $(BOLOS_SDK)/Makefile.defines
 
 # Main app configuration
 
-APPNAME = "Coda"
+APPNAME = "Group ops :)"
 APPVERSION = 0.0.1
 APP_LOAD_PARAMS = --appFlags 0x00 $(COMMON_LOAD_PARAMS)
-APP_LOAD_PARAMS += --path "44'/49370'"
-
-ifeq ($(TARGET_NAME),TARGET_NANOS)
-ICONNAME=nanos_app_coda.gif
-else
-ICONNAME=
-endif
 
 # Build configuration
 
@@ -42,11 +35,7 @@ DEFINES += APPVERSION=\"$(APPVERSION)\"
 
 DEFINES += OS_IO_SEPROXYHAL IO_SEPROXYHAL_BUFFER_SIZE_B=128
 DEFINES += HAVE_BAGL HAVE_SPRINTF
-DEFINES += HAVE_BOLOS_APP_STACK_CANARY
-
-# Enabling debug PRINTF
-DEFINES += HAVE_SPRINTF HAVE_PRINTF PRINTF=screen_printf
-# DEFINES   += PRINTF\(...\)=
+DEFINES += PRINTF\(...\)=
 
 DEFINES += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=7 IO_HID_EP_LENGTH=64 HAVE_USB_APDU
 
@@ -87,16 +76,9 @@ all: default
 load: all
 	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
 
-check:
-	tests/check
-
 delete:
 	python -m ledgerblue.deleteApp $(COMMON_DELETE_PARAMS)
 
-# import rules to compile glyphs
-include $(BOLOS_SDK)/Makefile.glyphs
 # Import generic rules from the SDK
-include $(BOLOS_SDK)/Makefile.rules
 
-listvariants:
-	@echo VARIANTS COIN coda
+include $(BOLOS_SDK)/Makefile.rules
