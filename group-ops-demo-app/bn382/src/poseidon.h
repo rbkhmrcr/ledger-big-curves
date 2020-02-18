@@ -10,9 +10,9 @@
 // elements per iteration, and offers log2(cq) bits of security.
 // here alpha = 11, m = 3, r = 1, s = 2 ?
 // we split the full rounds into two and put half before the parital ro
-// and half after. we have full rounds = 8 and partial = 33, totalling 41
+// and half after. we have full rounds = 8 and partial = 30, totalling 38
 
-#define rounds 41
+#define rounds 38
 #define sponge_size 3
 
 typedef scalar state[sponge_size];
