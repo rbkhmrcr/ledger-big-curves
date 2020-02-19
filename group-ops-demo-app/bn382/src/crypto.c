@@ -170,7 +170,7 @@ unsigned int scalar_eq(const scalar a, const scalar b) {
 
 // zero is the only point with Z = 0 in jacobian coordinates
 unsigned int is_zero(const group *p) {
-  return (os_memcmp(p->Z, field_zero, field_bytes) == 0);
+  return field_eq(p->Z, field_zero);
 }
 
 unsigned int affine_is_zero(const affine *p) {
@@ -202,10 +202,16 @@ unsigned int is_on_curve(const group *p) {
     field_mul(lhs, p->Z, lhs);         // z(y^2 - bz^2)
     field_mul(rhs, p->X, x2);          // x^3
   }
-  return (os_memcmp(lhs, rhs, field_bytes) == 0);
+  return field_eq(lhs, rhs);
 }
 
 void affine_to_projective(group *r, const affine *p) {
+  if (field_eq(p->x, field_zero) && field_eq(p->y, field_zero)) {
+    os_memcpy(r->X, field_zero, field_bytes);
+    os_memcpy(r->Y, field_one, field_bytes);
+    os_memcpy(r->Z, field_zero, field_bytes);
+    return;
+  }
   os_memcpy(r->X, p->x, field_bytes);
   os_memcpy(r->Y, p->y, field_bytes);
   os_memcpy(r->Z, field_one, field_bytes);
@@ -213,6 +219,12 @@ void affine_to_projective(group *r, const affine *p) {
 }
 
 void projective_to_affine(affine *r, const group *p) {
+  if (field_eq(p->Z, field_zero)) {
+    os_memcpy(r->x, field_zero, field_bytes);
+    os_memcpy(r->y, field_zero, field_bytes);
+    return;
+  }
+
   field zi, zi2, zi3;
   field_inv(zi, p->Z);        // 1/Z
   field_mul(zi2, zi, zi);     // 1/Z^2
@@ -230,6 +242,7 @@ void projective_to_affine(affine *r, const group *p) {
 void group_dbl(group *r, const group *p) {
   if (is_zero(p)) {
     *r = *p;
+    return;
   }
 
   field a, b, c;
@@ -266,6 +279,17 @@ void group_dbl(group *r, const group *p) {
 // TODO: do we have complete formulas? :s
 // TODO: get rid of some temp variables?
 void group_add(group *r, const group *p, const group *q) {
+
+  if (is_zero(p)) {
+    *r = *q;
+    return;
+  }
+
+  if (is_zero(q)) {
+    *r = *p;
+    return;
+  }
+
   field z1z1, z2z2;
   field_sq(z1z1, p->Z); // Z1Z1 = Z1^2
   field_sq(z2z2, q->Z); // Z2Z2 = Z2^2
