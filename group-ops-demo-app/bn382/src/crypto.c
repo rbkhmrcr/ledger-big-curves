@@ -382,7 +382,7 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
     unsigned int di = k[i / 8] & (1 << (7 - (i % 8)));
     group q0;
     group_dbl(&q0, &r);
-    pr = q0;
+    r = q0;
     if (di != 0) {
       group_add(&q0, &r, &p);
       r = q0;
