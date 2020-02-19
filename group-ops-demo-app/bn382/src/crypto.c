@@ -368,30 +368,34 @@ void group_madd(group *r, const group *p, const group *q) {
   field_sub(r->Z, t11, hh);  // (Z1 + h)^2 - Z1Z1 - hh
 }
 
-void affine_scalar_mul(affine *r, const scalar k, const affine *p) {
+void group_scalar_mul(group *r, const scalar k, const group *p) {
 
-  *r = affine_zero;
-  if (affine_is_zero(p)) {
+  *r = group_zero;
+  if (group_is_zero(p)) {
     return;
   }
   if (scalar_eq(k, scalar_zero)) {
     return;
   }
 
-  group pp, pr;
-  affine_to_projective(&pp, p);
-  affine_to_projective(&pr, r);
-
   for (unsigned int i = scalar_offset; i < scalar_bits; i++) {
     unsigned int di = k[i / 8] & (1 << (7 - (i % 8)));
     group q0;
-    group_dbl(&q0, &pr);
+    group_dbl(&q0, &r);
     pr = q0;
     if (di != 0) {
-      group_add(&q0, &pr, &pp);
-      pr = q0;
+      group_add(&q0, &r, &p);
+      r = q0;
     }
   }
+  return;
+}
+
+void affine_scalar_mul(affine *r, const scalar k, const affine *p) {
+  group pp, pr;
+  affine_to_projective(&pp, p);
+  affine_to_projective(&pr, r);
+  group_scalar_mul(&pr, k, &pp);
   projective_to_affine(r, &pr);
   return;
 }
