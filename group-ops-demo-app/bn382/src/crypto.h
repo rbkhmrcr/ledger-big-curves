@@ -32,9 +32,10 @@ void field_mul(field c, const field a, const field b);
 void field_pow(field c, const field a, const field e);
 void group_add(group *c, const group *a, const group *b);
 void group_dbl(group *c, const group *a);
+void group_scalar_mul(group *r, const scalar k, const group *p);
+void affine_scalar_mul(affine *r, const scalar k, const affine *p);
 void projective_to_affine(affine *p, const group *r);
 
-void affine_scalar_mul(affine *r, const scalar k, const affine *p);
 void generate_pubkey(affine *pub_key, const scalar priv_key);
 void generate_keypair(unsigned int index, affine *pub_key, scalar priv_key);
 

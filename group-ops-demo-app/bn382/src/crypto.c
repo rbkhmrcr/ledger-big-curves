@@ -371,7 +371,7 @@ void group_madd(group *r, const group *p, const group *q) {
 void group_scalar_mul(group *r, const scalar k, const group *p) {
 
   *r = group_zero;
-  if (group_is_zero(p)) {
+  if (is_zero(p)) {
     return;
   }
   if (scalar_eq(k, scalar_zero)) {
@@ -381,11 +381,11 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
   for (unsigned int i = scalar_offset; i < scalar_bits; i++) {
     unsigned int di = k[i / 8] & (1 << (7 - (i % 8)));
     group q0;
-    group_dbl(&q0, &r);
-    r = q0;
+    group_dbl(&q0, r);
+    *r = q0;
     if (di != 0) {
-      group_add(&q0, &r, &p);
-      r = q0;
+      group_add(&q0, r, p);
+      *r = q0;
     }
   }
   return;
