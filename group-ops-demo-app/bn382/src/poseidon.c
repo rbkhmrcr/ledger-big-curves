@@ -1332,20 +1332,15 @@ void matrix_mul_low(state s, const state m[sponge_size]) {
   field_mul(s[0], m[0][0], s[0]);
 }
 
-// TODO get rid of magic numbers?
+
 // only needs len_e = 1
 void to_the_alpha(field xa, const field x) { field_pow(xa, x, &alpha); }
 
-void poseidon(state s, const scalar input[sponge_size - 1]) {
-  int half_rounds = 4;
-  int partial_rounds = 33;
-
-  field_add(s[0], s[0], input[0]);
-  field_add(s[1], s[1], input[1]);
-
+void poseidon(state s) {
+  unsigned int half_rounds = full_rounds/2;
   // half of the full rounds
-  for (int r = 0; r < half_rounds; r++) {
-    for (int i = 0; i < sponge_size; i++) {
+  for (unsigned int r = 0; r < half_rounds; r++) {
+    for (unsigned int i = 0; i < sponge_size; i++) {
       field_add(s[i], s[i], round_keys[r][i]);
       to_the_alpha(s[i], s[i]);
     }
@@ -1354,9 +1349,9 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
   }
 
   // all partial rounds
-  int k = half_rounds;
-  for (int r = k; r < k + partial_rounds; r++) {
-    for (int i = 0; i < sponge_size; i++) {
+  unsigned int k = half_rounds;
+  for (unsigned int r = k; r < k + partial_rounds; r++) {
+    for (unsigned int i = 0; i < sponge_size; i++) {
       field_add(s[i], s[i], round_keys[r][i]);
     }
     to_the_alpha(s[0], s[0]);
@@ -1366,14 +1361,25 @@ void poseidon(state s, const scalar input[sponge_size - 1]) {
 
   // other half of the full rounds
   k = half_rounds + partial_rounds;
-  for (int r = k; r < k + half_rounds; r++) {
-    for (int i = 0; i < sponge_size; i++) {
+  for (unsigned int r = k; r < k + half_rounds; r++) {
+    for (unsigned int i = 0; i < sponge_size; i++) {
       field_add(s[i], s[i], round_keys[r][i]);
       to_the_alpha(s[i], s[i]);
     }
     matrix_mul_up(s, MDS_U_MNT);
     matrix_mul_low(s, MDS_L_MNT);
   }
+}
+
+void poseidon_1in(state s, const scalar input) {
+  field_add(s[0], s[0], input);
+  poseidon(s);
+}
+
+void poseidon_2in(state s, const scalar input0, const scalar input1) {
+  field_add(s[0], s[0], input0);
+  field_add(s[1], s[1], input1);
+  poseidon(s);
 }
 
 void poseidon_digest(const state s, scalar out) {

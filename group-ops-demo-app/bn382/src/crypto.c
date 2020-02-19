@@ -378,21 +378,21 @@ void affine_scalar_mul(affine *r, const scalar k, const affine *p) {
     return;
   }
 
-  group *pp, *pr;
-  affine_to_projective(pp, p);
-  affine_to_projective(pr, r);
+  group pp, pr;
+  affine_to_projective(&pp, p);
+  affine_to_projective(&pr, r);
 
   for (unsigned int i = scalar_offset; i < scalar_bits; i++) {
     unsigned int di = k[i / 8] & (1 << (7 - (i % 8)));
     group q0;
-    group_dbl(&q0, pr);
-    *pr = q0;
+    group_dbl(&q0, &pr);
+    pr = q0;
     if (di != 0) {
-      group_add(&q0, pr, pp);
-      *pr = q0;
+      group_add(&q0, &pr, &pp);
+      pr = q0;
     }
   }
-  projective_to_affine(r, pr);
+  projective_to_affine(r, &pr);
   return;
 }
 
@@ -419,7 +419,7 @@ void generate_keypair(unsigned int index, affine *pub_key, scalar priv_key) {
   os_memcpy(priv_key + 32, chain, 32);
   os_memcpy(priv_key + 64, chain, 32);
 
-  affine_scalar_mul(pub_key, priv_key, &group_one);
+  affine_scalar_mul(pub_key, priv_key, &affine_one);
   // os_memset(priv_key, 0, sizeof(priv_key));
   return;
 }
@@ -429,43 +429,42 @@ void generate_pubkey(affine *pub_key, const scalar priv_key) {
   return;
 }
 
-inline unsigned int is_odd(const field y) { return (y[field_bytes - 1] & 1); }
+inline unsigned int is_odd(const field y) {
+  return (y[field_bytes - 1] & 1);
+}
 
-void poseidon_4in(scalar out, const scalar in1, const scalar in2,
-                  const scalar in3, const scalar in4) {
+void schnorr_hash(scalar out, const scalar in0, const scalar in1, const scalar in2, const scalar in3, const scalar in4) {
+
   state pos = {{0}, {0}, {0}};
-  scalar tmp[sponge_size - 1];
-
-  os_memcpy(tmp[0], in1, scalar_bytes);
-  os_memcpy(tmp[1], in2, scalar_bytes);
-  poseidon(pos, tmp);
-  os_memcpy(tmp[0], in3, scalar_bytes);
-  os_memcpy(tmp[1], in4, scalar_bytes);
-  poseidon(pos, tmp);
+  /*
+  // state after applying {{0x2a, 0x2a, 0x2a, 0x2a, 0x2a, 0x2a, 0x2a, 0x65, 0x72, 0x75,
+  //             0x74, 0x61, 0x6e, 0x67, 0x69, 0x53, 0x61, 0x64, 0x6f, 0x43}, {0}};
+  */
+  poseidon_2in(pos, in0, in1);
+  poseidon_2in(pos, in2, in3);
+  poseidon_1in(pos, in4);
   poseidon_digest(pos, out);
   return;
 }
 
-void sign(field rx, scalar s, const affine *public_key,
-          const scalar private_key, const scalar msg) {
+void sign(field rx, scalar s, const affine *public_key, const scalar private_key, const scalar msgx, const scalar msgm) {
   scalar k_prime;
-  /* rx is G_io_apdu_buffer so we can take group_bytes bytes from it */
+  /* rx is G_io_apdu_buffer so we can take 192 bytes from it */
   {
     affine *r;
-    r = (affine *)rx;
-    poseidon_4in(k_prime, msg, public_key->x, public_key->y,
-                 private_key);                  // k = hash(m || pk || sk)
-    affine_scalar_mul(r, k_prime, &affine_one); // r = k*g
+    r = (affine *) rx;
+    schnorr_hash(k_prime, msgx, msgm, public_key->x, public_key->y, private_key);   // k = hash(m || pkx || pky || sk)
+    affine_scalar_mul(r, k_prime, &affine_one);                                      // r = k*g
 
-    /* store so we don't need group *r anymore */
-    os_memcpy(rx, r->x, field_bytes);
     if (is_odd(r->y)) {
-      field_negate(k_prime, k_prime); // if ry is odd, k = - k'
+      scalar_sub(k_prime, group_order, k_prime);                                    // if ry is odd, k = - k'
     }
+    /* store so we don't need affine *r anymore */
+    os_memcpy(rx, r->x, field_bytes);
   }
-  poseidon_4in(s, msg, rx, public_key->x,
-               public_key->y);   // e = hash(xr || pk || m)
-  scalar_mul(s, s, private_key); // e*sk
-  scalar_add(s, k_prime, s);     // k + e*sk
+  schnorr_hash(s, msgx, public_key->x, public_key->y, rx, msgm);                    // e = hash(x || pkx || pky || xr || m)
+  os_memcpy(s, scalar_zero, (scalar_bytes - 16));                                   // use 128 LSB as challenge
+  scalar_mul(s, s, private_key);                                                    // e*sk
+  scalar_add(s, k_prime, s);                                                        // k + e*sk
   return;
 }
