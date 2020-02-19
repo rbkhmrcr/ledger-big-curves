@@ -319,8 +319,8 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
   state s = {{0}, {0}, {0}};
   field field_zero = {0};
   poseidon_2in(s, field_zero, field_zero);
-  // poseidon_digest(s, G_io_apdu_buffer);
-  os_memmove(G_io_apdu_buffer, &s, field_bytes);
+  poseidon_digest(s, G_io_apdu_buffer);
+  // os_memmove(G_io_apdu_buffer, &s, field_bytes);
   tx = field_bytes;
 
   /*
