@@ -54,9 +54,6 @@ def point_mul(P, n):
         P = point_add(P, P)
     return R
 
-print(hex(point_mul(g, 3)[0]))
-print(hex(point_mul(g, 4)[0]))
-print(hex(point_mul(g, 5)[0]))
 textToSign = b''
 while True:
         data = input('Enter text to sign, end with an empty line : ')

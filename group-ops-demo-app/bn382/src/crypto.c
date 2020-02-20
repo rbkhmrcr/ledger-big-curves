@@ -418,7 +418,6 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
 void affine_scalar_mul(affine *r, const scalar k, const affine *p) {
   group pp, pr;
   affine_to_projective(&pp, p);
-  affine_to_projective(&pr, r);
   group_scalar_mul(&pr, k, &pp);
   projective_to_affine(r, &pr);
   return;
