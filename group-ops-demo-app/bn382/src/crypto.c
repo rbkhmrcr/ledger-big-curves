@@ -197,10 +197,10 @@ unsigned int is_on_curve(const group *p) {
     field_sq(y2, p->Y);
     field_sq(z2, p->Z);
 
-    field_mul(lhs, z2, group_coeff_b); // bz^2
-    field_sub(lhs, y2, lhs);           // y^2 - bz^2
-    field_mul(lhs, p->Z, lhs);         // z(y^2 - bz^2)
-    field_mul(rhs, p->X, x2);          // x^3
+    field_mul(lhs, z2, group_coeff_b);  // bz^2
+    field_sub(lhs, y2, lhs);            // y^2 - bz^2
+    field_mul(lhs, p->Z, lhs);          // z(y^2 - bz^2)
+    field_mul(rhs, p->X, x2);           // x^3
   }
   return field_eq(lhs, rhs);
 }
@@ -237,7 +237,6 @@ void projective_to_affine(affine *r, const group *p) {
 
 // https://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/doubling/dbl-2009-l.op3
 // cost 2M + 5S + 6add + 3*2 + 1*3 + 1*8
-// TODO: do we have complete formulas? :s
 // TODO: get rid of some temp variables?
 void group_dbl(group *r, const group *p) {
   if (is_zero(p)) {
@@ -246,37 +245,33 @@ void group_dbl(group *r, const group *p) {
   }
 
   field a, b, c;
-  field_sq(a, p->X); // a = X1^2
-  field_sq(b, p->Y); // b = Y1^2
-  field_sq(c, b);    // c = b^2
+  field_sq(a, p->X);                // a = X1^2
+  field_sq(b, p->Y);                // b = Y1^2
+  field_sq(c, b);                   // c = b^2
 
-  field t0, t1, t2, t3, d, e, f;
-  field_add(t0, p->X, b);       // t0 = X1 + b
-  field_sq(t1, t0);             // t1 = t0^2
-  field_sub(t2, t1, a);         // t2 = t1 - a
-  field_sub(t3, t2, c);         // t3 = t2 - c
-  field_mul(d, field_two, t3);  // d = 2 * t3 TODO : * 2 = dbl
-  field_mul(e, field_three, a); // e = 3 * a
-  field_sq(f, e);               // f = e^2
+  field d, e, f;
+  field_add(r->X, p->X, b);         // t0 = X1 + b
+  field_sq(r->Y, r->X);             // t1 = t0^2
+  field_sub(r->Z, r->Y, a);         // t2 = t1 - a
+  field_sub(r->X, r->Z, c);         // t3 = t2 - c
+  field_add(d, r->X, r->X);         // d = 2 * t3
+  field_mul(e, field_three, a);     // e = 3 * a
+  field_sq(f, e);                   // f = e^2
 
-  field t4;
-  field_mul(t4, field_two, d); // t4 = 2 * d TODO : * 2 = dbl
-  field_sub(r->X, f, t4);      // X = f - t4
+  field_add(r->Y, d, d);            // t4 = 2 * d
+  field_sub(r->X, f, r->Y);         // X = f - t4
 
-  field t5, t6, t7;
-  field_sub(t5, d, r->X);        // t5 = d - X
-  field_mul(t6, field_eight, c); // t6 = 8 * c TODO : * 8 = dbl dbl dbl
-  field_mul(t7, e, t5);          // t7 = e * t5
-  field_sub(r->Y, t7, t6);       // Y = t7 - t6
+  field_sub(r->Y, d, r->X);         // t5 = d - X
+  field_mul(f, field_eight, c);     // t6 = 8 * c
+  field_mul(r->Z, e, r->Y);         // t7 = e * t5
+  field_sub(r->Y, r->Z, f);         // Y = t7 - t6
 
-  field t8;
-  field_mul(t8, p->Y, p->Z);      // t8 = Y1 * Z1
-  field_mul(r->Z, field_two, t8); // Z = 2 * t8 TODO * 2 : dbl
+  field_mul(f, p->Y, p->Z);         // t8 = Y1 * Z1
+  field_add(r->Z, f, f);            // Z = 2 * t8
 }
 
 // https://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2007-bl.op3
 // cost 11M + 5S + 9add + 4*2
-// TODO: do we have complete formulas? :s
 // TODO: get rid of some temp variables?
 void group_add(group *r, const group *p, const group *q) {
 
@@ -291,48 +286,45 @@ void group_add(group *r, const group *p, const group *q) {
   }
 
   field z1z1, z2z2;
-  field_sq(z1z1, p->Z); // Z1Z1 = Z1^2
-  field_sq(z2z2, q->Z); // Z2Z2 = Z2^2
+  field_sq(z1z1, p->Z);         // Z1Z1 = Z1^2
+  field_sq(z2z2, q->Z);         // Z2Z2 = Z2^2
 
-  field u1, u2, t0, s1, t1, s2;
-  field_mul(u1, p->X, z2z2); // u1 = x1 * z2z2
-  field_mul(u2, q->X, z1z1); // u2 = x2 * z1z1
-  field_mul(t0, q->Z, z2z2); // t0 = z2 * z2z2
-  field_mul(s1, p->Y, t0);   // s1 = y1 * t0
-  field_mul(t1, p->Z, z1z1); // t1 = z1 * z1z1
-  field_mul(s2, q->Y, t1);   // s2 = y2 * t1
+  field u1, u2, s1, s2;
+  field_mul(u1, p->X, z2z2);    // u1 = x1 * z2z2
+  field_mul(u2, q->X, z1z1);    // u2 = x2 * z1z1
+  field_mul(r->X, q->Z, z2z2);  // t0 = z2 * z2z2
+  field_mul(s1, p->Y, r->X);    // s1 = y1 * t0
+  field_mul(r->Y, p->Z, z1z1);  // t1 = z1 * z1z1
+  field_mul(s2, q->Y, r->Y);    // s2 = y2 * t1
 
-  field h, t2, i, j, t3, w, v;
-  field_sub(h, u2, u1);        // h = u2 - u1
-  field_mul(t2, field_two, h); // t2 = 2 * h
-  field_sq(i, t2);             // i = t2^2
-  field_mul(j, h, i);          // j = h * i
-  field_sub(t3, s2, s1);       // t3 = s2 - s1
-  field_mul(w, field_two, t3); // w = 2 * t3
-  field_mul(v, u1, i);         // v = u1 * i
+  field h, i, j, w, v;
+  field_sub(h, u2, u1);         // h = u2 - u1
+  field_add(r->Z, h, h);        // t2 = 2 * h
+  field_sq(i, r->Z);            // i = t2^2
+  field_mul(j, h, i);           // j = h * i
+  field_sub(r->X, s2, s1);      // t3 = s2 - s1
+  field_add(w, r->X, r->X);     // w = 2 * t3
+  field_mul(v, u1, i);          // v = u1 * i
 
   // X3 = w^2 - j - 2*v
-  field t4, t5, t6;
-  field_sq(t4, w);             // t4 = w^2
-  field_mul(t5, field_two, v); // t5 = 2 * v
-  field_sub(t6, t4, j);        // t6 = t4 - j
-  field_sub(r->X, t6, t5);     // t6 - t5
+  field_sq(r->X, w);            // t4 = w^2
+  field_add(r->Y, v, v);        // t5 = 2 * v
+  field_sub(r->Z, r->X, j);     // t6 = t4 - j
+  field_sub(r->X, r->Z, r->Y);  // t6 - t5
 
   // Y3 = w * (v - X3) - 2*s1*j
-  field t7, t8, t9, t10;
-  field_sub(t7, v, r->X);       // t7 = v - X3
-  field_mul(t8, s1, j);         // t8 = s1 * j
-  field_mul(t9, field_two, t8); // t9 = 2 * t8
-  field_mul(t10, w, t7);        // t10 = w * t7
-  field_sub(r->Y, t10, t9);     // w * (v - X3) - 2*s1*j
+  field_sub(r->Y, v, r->X);     // t7 = v - X3
+  field_mul(r->Z, s1, j);       // t8 = s1 * j
+  field_add(s1, r->Z, r->Z);    // t9 = 2 * t8
+  field_mul(r->Z, w, r->Y);     // t10 = w * t7
+  field_sub(r->Y, r->Z, s1);    // w * (v - X3) - 2*s1*j
 
   // Z3 = ((Z1 + Z2)^2 - Z1Z1 - Z2Z2) * h
-  field t11, t12, t13, t14;
-  field_add(t11, p->Z, q->Z); // t11 = z1 + z2
-  field_sq(t12, t11);         // t12 = (z1 + z2)^2
-  field_sub(t13, t12, z1z1);  // t13 = (z1 + z2)^2 - z1z1
-  field_sub(t14, t13, z2z2);  // t14 = (z1 + z2)^2 - z1z1 - z2z2
-  field_mul(r->Z, t14, h);    // ((z1 + z2)^2 - z1z1 - z2z2) * h
+  field_add(r->Z, p->Z, q->Z);  // t11 = z1 + z2
+  field_sq(s1, r->Z);           // t12 = (z1 + z2)^2
+  field_sub(r->Z, s1, z1z1);    // t13 = (z1 + z2)^2 - z1z1
+  field_sub(j, r->Z, z2z2);     // t14 = (z1 + z2)^2 - z1z1 - z2z2
+  field_mul(r->Z, j, h);        // ((z1 + z2)^2 - z1z1 - z2z2) * h
 }
 
 // https://www.hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/madd-2007-bl.op3
@@ -351,45 +343,42 @@ void group_madd(group *r, const group *p, const group *q) {
   }
 
   field z1z1, u2;
-  field_sq(z1z1, p->Z);      // z1z1 = Z1^2
-  field_mul(u2, q->X, z1z1); // u2 = X2 * z1z1
+  field_sq(z1z1, p->Z);           // z1z1 = Z1^2
+  field_mul(u2, q->X, z1z1);      // u2 = X2 * z1z1
 
-  field t0, s2;
-  field_mul(t0, p->Z, z1z1); // t0 = Z1 * z1z1
-  field_mul(s2, q->Y, t0);   // s2 = Y2 * t0
+  field s2;
+  field_mul(r->X, p->Z, z1z1);    // t0 = Z1 * z1z1
+  field_mul(s2, q->Y, r->X);      // s2 = Y2 * t0
 
   field h, hh;
-  field_sub(h, u2, p->X); // h = u2 - X1
-  field_sq(hh, h);        // hh = h^2
+  field_sub(h, u2, p->X);         // h = u2 - X1
+  field_sq(hh, h);                // hh = h^2
 
-  field i, j, t1, w, v;
-  field_mul(i, field_four, hh); // i = 4 * hh
-  field_mul(j, h, i);           // j = h * i
-  field_sub(t1, s2, p->Y);      // t1 = s2 - Y1
-  field_mul(w, field_two, t1);  // w = 2 * t1
-  field_mul(v, p->X, i);        // v = X1 * i
+  field j, w, v;
+  field_mul(r->X, field_four, hh);  // i = 4 * hh
+  field_mul(j, h, r->X);            // j = h * i
+  field_sub(r->Y, s2, p->Y);        // t1 = s2 - Y1
+  field_add(w, r->Y, r->Y);         // w = 2 * t1
+  field_mul(v, p->X, r->X);         // v = X1 * i
 
   // X3 = w^2 - J - 2*V
-  field t2, t3, t4;
-  field_sq(t2, w);             // t2 = w^2
-  field_mul(t3, field_two, v); // t3 = 2*v
-  field_sub(t4, t2, j);        // t4 = t2 - j
-  field_sub(r->X, t4, t3);     // w^2 - j - 2*v
+  field_sq(r->X, w);                // t2 = w^2
+  field_add(r->Y, v, v);            // t3 = 2*v
+  field_sub(r->Z, r->X, j);         // t4 = t2 - j
+  field_sub(r->X, r->Z, r->Y);      // X3 = w^2 - j - 2*v = t4 - t3
 
   // Y3 = w * (V - X3) - 2*Y1*J
-  field t5, t6, t7, t8;
-  field_sub(t5, v, r->X);       // t5 = v - X3
-  field_mul(t6, p->Y, j);       // t6 = Y1 * j
-  field_mul(t7, field_two, t6); // t7 = 2 * t6
-  field_mul(t8, w, t5);         // t8 = w * t5
-  field_sub(r->Y, t8, t7);      // w * (v - X3) - 2*Y1*j
+  field_sub(r->Y, v, r->X);       // t5 = v - X3
+  field_mul(v, p->Y, j);          // t6 = Y1 * j
+  field_add(r->Z, v, v);          // t7 = 2 * t6
+  field_mul(s2, w, r->Y);         // t8 = w * t5
+  field_sub(r->Y, s2, r->Z);      // w * (v - X3) - 2*Y1*j = t8 - t7
 
   // Z3 = (Z1 + H)^2 - Z1Z1 - HH
-  field t9, t10, t11;
-  field_add(t9, p->Z, h);    // t9 = Z1 + h
-  field_sq(t10, t9);         // t10 = t9^2
-  field_sub(t11, t10, z1z1); // t11 = t10 - z1z1
-  field_sub(r->Z, t11, hh);  // (Z1 + h)^2 - Z1Z1 - hh
+  field_add(w, p->Z, h);          // t9 = Z1 + h
+  field_sq(v, w);                 // t10 = t9^2
+  field_sub(w, v, z1z1);          // t11 = t10 - z1z1
+  field_sub(r->Z, w, hh);         // (Z1 + h)^2 - Z1Z1 - hh = t11 - hh
 }
 
 void group_scalar_mul(group *r, const scalar k, const group *p) {
@@ -408,7 +397,9 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
     group_dbl(&q0, r);
     *r = q0;
     if (di != 0) {
-      group_add(&q0, r, p);
+      // only allowed because we only ever call this via affine_scalar_mul
+      group_madd(&q0, r, p);
+      // group_add(&q0, r, p);
       *r = q0;
     }
   }
