@@ -1217,7 +1217,8 @@ static const field round_keys[rounds][sponge_size] = {
 */
 };
 
-static const unsigned char alpha = 0x0B;
+// alpha = 17
+static const unsigned char alpha = 0x11;
 
 // 1 0 0
 // 1 1 0

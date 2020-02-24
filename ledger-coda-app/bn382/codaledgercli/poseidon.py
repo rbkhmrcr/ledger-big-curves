@@ -17,7 +17,7 @@ import poseidon_params
 p = 5543634365110765627805495722742127385843376434033820803590214255538854698464778703795540858859767700241957783601153
 
 _PoseidonParams = namedtuple('_PoseidonParams', ('p', 't', 'nRoundsF', 'nRoundsP', 'e', 'constants_C', 'constants_M'))
-DefaultParams = _PoseidonParams(p, 3, 8, 30, 11, poseidon_params.round_constants, poseidon_params.mds)
+DefaultParams = _PoseidonParams(p, 3, 8, 30, 17, poseidon_params.round_constants, poseidon_params.mds)
 
 def poseidon_mix(state, M, p):
     return [ sum([M[i][j] * x for j, x in enumerate(state)]) % p
