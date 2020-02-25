@@ -283,6 +283,10 @@ void group_add(group *r, const group *p, const group *q) {
     return;
   }
 
+  if (field_eq(p->X, q->X) && field_eq(p->Y, q->Y) && field_eq(p->Z, q->Z)) {
+    return group_dbl(r, p);
+  }
+
   field z1z1, z2z2;
   field_sq(z1z1, p->Z);         // Z1Z1 = Z1^2
   field_sq(z2z2, q->Z);         // Z2Z2 = Z2^2
@@ -340,16 +344,16 @@ void group_madd(group *r, const group *p, const group *q) {
   }
 
   field z1z1, u2;
-  field_sq(z1z1, p->Z);           // z1z1 = Z1^2
-  field_mul(u2, q->X, z1z1);      // u2 = X2 * z1z1
+  field_sq(z1z1, p->Z);             // z1z1 = Z1^2
+  field_mul(u2, q->X, z1z1);        // u2 = X2 * z1z1
 
   field s2;
-  field_mul(r->X, p->Z, z1z1);    // t0 = Z1 * z1z1
-  field_mul(s2, q->Y, r->X);      // s2 = Y2 * t0
+  field_mul(r->X, p->Z, z1z1);      // t0 = Z1 * z1z1
+  field_mul(s2, q->Y, r->X);        // s2 = Y2 * t0
 
   field h, hh;
-  field_sub(h, u2, p->X);         // h = u2 - X1
-  field_sq(hh, h);                // hh = h^2
+  field_sub(h, u2, p->X);           // h = u2 - X1
+  field_sq(hh, h);                  // hh = h^2
 
   field j, w, v;
   field_mul(r->X, field_four, hh);  // i = 4 * hh
@@ -365,17 +369,17 @@ void group_madd(group *r, const group *p, const group *q) {
   field_sub(r->X, r->Z, r->Y);      // X3 = w^2 - j - 2*v = t4 - t3
 
   // Y3 = w * (V - X3) - 2*Y1*J
-  field_sub(r->Y, v, r->X);       // t5 = v - X3
-  field_mul(v, p->Y, j);          // t6 = Y1 * j
-  field_add(r->Z, v, v);          // t7 = 2 * t6
-  field_mul(s2, w, r->Y);         // t8 = w * t5
-  field_sub(r->Y, s2, r->Z);      // w * (v - X3) - 2*Y1*j = t8 - t7
+  field_sub(r->Y, v, r->X);         // t5 = v - X3
+  field_mul(v, p->Y, j);            // t6 = Y1 * j
+  field_add(r->Z, v, v);            // t7 = 2 * t6
+  field_mul(s2, w, r->Y);           // t8 = w * t5
+  field_sub(r->Y, s2, r->Z);        // w * (v - X3) - 2*Y1*j = t8 - t7
 
   // Z3 = (Z1 + H)^2 - Z1Z1 - HH
-  field_add(w, p->Z, h);          // t9 = Z1 + h
-  field_sq(v, w);                 // t10 = t9^2
-  field_sub(w, v, z1z1);          // t11 = t10 - z1z1
-  field_sub(r->Z, w, hh);         // (Z1 + h)^2 - Z1Z1 - hh = t11 - hh
+  field_add(w, p->Z, h);            // t9 = Z1 + h
+  field_sq(v, w);                   // t10 = t9^2
+  field_sub(w, v, z1z1);            // t11 = t10 - z1z1
+  field_sub(r->Z, w, hh);           // (Z1 + h)^2 - Z1Z1 - hh = t11 - hh
 }
 
 void group_scalar_mul(group *r, const scalar k, const group *p) {
@@ -398,6 +402,36 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
       group_madd(&q0, r, p);
       // group_add(&q0, r, p);
       *r = q0;
+    }
+  }
+  return;
+}
+
+void mgmy_ladder(group *r, const scalar k, const group *p) {
+
+  *r = group_zero;
+  if (is_zero(p)) {
+    return;
+  }
+  if (scalar_eq(k, scalar_zero)) {
+    return;
+  }
+  group r1 = *p;
+
+  for (unsigned int i = scalar_bits; i > scalar_offset; i--) {
+    unsigned int di = k[i / 8] & (1 << (i % 8));
+
+    group q0, q1;
+    if (di == 0) {
+      group_add(&q0, r, &r1); // r1 = r0 + r1
+      r1 = q0;
+      group_dbl(&q1, r);      // r0 = r0 + r0
+      *r = q1;
+    } else {
+      group_add(&q0, r, &r1); // r0 = r0 + r1
+      *r = q0;
+      group_dbl(&q1, &r1);    // r1 = r1 + r1
+      r1 = q1;
     }
   }
   return;
@@ -444,32 +478,32 @@ void generate_pubkey(affine *pub_key, const scalar priv_key) {
   return;
 }
 
-inline unsigned int is_odd(const field y) {
-  return (y[field_bytes - 1] & 1);
-}
+inline unsigned int is_odd(const field y) { return (y[field_bytes - 1] & 1); }
 
-void schnorr_hash(scalar out, const scalar in0, const scalar in1, const scalar in2, const scalar in3, const scalar in4) {
+void schnorr_hash(scalar out, const scalar in0, const scalar in1,
+                  const scalar in2, const scalar in3, const scalar in4) {
 
   // state pos = {{0}, {0}, {0}};
 
   /*
-  // state after applying {{0x2a, 0x2a, 0x2a, 0x2a, 0x2a, 0x2a, 0x2a, 0x65, 0x72, 0x75,
-  //             0x74, 0x61, 0x6e, 0x67, 0x69, 0x53, 0x61, 0x64, 0x6f, 0x43}, {0}};
+  // state after applying {{0x2a, 0x2a, 0x2a, 0x2a, 0x2a, 0x2a, 0x2a, 0x65,
+  0x72, 0x75, 0x74, 0x61, 0x6e, 0x67, 0x69, 0x53, 0x61, 0x64, 0x6f, 0x43},
+  {0}};
   */
 
   state pos = {
-    {0x1c, 0xd6, 0x5e, 0xab, 0xe7, 0xba, 0x80, 0x54, 0xd2, 0x2b, 0x27, 0xb4,
-     0x80, 0x00, 0xce, 0x60, 0xc6, 0xee, 0x35, 0x19, 0xbe, 0x78, 0x45, 0xcb,
-     0x2c, 0xfd, 0xae, 0x8a, 0x6a, 0xc7, 0x84, 0xc3, 0x35, 0x68, 0x0a, 0xc9,
-     0x1d, 0x55, 0xc0, 0x45, 0xf3, 0x41, 0x3c, 0x21, 0x32, 0x4a, 0x1f, 0x79},
-    {0x20, 0x16, 0xb2, 0xac, 0xb8, 0x98, 0x81, 0x90, 0x99, 0xd8, 0xb1, 0x13,
-     0x23, 0x00, 0xd5, 0xeb, 0xb5, 0xcf, 0x5b, 0x0f, 0xb6, 0xd7, 0x3a, 0x79,
-     0xf0, 0xec, 0x6a, 0xd7, 0x1d, 0xc7, 0xc6, 0x6f, 0x5a, 0xa4, 0xff, 0xeb,
-     0xa4, 0xf8, 0xf6, 0x9d, 0x4a, 0xc3, 0xcb, 0x85, 0x64, 0x71, 0x31, 0xdc},
-    {0x0d, 0x85, 0xb7, 0xe5, 0xfd, 0xce, 0x11, 0xa7, 0x31, 0xee, 0x50, 0x4c,
-     0x23, 0x63, 0x78, 0x03, 0x13, 0x8d, 0xae, 0x73, 0x65, 0xd8, 0x69, 0x34,
-     0xdd, 0xad, 0x17, 0x4a, 0x06, 0xe7, 0x1f, 0xf3, 0x20, 0x23, 0x2d, 0x8b,
-     0xa1, 0x98, 0x82, 0xa1, 0xf4, 0x37, 0x37, 0x33, 0x87, 0xf7, 0xf0, 0xfa}};
+      {0x10, 0x3b, 0x9c, 0x65, 0x52, 0x8d, 0x48, 0xea, 0x19, 0x7e, 0x4c, 0xaa,
+       0xc5, 0x1d, 0x8f, 0xda, 0x9a, 0xb0, 0xf6, 0x24, 0xf9, 0x2e, 0x9b, 0x3f,
+       0x75, 0x2b, 0x80, 0x22, 0xf9, 0x1a, 0x35, 0x23, 0x60, 0x0e, 0x45, 0x96,
+       0x40, 0xf0, 0xb4, 0x06, 0x6e, 0xbe, 0x4d, 0x56, 0x8d, 0xa5, 0x8e, 0xa0},
+      {0x09, 0xd3, 0xb2, 0x79, 0x8b, 0x0b, 0xdd, 0x9f, 0x80, 0xbd, 0x98, 0x3f,
+       0x81, 0xfb, 0x4c, 0x7a, 0xaa, 0xd1, 0x2d, 0x82, 0xba, 0x2a, 0xf9, 0xc0,
+       0x8e, 0x78, 0xb2, 0x71, 0x6d, 0xc2, 0x5b, 0x4f, 0xce, 0x20, 0x39, 0x8e,
+       0x6c, 0x36, 0x42, 0x0b, 0xac, 0x75, 0xc6, 0xef, 0xdb, 0xe2, 0xc8, 0x87},
+      {0x08, 0x03, 0x68, 0xc9, 0xb0, 0x6f, 0x76, 0xe2, 0xb7, 0x25, 0x7d, 0x37,
+       0xb1, 0x6b, 0xb5, 0x7c, 0x24, 0x43, 0xef, 0x5b, 0xd1, 0x9c, 0x18, 0x2e,
+       0x5b, 0xf1, 0x62, 0x39, 0x47, 0x95, 0x2b, 0xca, 0x0e, 0x70, 0x46, 0x1c,
+       0xbb, 0xc1, 0x73, 0x82, 0xa7, 0x5e, 0x44, 0x47, 0x12, 0x54, 0x7b, 0x0e}};
   poseidon_2in(pos, in0, in1);
   poseidon_2in(pos, in2, in3);
   poseidon_1in(pos, in4);
@@ -477,24 +511,27 @@ void schnorr_hash(scalar out, const scalar in0, const scalar in1, const scalar i
   return;
 }
 
-void sign(field rx, scalar s, const affine *public_key, const scalar private_key, const scalar msgx, const scalar msgm) {
+void sign(field rx, scalar s, const affine *public_key,
+          const scalar private_key, const scalar msgx, const scalar msgm) {
   scalar k_prime;
   /* rx is G_io_apdu_buffer so we can take 192 bytes from it */
   {
     affine *r;
-    r = (affine *) rx;
-    schnorr_hash(k_prime, msgx, msgm, public_key->x, public_key->y, private_key);   // k = hash(m || pkx || pky || sk)
-    affine_scalar_mul(r, k_prime, &affine_one);                                      // r = k*g
+    r = (affine *)rx;
+    schnorr_hash(k_prime, msgx, msgm, public_key->x, public_key->y,
+                 private_key);                    // k = hash(m || pkx || pky || sk)
+    affine_scalar_mul(r, k_prime, &affine_one);   // r = k*g
 
     if (is_odd(r->y)) {
-      scalar_sub(k_prime, group_order, k_prime);                                    // if ry is odd, k = - k'
+      scalar_sub(k_prime, group_order, k_prime);  // if ry is odd, k = - k'
     }
     /* store so we don't need affine *r anymore */
     os_memcpy(rx, r->x, field_bytes);
   }
-  schnorr_hash(s, msgx, public_key->x, public_key->y, rx, msgm);                    // e = hash(x || pkx || pky || xr || m)
-  os_memcpy(s, scalar_zero, (scalar_bytes - 16));                                   // use 128 LSB as challenge
-  scalar_mul(s, s, private_key);                                                    // e*sk
-  scalar_add(s, k_prime, s);                                                        // k + e*sk
+  schnorr_hash(s, msgx, public_key->x, public_key->y, rx,
+               msgm);                             // e = hash(x || pkx || pky || xr || m)
+  os_memcpy(s, scalar_zero, (scalar_bytes - 16)); // use 128 LSB as challenge TODO what is 16.
+  scalar_mul(s, s, private_key);                  // e*sk
+  scalar_add(s, k_prime, s);                      // k + e*sk
   return;
 }
