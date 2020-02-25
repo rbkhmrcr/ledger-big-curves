@@ -103,10 +103,7 @@ static unsigned int ui_pubkey_approve_button(unsigned int button_mask, unsigned 
     tx += affine_bytes;
     io_exchange_with_code(SW_OK, tx);
     os_memmove(ctx->type_str, "Compare:", 9);
-    // hash pk to display (192B is too much to meaningfully compare)
-    unsigned char hash[32];
-    cx_hash_sha256(public_key.x, 96, hash);
-    bin2hex(ctx->full_str, hash, 32);
+    bin2hex(ctx->full_str, G_io_apdu_buffer, field_bytes);
     os_memmove(ctx->partial_str, ctx->full_str, 12);
     ctx->partial_str[12] = '\0';
     ctx->display_index = 0;

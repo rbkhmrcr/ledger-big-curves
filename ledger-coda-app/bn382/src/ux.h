@@ -61,6 +61,8 @@ typedef enum {
   TXN_ELEM_MEMO,
 } txn_elem_type_e;
 
+#define CVAL_LEN 128
+
 // txn_state is a helper object for computing the hash of a streamed
 // transaction.
 typedef struct {
@@ -78,9 +80,9 @@ typedef struct {
 
   uint8_t del;                // is delegation : 1 = true, 0 = false
   uint32_t nonce;             // transaction nonce
-  uint8_t out_val[128];       // currency value, in decimal
+  uint8_t out_val[CVAL_LEN];  // currency value, in decimal
   uint8_t val_len;            // length of out_val
-  uint8_t fee_val[128];       // currency value, in decimal
+  uint8_t fee_val[CVAL_LEN];  // currency value, in decimal
   uint32_t key_index;         // 'from' public key
   scalar out_key;             // 'to' public key
 } txn_state;
@@ -99,26 +101,32 @@ void txn_update(txn_state *txn, uint8_t *in, uint8_t inlen);
 // decoded, it returns TXN_STATE_FINISHED.
 txn_decoder_state_e txn_next_elem(txn_state *txn);
 
+#define CSTR_LEN 40
+#define CPART_LEN 13 // display 12 chars, + 1 for NULL
+#define KHEX_LEN (field_bytes * 2 * 2)
+#define SMSG_LEN (field_bytes * 2 * 2)
+#define SHEX_LEN (field_bytes * 2 * 2 * 2)
+
 typedef struct {
   uint32_t key_index;
   uint8_t display_index;
-  // NULL-terminated strings for display
-  uint8_t type_str[40];
-  uint8_t key_str[40];
-  uint8_t full_str[65];
-  uint8_t partial_str[13];
+  uint8_t type_str[CSTR_LEN];
+  uint8_t key_str[CSTR_LEN];
+  uint8_t full_str[KHEX_LEN];
+  uint8_t partial_str[CPART_LEN];
 } pubkey_context;
 
 typedef struct {
   uint32_t key_index;
-  uint8_t msg[364];
-  uint8_t hex_msg[728];
+  uint8_t msg[SMSG_LEN];
+  uint8_t hex_msg[SHEX_LEN];
   uint32_t display_index;
-  // NULL-terminated strings for display
-  uint8_t index_str[40]; // 40??
-  uint8_t partial_msg_str[13];
+  uint8_t index_str[CSTR_LEN];
+  uint8_t partial_msg_str[CPART_LEN];
 } signature_context;
 
+// TODO get rid of dead code :)
+// this is never used -- we dont hash messages before signing
 typedef struct {
   uint32_t key_index;
   int sign;
@@ -126,10 +134,9 @@ typedef struct {
   uint8_t display_index;
   uint8_t elem_part; // screen index of elements
   txn_state txn;
-  // NUL-terminated strings for display
-  uint8_t label_str[40]; // variable length
-  uint8_t full_str[128]; // variable length
-  uint8_t partial_str[13];
+  uint8_t label_str[CSTR_LEN];
+  uint8_t full_str[128];
+  uint8_t partial_str[CPART_LEN];
   int initialized; // protects against certain attacks
 } hash_context;
 

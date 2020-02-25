@@ -59,12 +59,12 @@ static unsigned int ui_sign_approve_button(unsigned int button_mask, unsigned in
     affine public_key;
     scalar private_key;
     generate_keypair(ctx->key_index, &public_key, private_key);
-    sign(G_io_apdu_buffer, G_io_apdu_buffer + field_bytes, &public_key, private_key, ctx->msg, ctx->msg + 96);
+    sign(G_io_apdu_buffer, G_io_apdu_buffer + field_bytes, &public_key, private_key, ctx->msg, ctx->msg + field_bytes);
     // Send the data in the APDU buffer, along with a special code that
     // indicates approval. 192 is the number of bytes in the response APDU,
     // sans response code. The Ledger can only handle sending less than 260
     // bytes total per message.
-    io_exchange_with_code(SW_OK, 192);
+    io_exchange_with_code(SW_OK, field_bytes + scalar_bytes);
     // Return to the main screen.
     ui_idle();
     }
@@ -135,7 +135,7 @@ static unsigned int ui_sign_compare_button(unsigned int button_mask, unsigned in
     // Prepare to display the approval screen by printing the key index
     // into the index_str buffer. We copy two bytes in the final os_memmove
     // so as to include the terminating '\0' byte for the string.
-    os_memmove(ctx->index_str, "with Key #", 10);
+    os_memmove(ctx->index_str, "with key #", 10);
     int n = bin2dec(ctx->index_str+10, ctx->key_index);
     os_memmove(ctx->index_str+10+n, "?", 2);
     // Note that because the approval screen does not have a preprocessor,

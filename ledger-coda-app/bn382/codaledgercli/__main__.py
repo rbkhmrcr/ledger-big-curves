@@ -63,7 +63,7 @@ def main():
 
         args = parser.parse_args()
 
-        dongle = getDongle(False)
+        dongle = getDongle(True)
 
         if args.request == 'version':
             get_version(dongle)
