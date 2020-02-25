@@ -169,9 +169,7 @@ unsigned int scalar_eq(const scalar a, const scalar b) {
 }
 
 // zero is the only point with Z = 0 in jacobian coordinates
-unsigned int is_zero(const group *p) {
-  return field_eq(p->Z, field_zero);
-}
+unsigned int is_zero(const group *p) { return field_eq(p->Z, field_zero); }
 
 unsigned int affine_is_zero(const affine *p) {
   return (field_eq(p->x, field_zero) && field_eq(p->y, field_zero));
@@ -190,17 +188,19 @@ unsigned int is_on_curve(const group *p) {
     field_mul(rhs, rhs, p->X);          // x^3
     field_add(rhs, rhs, group_coeff_b); // x^3 + b
   } else {
-    // we check (y/z)^2 == (x/z)^3 + b
-    // => z(y^2 - bz^2) == x^3
-    field x2, y2, z2;
-    field_sq(x2, p->X);
-    field_sq(y2, p->Y);
-    field_sq(z2, p->Z);
+    // we check (y/z^3)^2 == (x/z^2)^3 + b
+    // => y^2 == x^3 + bz^6
+    field x3, z6;
+    field_sq(x3, p->X);                 // x^2
+    field_mul(x3, x3, p->X);            // x^3
+    field_sq(lhs, p->Y);                // y^2
+    field_sq(z6, p->Z);                 // z^2
+    field_sq(z6, z6);                   // z^4
+    field_mul(z6, z6, p->Z);            // z^5
+    field_mul(z6, z6, p->Z);            // z^6
 
-    field_mul(lhs, z2, group_coeff_b);  // bz^2
-    field_sub(lhs, y2, lhs);            // y^2 - bz^2
-    field_mul(lhs, p->Z, lhs);          // z(y^2 - bz^2)
-    field_mul(rhs, p->X, x2);           // x^3
+    field_mul(rhs, z6, group_coeff_b);  // bz^6
+    field_add(rhs, x3, rhs);            // x^3 + bz^6
   }
   return field_eq(lhs, rhs);
 }
@@ -391,47 +391,20 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
   if (scalar_eq(k, scalar_zero)) {
     return;
   }
-
+  group r1 = *p;
   for (unsigned int i = scalar_offset; i < scalar_bits; i++) {
     unsigned int di = k[i / 8] & (1 << (7 - (i % 8)));
     group q0;
-    group_dbl(&q0, r);
-    *r = q0;
-    if (di != 0) {
-      // only allowed because we only ever call this via affine_scalar_mul
-      group_madd(&q0, r, p);
-      // group_add(&q0, r, p);
-      *r = q0;
-    }
-  }
-  return;
-}
-
-void mgmy_ladder(group *r, const scalar k, const group *p) {
-
-  *r = group_zero;
-  if (is_zero(p)) {
-    return;
-  }
-  if (scalar_eq(k, scalar_zero)) {
-    return;
-  }
-  group r1 = *p;
-
-  for (unsigned int i = scalar_bits; i > scalar_offset; i--) {
-    unsigned int di = k[i / 8] & (1 << (i % 8));
-
-    group q0, q1;
     if (di == 0) {
       group_add(&q0, r, &r1); // r1 = r0 + r1
       r1 = q0;
-      group_dbl(&q1, r);      // r0 = r0 + r0
-      *r = q1;
+      group_dbl(&q0, r);      // r0 = r0 + r0
+      *r = q0;
     } else {
       group_add(&q0, r, &r1); // r0 = r0 + r1
       *r = q0;
-      group_dbl(&q1, &r1);    // r1 = r1 + r1
-      r1 = q1;
+      group_dbl(&q0, &r1);    // r1 = r1 + r1
+      r1 = q0;
     }
   }
   return;
