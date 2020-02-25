@@ -283,6 +283,10 @@ void group_add(group *r, const group *p, const group *q) {
     return;
   }
 
+  if (field_eq(p->X, q->X) && field_eq(p->Y, q->Y) && field_eq(p->Z, q->Z)) {
+    return group_dbl(r, p);
+  }
+
   field z1z1, z2z2;
   field_sq(z1z1, p->Z);         // Z1Z1 = Z1^2
   field_sq(z2z2, q->Z);         // Z2Z2 = Z2^2
@@ -377,7 +381,7 @@ void group_madd(group *r, const group *p, const group *q) {
   field_sub(w, v, z1z1);            // t11 = t10 - z1z1
   field_sub(r->Z, w, hh);           // (Z1 + h)^2 - Z1Z1 - hh = t11 - hh
 }
-/*
+
 void group_scalar_mul(group *r, const scalar k, const group *p) {
 
   *r = group_zero;
@@ -402,8 +406,8 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
   }
   return;
 }
-*/
-void group_scalar_mul(group *r, const scalar k, const group *p) {
+
+void mgmy_ladder(group *r, const scalar k, const group *p) {
 
   *r = group_zero;
   if (is_zero(p)) {
@@ -416,24 +420,22 @@ void group_scalar_mul(group *r, const scalar k, const group *p) {
 
   for (unsigned int i = scalar_bits; i > scalar_offset; i--) {
     unsigned int di = k[i / 8] & (1 << (i % 8));
-    group q0;
-    group q1;
+
+    group q0, q1;
     if (di == 0) {
-      group_add(&q0, r, &r1);
-      group_dbl(&q1, r);
-      *r = q1;
+      group_add(&q0, r, &r1); // r1 = r0 + r1
       r1 = q0;
+      group_dbl(&q1, r);      // r0 = r0 + r0
+      *r = q1;
     } else {
-      group_add(&q0, r, &r1);
-      group_dbl(&q1, &r1);
+      group_add(&q0, r, &r1); // r0 = r0 + r1
       *r = q0;
+      group_dbl(&q1, &r1);    // r1 = r1 + r1
       r1 = q1;
     }
   }
   return;
 }
-
-
 
 void affine_scalar_mul(affine *r, const scalar k, const affine *p) {
   group pp, pr;
